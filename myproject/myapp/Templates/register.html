@@ -1,0 +1,283 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block content %}
+
+    <!-- Page Header Start -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Create Account</h1>
+        <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+            <li class="breadcrumb-item active text-white">Register</li>
+        </ol>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Register Form Start -->
+    <div class="container-fluid py-5">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-9 wow fadeInUp" data-wow-delay="0.1s">
+
+                    <!-- Card -->
+                    <div class="border rounded p-4 p-md-5 bg-white shadow-sm">
+
+                        <!-- Header -->
+                        <div class="text-center mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary mb-3"
+                                style="width: 64px; height: 64px;">
+                                <i class="fas fa-user-plus fa-2x text-white"></i>
+                            </div>
+                            <h2 class="fw-bold mb-1">Create Account</h2>
+                            <p class="text-muted mb-0">Join Electro and start shopping today</p>
+                        </div>
+
+                        <!-- Django messages (success / error from backend) -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- Register Form -->
+                        <form id="registerForm" method="POST" action="{% url 'register' %}" novalidate>
+                            {% csrf_token %}
+
+                            <!-- Name Field -->
+                            <div class="mb-3">
+                                <label for="registerName" class="form-label fw-semibold">
+                                    <i class="fas fa-id-card text-primary me-1"></i> Full Name
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control rounded-pill py-2 px-4"
+                                    id="registerName"
+                                    name="name"
+                                    placeholder="Enter your full name"
+                                    value="{{ form_data.name }}"
+                                    autocomplete="name"
+                                >
+                                <div class="invalid-feedback" id="nameError">
+                                    This field is required.
+                                </div>
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="mb-3">
+                                <label for="registerEmail" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope text-primary me-1"></i> Email Address
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control rounded-pill py-2 px-4"
+                                    id="registerEmail"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    value="{{ form_data.email }}"
+                                    autocomplete="email"
+                                >
+                                <div class="invalid-feedback" id="emailError">
+                                    This field is required.
+                                </div>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="mb-3">
+                                <label for="registerPassword" class="form-label fw-semibold">
+                                    <i class="fas fa-lock text-primary me-1"></i> Password
+                                </label>
+                                <div class="input-group">
+                                    <input
+                                        type="password"
+                                        class="form-control rounded-pill py-2 px-4"
+                                        id="registerPassword"
+                                        name="password"
+                                        placeholder="Enter your password"
+                                        autocomplete="new-password"
+                                        style="border-radius: 50px 0 0 50px !important;"
+                                    >
+                                    <button
+                                        class="btn btn-outline-secondary"
+                                        type="button"
+                                        id="toggleRegisterPassword"
+                                        title="Show/Hide Password"
+                                        style="border-radius: 0 50px 50px 0; border-left: 0;"
+                                    >
+                                        <i class="fas fa-eye" id="registerPasswordIcon"></i>
+                                    </button>
+                                </div>
+                                <div class="invalid-feedback d-block" id="passwordError" style="display:none !important;"></div>
+                            </div>
+
+                            <!-- Confirm Password Field -->
+                            <div class="mb-4">
+                                <label for="registerConfirmPassword" class="form-label fw-semibold">
+                                    <i class="fas fa-check-circle text-primary me-1"></i> Confirm Password
+                                </label>
+                                <div class="input-group">
+                                    <input
+                                        type="password"
+                                        class="form-control rounded-pill py-2 px-4"
+                                        id="registerConfirmPassword"
+                                        name="confirm_password"
+                                        placeholder="Re-enter your password"
+                                        autocomplete="new-password"
+                                        style="border-radius: 50px 0 0 50px !important;"
+                                    >
+                                    <button
+                                        class="btn btn-outline-secondary"
+                                        type="button"
+                                        id="toggleConfirmPassword"
+                                        title="Show/Hide Password"
+                                        style="border-radius: 0 50px 50px 0; border-left: 0;"
+                                    >
+                                        <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+                                    </button>
+                                </div>
+                                <div class="invalid-feedback d-block" id="confirmPasswordError" style="display:none !important;"></div>
+                            </div>
+
+                            <!-- Terms & Conditions -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="agreeTerms" name="agree_terms">
+                                <label class="form-check-label text-muted" for="agreeTerms">
+                                    I agree to the
+                                    <a href="#" class="text-primary text-decoration-none">Terms &amp; Conditions</a>
+                                    and
+                                    <a href="#" class="text-primary text-decoration-none">Privacy Policy</a>
+                                </label>
+                                <div class="invalid-feedback" id="termsError">
+                                    You must agree to the terms and conditions.
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary rounded-pill py-2 px-4 fw-semibold" id="registerBtn">
+                                    <i class="fas fa-user-plus me-2"></i> Create Account
+                                </button>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="text-center text-muted mb-3">
+                                <small>— or —</small>
+                            </div>
+
+                            <!-- Login Link -->
+                            <div class="text-center">
+                                <span class="text-muted">Already have an account?</span>
+                                <a href="{% url 'login' %}" class="text-primary fw-semibold ms-1 text-decoration-none">
+                                    Sign In
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+                    <!-- Card End -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Register Form End -->
+
+    <script>
+        (function () {
+            'use strict';
+
+            // ── Password visibility toggles ─────────────────────────────────
+            function setupToggle(btnId, inputId, iconId) {
+                document.getElementById(btnId).addEventListener('click', function () {
+                    const input = document.getElementById(inputId);
+                    const icon  = document.getElementById(iconId);
+                    const show  = input.type === 'password';
+                    input.type  = show ? 'text' : 'password';
+                    icon.classList.toggle('fa-eye',      !show);
+                    icon.classList.toggle('fa-eye-slash', show);
+                });
+            }
+
+            setupToggle('toggleRegisterPassword', 'registerPassword',        'registerPasswordIcon');
+            setupToggle('toggleConfirmPassword',  'registerConfirmPassword', 'confirmPasswordIcon');
+
+            // ── Submit: empty-field check only ──────────────────────────────
+            const form             = document.getElementById('registerForm');
+            const nameInput        = document.getElementById('registerName');
+            const emailInput       = document.getElementById('registerEmail');
+            const pwdInput         = document.getElementById('registerPassword');
+            const confirmInput     = document.getElementById('registerConfirmPassword');
+            const termsCheck       = document.getElementById('agreeTerms');
+
+            const nameError            = document.getElementById('nameError');
+            const emailError           = document.getElementById('emailError');
+            const passwordError        = document.getElementById('passwordError');
+            const confirmPasswordError = document.getElementById('confirmPasswordError');
+            const termsError           = document.getElementById('termsError');
+
+            form.addEventListener('submit', function (e) {
+                let valid = true;
+
+                // Name — empty check
+                if (!nameInput.value.trim()) {
+                    nameInput.classList.add('is-invalid');
+                    nameError.style.display = 'block';
+                    valid = false;
+                } else {
+                    nameInput.classList.remove('is-invalid');
+                    nameError.style.display = 'none';
+                }
+
+                // Email — empty check
+                if (!emailInput.value.trim()) {
+                    emailInput.classList.add('is-invalid');
+                    emailError.style.display = 'block';
+                    valid = false;
+                } else {
+                    emailInput.classList.remove('is-invalid');
+                    emailError.style.display = 'none';
+                }
+
+                // Password — empty check
+                if (!pwdInput.value) {
+                    pwdInput.classList.add('is-invalid');
+                    passwordError.textContent = 'This field is required.';
+                    passwordError.style.removeProperty('display');
+                    valid = false;
+                } else {
+                    pwdInput.classList.remove('is-invalid');
+                    passwordError.style.display = 'none';
+                }
+
+                // Confirm Password — empty check
+                if (!confirmInput.value) {
+                    confirmInput.classList.add('is-invalid');
+                    confirmPasswordError.textContent = 'This field is required.';
+                    confirmPasswordError.style.removeProperty('display');
+                    valid = false;
+                } else {
+                    confirmInput.classList.remove('is-invalid');
+                    confirmPasswordError.style.display = 'none';
+                }
+
+                // Terms — must be checked
+                if (!termsCheck.checked) {
+                    termsCheck.classList.add('is-invalid');
+                    termsError.style.display = 'block';
+                    valid = false;
+                } else {
+                    termsCheck.classList.remove('is-invalid');
+                    termsError.style.display = 'none';
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+
+        })();
+    </script>
+
+{% endblock %}

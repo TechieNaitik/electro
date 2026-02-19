@@ -1,0 +1,235 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block content %}
+
+    <!-- Page Header Start -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Login</h1>
+        <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+            <li class="breadcrumb-item active text-white">Login</li>
+        </ol>
+    </div>
+    <!-- Page Header End -->
+
+    <!-- Login Form Start -->
+    <div class="container-fluid py-5">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-8 wow fadeInUp" data-wow-delay="0.1s">
+
+                    <!-- Card -->
+                    <div class="border rounded p-4 p-md-5 bg-white shadow-sm">
+
+                        <!-- Header -->
+                        <div class="text-center mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary mb-3"
+                                style="width: 64px; height: 64px;">
+                                <i class="fas fa-user fa-2x text-white"></i>
+                            </div>
+                            <h2 class="fw-bold mb-1">Welcome Back</h2>
+                            <p class="text-muted mb-0">Sign in to your Electro account</p>
+                        </div>
+
+                        <!-- Alert for general errors (backend-ready) -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- Login Form -->
+                        <form id="loginForm" method="POST" action="{% url 'login' %}" novalidate>
+                            {% csrf_token %}
+
+                            <!-- Email Field -->
+                            <div class="mb-3">
+                                <label for="loginEmail" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope text-primary me-1"></i> Email Address
+                                </label>
+                                <input
+                                    type="email"
+                                    class="form-control rounded-pill py-2 px-4{% if errors.email %} is-invalid{% endif %}"
+                                    id="loginEmail"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    value="{{ form_data.email }}"
+                                    autocomplete="email"
+                                    required
+                                >
+                                <div class="invalid-feedback" id="emailError">
+                                    {% if errors.email %}{{ errors.email }}{% else %}Please enter a valid email address.{% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="mb-3">
+                                <label for="loginPassword" class="form-label fw-semibold">
+                                    <i class="fas fa-lock text-primary me-1"></i> Password
+                                </label>
+                                <div class="input-group">
+                                    <input
+                                        type="password"
+                                        class="form-control rounded-pill py-2 px-4{% if errors.password %} is-invalid{% endif %}"
+                                        id="loginPassword"
+                                        name="password"
+                                        placeholder="Enter your password"
+                                        autocomplete="current-password"
+                                        required
+                                        style="border-radius: 50px 0 0 50px !important;"
+                                    >
+                                    <button
+                                        class="btn btn-outline-secondary"
+                                        type="button"
+                                        id="toggleLoginPassword"
+                                        title="Show/Hide Password"
+                                        style="border-radius: 0 50px 50px 0; border-left: 0;"
+                                    >
+                                        <i class="fas fa-eye" id="loginPasswordIcon"></i>
+                                    </button>
+                                </div>
+                                {% if errors.password %}
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ errors.password }}
+                                </div>
+                                {% endif %}
+                                <div class="invalid-feedback d-block" id="passwordError" style="display:none !important;"></div>
+                            </div>
+
+                            <!-- Remember Me & Forgot Password -->
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+                                    <label class="form-check-label text-muted" for="rememberMe">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <a href="#" class="text-primary text-decoration-none small">Forgot Password?</a>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary rounded-pill py-2 px-4 fw-semibold" id="loginBtn">
+                                    <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                                </button>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="text-center text-muted mb-3">
+                                <small>— or —</small>
+                            </div>
+
+                            <!-- Register Link -->
+                            <div class="text-center">
+                                <span class="text-muted">Don't have an account?</span>
+                                <a href="{% url 'register' %}" class="text-primary fw-semibold ms-1 text-decoration-none">
+                                    Create Account
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+                    <!-- Card End -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Login Form End -->
+
+    <!-- Client-Side Validation Script -->
+    <script>
+        (function () {
+            'use strict';
+
+            // ── Toggle password visibility ──────────────────────────────────
+            const toggleBtn = document.getElementById('toggleLoginPassword');
+            const pwdInput  = document.getElementById('loginPassword');
+            const pwdIcon   = document.getElementById('loginPasswordIcon');
+
+            toggleBtn.addEventListener('click', function () {
+                const isPassword = pwdInput.type === 'password';
+                pwdInput.type    = isPassword ? 'text' : 'password';
+                pwdIcon.classList.toggle('fa-eye',      !isPassword);
+                pwdIcon.classList.toggle('fa-eye-slash', isPassword);
+            });
+
+            // ── Form validation ─────────────────────────────────────────────
+            const form        = document.getElementById('loginForm');
+            const emailInput  = document.getElementById('loginEmail');
+            const emailError  = document.getElementById('emailError');
+            const passwordError = document.getElementById('passwordError');
+
+            function validateEmail(value) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(value.trim());
+            }
+
+            function showError(input, errorEl, message) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+            }
+
+            function showSuccess(input, errorEl) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                errorEl.style.display = 'none';
+            }
+
+            // Live validation on blur
+            emailInput.addEventListener('blur', function () {
+                if (!this.value.trim()) {
+                    showError(this, emailError, 'Email address is required.');
+                } else if (!validateEmail(this.value)) {
+                    showError(this, emailError, 'Please enter a valid email address (e.g. user@example.com).');
+                } else {
+                    showSuccess(this, emailError);
+                }
+            });
+
+            pwdInput.addEventListener('blur', function () {
+                if (!this.value) {
+                    showError(this, passwordError, 'Password is required.');
+                } else {
+                    showSuccess(this, passwordError);
+                }
+            });
+
+            // Submit validation
+            form.addEventListener('submit', function (e) {
+                let valid = true;
+
+                // Validate email
+                if (!emailInput.value.trim()) {
+                    showError(emailInput, emailError, 'Email address is required.');
+                    valid = false;
+                } else if (!validateEmail(emailInput.value)) {
+                    showError(emailInput, emailError, 'Please enter a valid email address (e.g. user@example.com).');
+                    valid = false;
+                } else {
+                    showSuccess(emailInput, emailError);
+                }
+
+                // Validate password
+                if (!pwdInput.value) {
+                    showError(pwdInput, passwordError, 'Password is required.');
+                    valid = false;
+                } else {
+                    showSuccess(pwdInput, passwordError);
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+
+        })();
+    </script>
+
+{% endblock %}
