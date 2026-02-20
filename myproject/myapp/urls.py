@@ -30,4 +30,7 @@ urlpatterns = [
     path('contact', views.contact, name='contact'),
     path('error', views.error, name='error'),
     path('bestseller', views.bestseller, name='bestseller'),
+    path('logout', views.logout, name='logout'),
+    path('forgot_password', views.forgot_password, name='forgot_password'),
+    path('reset_password', views.reset_password, name='reset_password'),
 ]
