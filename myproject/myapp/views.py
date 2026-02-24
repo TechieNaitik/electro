@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
 from django.conf import settings
 
-from .models import Customer
+from .models import Customer, Category, Product
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helper
@@ -15,10 +15,18 @@ from .models import Customer
 # Views
 # ─────────────────────────────────────────────────────────────────────────────
 def home(request):
-    return render(request, 'index.html')
+    context = {
+        'categories': Category.objects.all(),
+        'products': Product.objects.all(),
+    }
+    return render(request, 'index.html', context)
 
 def index(request):
-    return render(request, 'index.html')
+    context = {
+        'categories': Category.objects.all(),
+        'products': Product.objects.all(),
+    }
+    return render(request, 'index.html', context)
 
 def register(request):
     if 'email' in request.session:
@@ -80,7 +88,11 @@ def login(request):
     return render(request, 'login.html')
 
 def shop(request):
-    return render(request, 'shop.html')
+    context = {
+        'categories': Category.objects.all(),
+        'products': Product.objects.all(),
+    }
+    return render(request, 'shop.html', context)
 
 def single(request):
     return render(request, 'single.html')
