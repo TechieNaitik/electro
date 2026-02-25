@@ -114,15 +114,15 @@
             <div class="col-md-4 col-lg-6 text-center">
                 <div class="position-relative ps-4">
                     <div class="d-flex border rounded-pill">
-                        <input class="form-control border-0 rounded-pill w-100 py-3" type="text"
+                        <input id="headerSearchInput" class="form-control border-0 rounded-pill w-100 py-3" type="text"
                             data-bs-target="#dropdownToggle123" placeholder="Search Looking For?">
-                        <select class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 200px;">
-                            <option value="All Category">All Category</option>
+                        <select id="headerCategorySelect" class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 200px;">
+                            <option value="0">All Category</option>
                             {% for category in categories %}
-                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                <option value="{{ category.id }}" {% if selected_category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
                             {% endfor %}
                         </select>
-                        <button type="button" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;"><i
+                        <button id="headerSearchBtn" type="button" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;"><i
                                 class="fas fa-search"></i></button>
                     </div>
                 </div>
@@ -157,7 +157,7 @@
                                 {% for category in categories %}
                                 <li>
                                     <div class="categories-bars-item">
-                                        <a href="#">{{ category.name }}</a>
+                                        <a href="{% url 'shop_category' category.id %}">{{ category.name }}</a>
                                     </div>
                                 </li>
                                 {% endfor %}
@@ -199,7 +199,7 @@
                                         {% for category in categories %}
                                         <li>
                                             <div class="categories-bars-item">
-                                                <a href="#">{{ category.name }}</a>
+                                                <a href="{% url 'shop_category' category.id %}">{{ category.name }}</a>
                                             </div>
                                         </li>
                                         {% endfor %}
@@ -386,7 +386,7 @@
             <div class="tab-class">
                 <div class="row g-4">
                     <div class="col-lg-4 text-start wow fadeInLeft" data-wow-delay="0.1s">
-                        <h1>Our Products</h1>
+                        <h1>{% if selected_category %}{{ selected_category.name }}{% else %}Our Products{% endif %}</h1>
                     </div>
                     <div class="col-lg-8 text-end wow fadeInRight" data-wow-delay="0.1s">
                         <ul class="nav nav-pills d-inline-flex text-center mb-5">
@@ -541,7 +541,7 @@
             <div class="mx-auto text-center mb-5" style="max-width: 900px;">
                 <h4 class="text-primary border-bottom border-primary border-2 d-inline-block p-2 title-border-radius wow fadeInUp"
                     data-wow-delay="0.1s">Products</h4>
-                <h1 class="mb-0 display-3 wow fadeInUp" data-wow-delay="0.3s">All Product Items</h1>
+                <h1 class="mb-0 display-3 wow fadeInUp" data-wow-delay="0.3s">{% if selected_category %}{{ selected_category.name }}{% else %}All Product Items{% endif %}</h1>
             </div>
             <div class="productList-carousel owl-carousel pt-4 wow fadeInUp" data-wow-delay="0.3s">
                 {% for product in products %}
@@ -591,9 +591,10 @@
             <div class="mx-auto text-center mb-5" style="max-width: 700px;">
                 <h4 class="text-primary mb-4 border-bottom border-primary border-2 d-inline-block p-2 title-border-radius wow fadeInUp"
                     data-wow-delay="0.1s">Bestseller Products</h4>
-                <p class="mb-0 wow fadeInUp" data-wow-delay="0.2s">Lorem ipsum dolor sit amet consectetur adipisicing
-                    elit. Modi, asperiores ducimus sint quos tempore officia similique quia? Libero, pariatur
-                    consectetur?</p>
+                <p class="mb-0 wow fadeInUp" data-wow-delay="0.2s">Our Best Sellers are the products customers love most — tried, 
+                    trusted, and highly rated. From top-quality essentials to trending must-haves, each item here stands out for 
+                    its performance, value, and popularity. Discover what everyone is choosing and find your next favorite today.
+                </p>
             </div>
             <div class="row g-4">
                 {% for product in products|slice:":6" %}
@@ -783,6 +784,17 @@
 
     <!-- Template Javascript -->
     <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        document.getElementById('headerSearchBtn').addEventListener('click', function() {
+            var categoryId = document.getElementById('headerCategorySelect').value;
+            // var query = document.getElementById('headerSearchInput').value;
+            if (categoryId == "0") {
+                window.location.href = "{% url 'shop' %}";
+            } else {
+                window.location.href = "/shop/" + categoryId + "/";
+            }
+        });
+    </script>
 </body>
 
 </html>

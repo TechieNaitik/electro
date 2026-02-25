@@ -23,7 +23,8 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('login', views.login, name='login'),
     path('register', views.register, name='register'),
-    path('shop', views.shop, name='shop'),
+    path('shop/', views.shop, name='shop'),
+    path('shop/<int:cid>/', views.shop, name='shop_category'),
     path('single', views.single, name='single'),
     path('cart', views.cart, name='cart'),
     path('checkout', views.checkout, name='checkout'),
@@ -33,4 +34,5 @@ urlpatterns = [
     path('logout', views.logout, name='logout'),
     path('forgot_password', views.forgot_password, name='forgot_password'),
     path('reset_password', views.reset_password, name='reset_password'),
+    path('category/<int:cid>/', views.category_products, name='category_products'),
 ]
