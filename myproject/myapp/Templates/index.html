@@ -34,7 +34,6 @@
 </head>
 
 <body>
-
     <!-- Spinner Start -->
     <div id="spinner"
         class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -43,7 +42,6 @@
         </div>
     </div>
     <!-- Spinner End -->
-
 
     <!-- Topbar Start -->
     <div class="container-fluid px-5 d-none border-bottom d-lg-block">
@@ -100,6 +98,7 @@
             </div>
         </div>
     </div>
+
     <div class="container-fluid px-5 py-4 d-none d-lg-block">
         <div class="row gx-0 align-items-center text-center">
             <div class="col-md-4 col-lg-3 text-center text-lg-start">
@@ -115,7 +114,7 @@
                 <div class="position-relative ps-4">
                     <div class="d-flex border rounded-pill">
                         <input id="headerSearchInput" class="form-control border-0 rounded-pill w-100 py-3" type="text"
-                            data-bs-target="#dropdownToggle123" placeholder="Search Looking For?">
+                            data-bs-target="#dropdownToggle123" placeholder="Search Looking For?" value="{{ search_query|default:'' }}">
                         <select id="headerCategorySelect" class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 200px;">
                             <option value="0">All Category</option>
                             {% for category in categories %}
@@ -378,7 +377,6 @@
         </div>
     </div>
     <!-- Products Offer End -->
-
 
     <!-- Our Products Start -->
     <div class="container-fluid product py-5">
@@ -770,10 +768,8 @@
     </div>
     <!-- Copyright End -->
 
-
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary btn-lg-square back-to-top"><i class="fa fa-arrow-up"></i></a>
-
 
     <!-- JavaScript Libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
@@ -787,11 +783,22 @@
     <script>
         document.getElementById('headerSearchBtn').addEventListener('click', function() {
             var categoryId = document.getElementById('headerCategorySelect').value;
-            // var query = document.getElementById('headerSearchInput').value;
-            if (categoryId == "0") {
-                window.location.href = "{% url 'shop' %}";
-            } else {
-                window.location.href = "/shop/" + categoryId + "/";
+            var query = document.getElementById('headerSearchInput').value;
+            var url = "{% url 'shop' %}?";
+            
+            if (categoryId != "0") {
+                url += "cid=" + categoryId + "&";
+            }
+            if (query) {
+                url += "q=" + encodeURIComponent(query);
+            }
+            window.location.href = url;
+        });
+
+        // Add event listener for Enter key on search input
+        document.getElementById('headerSearchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById('headerSearchBtn').click();
             }
         });
     </script>

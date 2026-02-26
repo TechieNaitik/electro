@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
 from django.conf import settings
+from django.db.models.functions import Lower
 
 from .models import Customer, Category, Product
 
@@ -105,13 +106,30 @@ def shop(request, cid=0):
         'categories': Category.objects.all(),
     }
     
+    # Get category ID from GET if not in URL
+    get_cid = request.GET.get('cid')
+    if get_cid:
+        try:
+            cid = int(get_cid)
+        except ValueError:
+            pass
+
     # Get initial products based on category
     if cid == 0:
         products = Product.objects.all()
     else:
-        category = Category.objects.get(id=cid)
-        products = Product.objects.filter(category_id=category)
-        context['selected_category'] = category
+        try:
+            category = Category.objects.get(id=cid)
+            products = Product.objects.filter(category_id=category)
+            context['selected_category'] = category
+        except Category.DoesNotExist:
+            products = Product.objects.all()
+
+    # Apply search query if present
+    query = request.GET.get('q')
+    if query:
+        products = products.filter(name__icontains=query)
+        context['search_query'] = query
 
     # Apply price filter if present
     max_price = request.GET.get('max_price')
@@ -121,6 +139,22 @@ def shop(request, cid=0):
             context['current_max_price'] = max_price
         except ValueError:
             pass
+
+    # Apply sorting (default: Name A-Z, case-insensitive, lowercase before uppercase)
+    sort = request.GET.get('sort', 'Name, A-Z')
+    # Annotate with lower_name for case-insensitive comparison
+    products = products.annotate(lower_name=Lower('name'))
+    # sort_map: tuples of ORM order fields
+    # Primary = lower_name (case-insensitive alpha), secondary = -name (lowercase before uppercase)
+    sort_map = {
+        'Name, A-Z':   ('lower_name', '-name'),
+        'Name, Z-A':   ('-lower_name', '-name'),
+        'Price, ASC':  ('price',),
+        'Price, DESC': ('-price',),
+    }
+    order_fields = sort_map.get(sort, ('lower_name', '-name'))
+    products = products.order_by(*order_fields)
+    context['current_sort'] = sort
 
     context['products'] = products
     return render(request, 'shop.html', context)

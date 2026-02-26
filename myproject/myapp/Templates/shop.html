@@ -85,37 +85,6 @@
     </div>
     <!-- Services End -->
 
-    <!-- Products Offer Start -->
-    <div class="container-fluid bg-light py-5">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.2s">
-                    <a href="#" class="d-flex align-items-center justify-content-between border bg-white rounded p-4">
-                        <div>
-                            <p class="text-muted mb-3">Find The Best Camera for You!</p>
-                            <h3 class="text-primary">Smart Camera</h3>
-                            <h1 class="display-3 text-secondary mb-0">40% <span
-                                    class="text-primary fw-normal">Off</span></h1>
-                        </div>
-                        <img src="{% static 'img/product-1.png' %}" class="img-fluid" alt="">
-                    </a>
-                </div>
-                <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.3s">
-                    <a href="#" class="d-flex align-items-center justify-content-between border bg-white rounded p-4">
-                        <div>
-                            <p class="text-muted mb-3">Find The Best Watches for You!</p>
-                            <h3 class="text-primary">Smart Whatch</h3>
-                            <h1 class="display-3 text-secondary mb-0">20% <span
-                                    class="text-primary fw-normal">Off</span></h1>
-                        </div>
-                        <img src="{% static 'img/product-2.png' %}" class="img-fluid" alt="">
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Products Offer End -->
-
     <!-- Shop Page Start -->
     <div class="container-fluid shop py-5">
         <div class="container py-5">
@@ -165,7 +134,7 @@
                             <div class="rounded me-4" style="width: 100px; height: 100px;">
                                 <img src="{{ product.image.url }}" class="img-fluid rounded" alt="Image">
                             </div>
-                            <div>
+                            <div class="d-flex flex-column justify-content-center">
                                 <h6 class="mb-2">{{ product.name }}</h6>
                                 <div class="d-flex mb-2">
                                     <i class="fa fa-star text-secondary"></i>
@@ -175,14 +144,14 @@
                                     <i class="fa fa-star"></i>
                                 </div>
                                 <div class="d-flex mb-2">
-                                    <h5 class="fw-bold me-2">₹{{ product.price }}</h5>
+                                    <h5 class="text-primary fw-bold me-2">₹{{ product.price }}</h5>
                                     <!-- <h5 class="text-danger text-decoration-line-through">4.11 $</h5> -->
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                         <div class="d-flex justify-content-center my-4">
-                            <a href="#" class="btn btn-primary px-4 py-3 rounded-pill w-100">Vew More</a>
+                            <a href="#" class="btn btn-primary px-4 py-3 rounded-pill w-100">View More</a>
                         </div>
                     </div>
                 </div>
@@ -190,24 +159,22 @@
                     <div class="row g-4">
                         <div class="col-xl-7">
                             <div class="input-group w-100 mx-auto d-flex">
-                                <input type="search" class="form-control p-3" placeholder="keywords"
+                                <input type="search" class="form-control p-3" placeholder="Search"
                                     aria-describedby="search-icon-1">
                                 <span id="search-icon-1" class="input-group-text p-3"><i
                                         class="fa fa-search"></i></span>
                             </div>
                         </div>
                         <div class="col-xl-3 text-end">
-                            <div class="bg-light ps-3 py-3 rounded d-flex justify-content-between">
-                                <label for="electronics">Sort By:</label>
+                            <div class="bg-light ps-3 py-3 rounded d-flex align-items-center justify-content-between">
+                                <label for="electronics" class="mb-0 me-2 text-nowrap fw-500">Sort By:</label>
                                 <select id="electronics" name="electronicslist"
-                                    class="border-0 form-select-sm bg-light me-3" form="electronicsform">
-                                    <option value="volvo">Default Sorting</option>
-                                    <option value="volv">Nothing</option>
-                                    <option value="sab">Popularity</option>
-                                    <option value="saab">Newness</option>
-                                    <option value="opel">Average Rating</option>
-                                    <option value="audio">Low to high</option>
-                                    <option value="audi">High to low</option>
+                                    class="border-0 form-select-sm bg-light me-3" form="electronicsform"
+                                    onchange="applySort(this.value)">
+                                    <option value="Name, A-Z" {% if current_sort == 'Name, A-Z' or not current_sort %}selected{% endif %}>Name, ASC</option>
+                                    <option value="Name, Z-A" {% if current_sort == 'Name, Z-A' %}selected{% endif %}>Name, DESC</option>
+                                    <option value="Price, ASC" {% if current_sort == 'Price, ASC' %}selected{% endif %}>Price, Low to High</option>
+                                    <option value="Price, DESC" {% if current_sort == 'Price, DESC' %}selected{% endif %}>Price, High to Low</option>
                                 </select>
                             </div>
                         </div>
@@ -368,6 +335,16 @@
                 urlParams.set('max_price', maxPrice);
             } else {
                 urlParams.delete('max_price');
+            }
+            window.location.search = urlParams.toString();
+        }
+
+        function applySort(value) {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (value) {
+                urlParams.set('sort', value);
+            } else {
+                urlParams.delete('sort');
             }
             window.location.search = urlParams.toString();
         }
