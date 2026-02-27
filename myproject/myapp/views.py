@@ -1,7 +1,7 @@
 import re, random, time, secrets
 from django.core.mail import send_mail
 from django.contrib import messages
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.conf import settings
 from django.db.models.functions import Lower
 
@@ -159,9 +159,15 @@ def shop(request, cid=0):
     context['products'] = products
     return render(request, 'shop.html', context)
 
-def single(request):
+def single(request, pid):
+    product = get_object_or_404(Product, pk=pid)
+    related_products = Product.objects.filter(
+        category_id=product.category_id
+    ).exclude(pk=pid)[:3]
     context = {
         'categories': Category.objects.all(),
+        'product': product,
+        'related_products': related_products,
     }
     return render(request, 'single.html', context)
 
@@ -194,6 +200,30 @@ def error(request):
         'categories': Category.objects.all(),
     }
     return render(request, 'error.html', context)
+
+def about(request):
+    context = {
+        'categories': Category.objects.all(),
+    }
+    return render(request, 'about.html', context)
+
+def privacy_policy(request):
+    context = {
+        'categories': Category.objects.all(),
+    }
+    return render(request, 'privacy_policy.html', context)
+
+def terms(request):
+    context = {
+        'categories': Category.objects.all(),
+    }
+    return render(request, 'terms.html', context)
+
+def sitemap(request):
+    context = {
+        'categories': Category.objects.all(),
+    }
+    return render(request, 'sitemap.html', context)
 
 def bestseller(request):
     context = {

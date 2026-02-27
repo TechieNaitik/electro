@@ -204,12 +204,12 @@
                                                 <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top" alt="">
                                                 <!-- <div class="product-new">New</div> -->
                                                 <div class="product-details">
-                                                    <a href="#"><i class="fa fa-eye fa-1x"></i></a>
+                                                    <a href="{% url 'single' product.id %}"><i class="fa fa-eye fa-1x"></i></a>
                                                 </div>
                                             </div>
                                             <div class="text-center rounded-bottom p-4">
-                                                <a href="#" class="d-block mb-2">{{ product.category_id.name }}</a>
-                                                <a href="#" class="d-block h4">{{ product.name }}</a>
+                                                <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
+                                                <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                                 <!-- <del class="me-2 fs-5">$1,250.00</del> -->
                                                 <span class="text-primary fs-5">₹{{ product.price }}</span>
                                             </div>
@@ -271,14 +271,14 @@
                                                     <img src="{{ product.image.url }}" class="img-fluid w-100 h-100"
                                                         alt="Image">
                                                     <div class="products-mini-icon rounded-circle bg-primary">
-                                                        <a href="#"><i class="fa fa-eye fa-1x text-white"></i></a>
+                                                        <a href="{% url 'single' product.id %}"><i class="fa fa-eye fa-1x text-white"></i></a>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-7">
                                                 <div class="products-mini-content p-3">
-                                                    <a href="#" class="d-block mb-2">{{ product.category_id.name }}</a>
-                                                    <a href="#" class="d-block h4">{{ product.name }}</a>
+                                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
+                                                    <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                                     <!-- <del class="me-2 fs-5">$1,250.00</del> -->
                                                     <span class="text-primary fs-5">₹{{ product.price }}</span>
                                                 </div>

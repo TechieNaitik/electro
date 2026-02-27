@@ -1,0 +1,174 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Terms & Conditions</h1>
+    <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+        <li class="breadcrumb-item active text-white">Terms & Conditions</li>
+    </ol>
+</div>
+
+<!-- Terms Content -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-9 wow fadeInUp" data-wow-delay="0.1s">
+
+                <div class="bg-light rounded p-2 mb-4 d-inline-block">
+                    <small class="text-muted px-2">
+                        <i class="fas fa-calendar-alt me-1"></i> Effective Date: January 1, 2025
+                    </small>
+                </div>
+
+                <p class="lead text-muted mb-5">
+                    Please read these Terms & Conditions carefully before using <strong>Electro</strong>. By accessing or placing
+                    an order on our platform, you agree to be bound by the following terms.
+                </p>
+
+                <!-- Section 1 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        1. Acceptance of Terms
+                    </h4>
+                    <p class="text-muted">
+                        By creating an account or making a purchase on Electro, you confirm that you are at least 18 years of age
+                        and agree to these Terms & Conditions. If you disagree with any part of these terms, you must not use our platform.
+                    </p>
+                </div>
+
+                <!-- Section 2 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        2. Account Responsibilities
+                    </h4>
+                    <p class="text-muted">When you create an account, you agree to:</p>
+                    <ul class="text-muted">
+                        <li class="mb-2">Provide accurate, current, and complete registration information.</li>
+                        <li class="mb-2">Maintain the confidentiality of your account credentials.</li>
+                        <li class="mb-2">Notify us immediately of any unauthorised use of your account.</li>
+                        <li class="mb-2">Accept responsibility for all activities that occur under your account.</li>
+                    </ul>
+                </div>
+
+                <!-- Section 3 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        3. Products & Pricing
+                    </h4>
+                    <p class="text-muted">
+                        All product descriptions, images, and prices are provided in good faith. We reserve the right to
+                        correct errors, modify prices, or discontinue products at any time without prior notice.
+                        Prices are listed in Indian Rupees (₹) and are inclusive of applicable taxes unless stated otherwise.
+                    </p>
+                </div>
+
+                <!-- Section 4 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        4. Orders & Payments
+                    </h4>
+                    <ul class="text-muted">
+                        <li class="mb-2">Placing an order constitutes an offer to purchase the selected product.</li>
+                        <li class="mb-2">We reserve the right to refuse or cancel any order at our discretion.</li>
+                        <li class="mb-2">Payment must be completed in full before order processing begins.</li>
+                        <li class="mb-2">Order confirmation emails are sent as acknowledgement, not a guarantee of availability.</li>
+                    </ul>
+                </div>
+
+                <!-- Section 5 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        5. Shipping & Delivery
+                    </h4>
+                    <p class="text-muted">
+                        Delivery timelines are estimates and may vary due to location, courier availability, or unforeseen circumstances.
+                        Electro is not liable for delays caused by third-party logistics providers. Risk of loss transfers
+                        to you upon delivery to the shipping address provided at checkout.
+                    </p>
+                </div>
+
+                <!-- Section 6 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        6. Returns & Refunds
+                    </h4>
+                    <p class="text-muted">
+                        We offer a <strong>30-day return window</strong> for most items. To be eligible for a return, the product must be:
+                    </p>
+                    <ul class="text-muted">
+                        <li class="mb-2">In its original, unused condition with all packaging intact.</li>
+                        <li class="mb-2">Accompanied by proof of purchase.</li>
+                        <li class="mb-2">Reported within 30 days of the delivery date.</li>
+                    </ul>
+                    <p class="text-muted">
+                        Refunds are processed within 7–10 business days after we receive and inspect the returned item.
+                    </p>
+                </div>
+
+                <!-- Section 7 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        7. Intellectual Property
+                    </h4>
+                    <p class="text-muted">
+                        All content on Electro — including logos, images, product descriptions, and design elements — is the
+                        intellectual property of Electro or its content suppliers. Unauthorised reproduction, distribution,
+                        or use of any content is strictly prohibited.
+                    </p>
+                </div>
+
+                <!-- Section 8 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        8. Limitation of Liability
+                    </h4>
+                    <p class="text-muted">
+                        Electro shall not be liable for any indirect, incidental, or consequential damages arising from the use
+                        of our platform or the purchase of products. Our total liability to you shall not exceed the amount
+                        paid for the order in question.
+                    </p>
+                </div>
+
+                <!-- Section 9 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        9. Governing Law
+                    </h4>
+                    <p class="text-muted">
+                        These Terms & Conditions are governed by and construed in accordance with the laws of India.
+                        Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts
+                        of Gujarat, India.
+                    </p>
+                </div>
+
+                <!-- Section 10 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        10. Changes to Terms
+                    </h4>
+                    <p class="text-muted">
+                        We reserve the right to revise these Terms & Conditions at any time. Continued use of the platform
+                        after any revisions constitutes your acceptance of the new terms. We encourage you to review this
+                        page periodically.
+                    </p>
+                </div>
+
+                <!-- Contact -->
+                <div class="border rounded p-4 bg-light">
+                    <h5 class="fw-bold mb-2"><i class="fas fa-envelope text-primary me-2"></i>Have Questions?</h5>
+                    <p class="text-muted mb-2">
+                        If you have any questions regarding these Terms & Conditions, feel free to reach out to us.
+                    </p>
+                    <a href="{% url 'contact' %}" class="btn btn-primary rounded-pill px-4 py-2">
+                        <i class="fas fa-paper-plane me-2"></i>Contact Us
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

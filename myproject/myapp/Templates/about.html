@@ -1,0 +1,108 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">About Us</h1>
+    <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+        <li class="breadcrumb-item active text-white">About Us</li>
+    </ol>
+</div>
+
+<!-- About Section -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+
+        <!-- Intro -->
+        <div class="row g-5 align-items-center mb-5">
+            <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.1s">
+                <h4 class="text-primary fw-bold mb-2">Who We Are</h4>
+                <h1 class="display-5 fw-bold mb-4">Your Trusted Electronics Destination</h1>
+                <p class="text-muted mb-3">
+                    Welcome to <strong>Electro</strong> — a one-stop shop for the latest and greatest in consumer electronics.
+                    From smartphones and laptops to smart home devices and accessories, we bring you top-tier products
+                    at unmatched prices.
+                </p>
+                <p class="text-muted mb-4">
+                    Founded with a passion for technology, our mission is to make premium electronics accessible to everyone.
+                    We partner with leading brands worldwide to ensure every product you find here is authentic,
+                    quality-tested, and delivered with care.
+                </p>
+                <a href="{% url 'shop' %}" class="btn btn-primary rounded-pill py-3 px-5">
+                    <i class="fas fa-shopping-bag me-2"></i>Browse Products
+                </a>
+            </div>
+            <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.2s">
+                <div class="bg-light rounded p-5 text-center">
+                    <i class="fas fa-shopping-bag text-primary" style="font-size: 6rem;"></i>
+                    <h2 class="text-primary mt-3 fw-bold">Electro</h2>
+                    <p class="text-muted">Electronics &bull; Technology &bull; Innovation</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-4 mb-5">
+            <div class="col-sm-6 col-lg-3 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="border rounded p-4 text-center h-100">
+                    <i class="fas fa-box-open fa-2x text-primary mb-3"></i>
+                    <h2 class="fw-bold text-dark">500+</h2>
+                    <p class="text-muted mb-0">Products Listed</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="border rounded p-4 text-center h-100">
+                    <i class="fas fa-users fa-2x text-primary mb-3"></i>
+                    <h2 class="fw-bold text-dark">10K+</h2>
+                    <p class="text-muted mb-0">Happy Customers</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="border rounded p-4 text-center h-100">
+                    <i class="fas fa-certificate fa-2x text-primary mb-3"></i>
+                    <h2 class="fw-bold text-dark">100%</h2>
+                    <p class="text-muted mb-0">Authentic Products</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3 wow fadeInUp" data-wow-delay="0.4s">
+                <div class="border rounded p-4 text-center h-100">
+                    <i class="fas fa-headset fa-2x text-primary mb-3"></i>
+                    <h2 class="fw-bold text-dark">24/7</h2>
+                    <p class="text-muted mb-0">Customer Support</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Values -->
+        <div class="row g-4">
+            <div class="col-12 text-center mb-3 wow fadeInUp">
+                <h2 class="fw-bold">Our Core Values</h2>
+            </div>
+            <div class="col-md-4 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="bg-light rounded p-4 h-100">
+                    <i class="fas fa-shield-alt fa-2x text-primary mb-3"></i>
+                    <h5 class="fw-bold">Trust & Authenticity</h5>
+                    <p class="text-muted mb-0">Every product is sourced from verified suppliers and undergoes rigorous quality checks before listing.</p>
+                </div>
+            </div>
+            <div class="col-md-4 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="bg-light rounded p-4 h-100">
+                    <i class="fas fa-truck fa-2x text-primary mb-3"></i>
+                    <h5 class="fw-bold">Fast & Reliable Delivery</h5>
+                    <p class="text-muted mb-0">We ship across the country with real-time tracking so your order always arrives on time.</p>
+                </div>
+            </div>
+            <div class="col-md-4 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="bg-light rounded p-4 h-100">
+                    <i class="fas fa-undo fa-2x text-primary mb-3"></i>
+                    <h5 class="fw-bold">Hassle-Free Returns</h5>
+                    <p class="text-muted mb-0">Not satisfied? Return within 30 days, no questions asked. Your satisfaction is our guarantee.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Privacy Policy</h1>
+    <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+        <li class="breadcrumb-item active text-white">Privacy Policy</li>
+    </ol>
+</div>
+
+<!-- Privacy Policy Content -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-9 wow fadeInUp" data-wow-delay="0.1s">
+
+                <div class="bg-light rounded p-2 mb-4 d-inline-block">
+                    <small class="text-muted px-2">
+                        <i class="fas fa-calendar-alt me-1"></i> Last updated: January 1, 2025
+                    </small>
+                </div>
+
+                <p class="lead text-muted mb-5">
+                    At <strong>Electro</strong>, your privacy is our priority. This Privacy Policy explains how we collect,
+                    use, and protect your personal information when you visit or make a purchase from our platform.
+                </p>
+
+                <!-- Section 1 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        1. Information We Collect
+                    </h4>
+                    <p class="text-muted">We collect the following categories of personal data:</p>
+                    <ul class="text-muted">
+                        <li class="mb-2"><strong>Account Information:</strong> Name, email address, and password when you register.</li>
+                        <li class="mb-2"><strong>Transaction Data:</strong> Purchase history, billing details, and order IDs.</li>
+                        <li class="mb-2"><strong>Usage Data:</strong> Pages visited, search queries, and interaction patterns on our site.</li>
+                        <li class="mb-2"><strong>Device Information:</strong> IP address, browser type, operating system, and session data.</li>
+                    </ul>
+                </div>
+
+                <!-- Section 2 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        2. How We Use Your Information
+                    </h4>
+                    <p class="text-muted">Your data is used exclusively to:</p>
+                    <ul class="text-muted">
+                        <li class="mb-2">Process and fulfill your orders.</li>
+                        <li class="mb-2">Communicate with you about your account, orders, and promotions.</li>
+                        <li class="mb-2">Improve our website, products, and services.</li>
+                        <li class="mb-2">Send transactional emails such as OTPs and order confirmations.</li>
+                        <li class="mb-2">Detect and prevent fraudulent activity.</li>
+                    </ul>
+                </div>
+
+                <!-- Section 3 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        3. Cookies
+                    </h4>
+                    <p class="text-muted">
+                        We use cookies and similar tracking technologies to enhance your browsing experience, remember your
+                        preferences, and analyze site traffic. You can control cookie preferences through your browser settings.
+                        Note that disabling cookies may limit certain features of our website.
+                    </p>
+                </div>
+
+                <!-- Section 4 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        4. Data Sharing & Third Parties
+                    </h4>
+                    <p class="text-muted">
+                        We do <strong>not</strong> sell, trade, or rent your personal information to third parties.
+                        We may share data with trusted service providers (e.g., payment processors, shipping partners)
+                        solely to fulfil your order. All third parties are bound by confidentiality agreements.
+                    </p>
+                </div>
+
+                <!-- Section 5 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        5. Data Security
+                    </h4>
+                    <p class="text-muted">
+                        We implement industry-standard security measures including SSL encryption, secure session management,
+                        and CSRF protection to safeguard your data. While no system is 100% immune to breaches, we are
+                        committed to keeping your information as secure as possible.
+                    </p>
+                </div>
+
+                <!-- Section 6 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        6. Your Rights
+                    </h4>
+                    <p class="text-muted">You have the right to:</p>
+                    <ul class="text-muted">
+                        <li class="mb-2">Access the personal data we hold about you.</li>
+                        <li class="mb-2">Request correction of inaccurate data.</li>
+                        <li class="mb-2">Request deletion of your account and associated data.</li>
+                        <li class="mb-2">Opt out of marketing communications at any time.</li>
+                    </ul>
+                </div>
+
+                <!-- Section 7 -->
+                <div class="mb-5">
+                    <h4 class="fw-bold text-dark border-start border-primary border-3 ps-3 mb-3">
+                        7. Changes to This Policy
+                    </h4>
+                    <p class="text-muted">
+                        We reserve the right to update this Privacy Policy at any time. Changes will be posted on this page
+                        with a revised "Last updated" date. Continued use of our platform after any changes constitutes
+                        your acceptance of the updated policy.
+                    </p>
+                </div>
+
+                <!-- Contact -->
+                <div class="border rounded p-4 bg-light">
+                    <h5 class="fw-bold mb-2"><i class="fas fa-envelope text-primary me-2"></i>Questions?</h5>
+                    <p class="text-muted mb-2">
+                        If you have any questions or concerns about this Privacy Policy, please contact us:
+                    </p>
+                    <a href="{% url 'contact' %}" class="btn btn-primary rounded-pill px-4 py-2">
+                        <i class="fas fa-paper-plane me-2"></i>Contact Us
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

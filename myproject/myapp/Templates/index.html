@@ -180,7 +180,6 @@
                         <div class="navbar-nav ms-auto py-0">
                             <a href="{% url 'index' %}" class="nav-item nav-link {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
                             <a href="{% url 'shop' %}" class="nav-item nav-link {% if request.resolver_match.url_name == 'shop' %}active{% endif %}">Shop</a>
-                            <a href="{% url 'single' %}" class="nav-item nav-link {% if request.resolver_match.url_name == 'single' %}active{% endif %}">Single Page</a>
                             <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'bestseller' or request.resolver_match.url_name == 'cart' or request.resolver_match.url_name == 'checkout' or request.resolver_match.url_name == 'error' %}active{% endif %}" data-bs-toggle="dropdown">Pages</a>
                                 <div class="dropdown-menu m-0">
@@ -190,7 +189,6 @@
                                     <a href="{% url 'error' %}" class="dropdown-item {% if request.resolver_match.url_name == 'error' %}active{% endif %}">404 Page</a>
                                 </div>
                             </div>
-                            <a href="{% url 'contact' %}" class="nav-item nav-link me-2 {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a>
                             <div class="nav-item dropdown d-block d-lg-none mb-3">
                                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">All Category</a>
                                 <div class="dropdown-menu m-0">
@@ -467,12 +465,12 @@
                                         <div class="product-item-inner-item">
                                             <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top">
                                             <div class="product-details">
-                                                <a href="#"><i class="fa fa-eye"></i></a>
+                                                <a href="{% url 'single' product.id %}"><i class="fa fa-eye"></i></a>
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a class="d-block mb-2">{{ product.category_id.name }}</a>
-                                            <a class="d-block h4">{{ product.name }}</a>
+                                            <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
+                                            <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                             <span class="text-primary fs-5">₹{{ product.price }}</span>
                                         </div>
                                     </div>
@@ -550,14 +548,14 @@
                                 <div class="products-mini-img border-end h-100">
                                     <img src="{{ product.image.url }}" class="img-fluid w-100 h-100" alt="Image">
                                     <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="#"><i class="fa fa-eye fa-1x text-white"></i></a>
+                                        <a href="{% url 'single' product.id %}"><i class="fa fa-eye fa-1x text-white"></i></a>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-7">
                                 <div class="products-mini-content p-3">
-                                    <a href="#" class="d-block mb-2">{{ product.category_id.name }}</a>
-                                    <a href="#" class="d-block h4">{{ product.name }}</a>
+                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
+                                    <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                     <span class="text-primary fs-5">₹{{ product.price }}</span>
                                 </div>
                             </div>
@@ -603,14 +601,14 @@
                                 <div class="products-mini-img border-end h-100">
                                     <img src="{{ product.image.url }}" class="img-fluid w-100 h-100" alt="Image">
                                     <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="#"><i class="fa fa-eye fa-1x text-white"></i></a>
+                                        <a href="{% url 'single' product.id %}"><i class="fa fa-eye fa-1x text-white"></i></a>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-7">
                                 <div class="products-mini-content p-3">
-                                    <a href="#" class="d-block mb-2">{{ product.category_id.name }}</a>
-                                    <a href="#" class="d-block h4">{{ product.name }}</a>
+                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
+                                    <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                     <span class="text-primary fs-5">₹{{ product.price }}</span>
                                 </div>
                             </div>
@@ -708,10 +706,10 @@
                 <div class="col-md-6 col-lg-6 col-xl-3">
                     <div class="footer-item d-flex flex-column">
                         <h4 class="text-primary mb-4">Customer Service</h4>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Contact Us</a>
+                        <a href="{% url 'contact' %}" class=""><i class="fas fa-angle-right me-2"></i> Contact Us</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Returns</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Order History</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Site Map</a>
+                        <a href="{% url 'sitemap' %}" class=""><i class="fas fa-angle-right me-2"></i> Site Map</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Testimonials</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> My Account</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Unsubscribe Notification</a>
@@ -720,10 +718,10 @@
                 <div class="col-md-6 col-lg-6 col-xl-3">
                     <div class="footer-item d-flex flex-column">
                         <h4 class="text-primary mb-4">Information</h4>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> About Us</a>
+                        <a href="{% url 'about' %}" class=""><i class="fas fa-angle-right me-2"></i> About Us</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Delivery infomation</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Privacy Policy</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Terms & Conditions</a>
+                        <a href="{% url 'privacy_policy' %}" class=""><i class="fas fa-angle-right me-2"></i> Privacy Policy</a>
+                        <a href="{% url 'terms' %}" class=""><i class="fas fa-angle-right me-2"></i> Terms & Conditions</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Warranty</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> FAQ</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Seller Login</a>
@@ -777,9 +775,9 @@
     <script src="{% static 'lib/wow/wow.min.js' %}"></script>
     <script src="{% static 'lib/owlcarousel/owl.carousel.min.js' %}"></script>
 
-
     <!-- Template Javascript -->
     <script src="{% static 'js/main.js' %}"></script>
+
     <script>
         document.getElementById('headerSearchBtn').addEventListener('click', function() {
             var categoryId = document.getElementById('headerCategorySelect').value;
