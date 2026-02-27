@@ -225,6 +225,12 @@ def sitemap(request):
     }
     return render(request, 'sitemap.html', context)
 
+def faq(request):
+    context = {
+        'categories': Category.objects.all(),
+    }
+    return render(request, 'faq.html', context)
+
 def bestseller(request):
     context = {
         'categories': Category.objects.all(),

@@ -5,7 +5,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Electro - Electronics Website</title>
+    <title>{% block title %}Home{% endblock %} - Electro</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -688,7 +688,7 @@
                         <a href="{% url 'privacy_policy' %}" class=""><i class="fas fa-angle-right me-2"></i> Privacy Policy</a>
                         <a href="{% url 'terms' %}" class=""><i class="fas fa-angle-right me-2"></i> Terms & Conditions</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Warranty</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> FAQ</a>
+                        <a href="{% url 'faq' %}" class=""><i class="fas fa-angle-right me-2"></i> FAQ</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Seller Login</a>
                     </div>
                 </div>
