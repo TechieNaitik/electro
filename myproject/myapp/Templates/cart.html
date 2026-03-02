@@ -1,19 +1,13 @@
 {% extends 'index.html' %}
 {% block title %}Cart{% endblock %}
-{% load static %} 
+{% load static %}
 {% block content %}
 <!-- Single Page Header start -->
 <div class="container-fluid page-header py-5">
-  <h1
-    class="text-center text-white display-6 wow fadeInUp"
-    data-wow-delay="0.1s"
-  >
+  <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">
     Cart Page
   </h1>
-  <ol
-    class="breadcrumb justify-content-center mb-0 wow fadeInUp"
-    data-wow-delay="0.3s"
-  >
+  <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
     <li class="breadcrumb-item"><a href="#">Home</a></li>
     <li class="breadcrumb-item"><a href="#">Pages</a></li>
     <li class="breadcrumb-item active text-white">Cart Page</li>
@@ -24,194 +18,175 @@
 <!-- Cart Page Start -->
 <div class="container-fluid py-5">
   <div class="container py-5">
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Model</th>
+    <div class="table-responsive shadow-sm rounded-3 overflow-hidden">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-primary text-white">
+          <tr class="py-3">
+            <th scope="col" class="ps-4">Product</th>
             <th scope="col">Price</th>
-            <th scope="col">Quantity</th>
+            <th scope="col" class="text-center">Quantity</th>
             <th scope="col">Total</th>
-            <th scope="col">Handle</th>
+            <th scope="col" class="pe-4 text-center">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">
-              <p class="mb-0 py-4">Apple iPad Mini</p>
-            </th>
-            <td>
-              <p class="mb-0 py-4">G2356</p>
-            </td>
-            <td>
-              <p class="mb-0 py-4">2.99 $</p>
-            </td>
-            <td>
-              <div class="input-group quantity py-4" style="width: 100px">
-                <div class="input-group-btn">
-                  <button
-                    class="btn btn-sm btn-minus rounded-circle bg-light border"
-                  >
-                    <i class="fa fa-minus"></i>
-                  </button>
+          {% for item in cart_items %}
+          <tr class="border-bottom" id="cart-item-{{ item.id }}">
+            <td class="ps-4 py-4">
+              <div class="d-flex align-items-center">
+                <div class="rounded-3 border overflow-hidden me-4" style="width: 100px; height: 100px;">
+                  <img src="{{ item.product.image.url }}" class="img-fluid w-100 h-100 object-fit-cover"
+                    alt="{{ item.product.name }}">
                 </div>
-                <input
-                  type="text"
-                  class="form-control form-control-sm text-center border-0"
-                  value="1"
-                />
-                <div class="input-group-btn">
-                  <button
-                    class="btn btn-sm btn-plus rounded-circle bg-light border"
-                  >
-                    <i class="fa fa-plus"></i>
-                  </button>
+                <div>
+                  <h6 class="mb-1 fw-bold">{{ item.product.name }}</h6>
+                  <p class="text-muted small mb-0">Model: {{ item.product.category_id.name }}</p>
                 </div>
               </div>
             </td>
             <td>
-              <p class="mb-0 py-4">2.99 $</p>
-            </td>
-            <td class="py-4">
-              <button class="btn btn-md rounded-circle bg-light border">
-                <i class="fa fa-times text-danger"></i>
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">
-              <p class="mb-0 py-4">Apple iPad Mini</p>
-            </th>
-            <td>
-              <p class="mb-0 py-4">G2356</p>
+              <span class="fw-semibold">₹{{ item.product.price }}</span>
             </td>
             <td>
-              <p class="mb-0 py-4">2.99 $</p>
-            </td>
-            <td>
-              <div class="input-group quantity py-4" style="width: 100px">
-                <div class="input-group-btn">
-                  <button
-                    class="btn btn-sm btn-minus rounded-circle bg-light border"
-                  >
-                    <i class="fa fa-minus"></i>
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  class="form-control form-control-sm text-center border-0"
-                  value="1"
-                />
-                <div class="input-group-btn">
-                  <button
-                    class="btn btn-sm btn-plus rounded-circle bg-light border"
-                  >
-                    <i class="fa fa-plus"></i>
-                  </button>
+              <div class="d-flex justify-content-center align-items-center">
+                <div class="input-group quantity"
+                  style="width: 130px; border: 1px solid #dee2e6; border-radius: 50px; padding: 2px;">
+                  <input type="text" id="qty-{{ item.id }}"
+                    class="form-control form-control-sm text-center border-0 fw-bold bg-transparent"
+                    value="{{ item.quantity }}" readonly style="box-shadow: none;">
+                  <div class="input-group-append d-flex">
+                    <a href="{% url 'update_cart' item.id 'decrease' %}"
+                      class="btn btn-sm btn-light border-0 rounded-circle me-1 ajax-update-cart"
+                      data-cid="{{ item.id }}" style="width: 28px; height: 28px; padding: 0; line-height: 28px;">
+                      <i class="fa fa-minus small"></i>
+                    </a>
+                    <a href="{% url 'update_cart' item.id 'increase' %}"
+                      class="btn btn-sm btn-light border-0 rounded-circle ajax-update-cart" data-cid="{{ item.id }}"
+                      style="width: 28px; height: 28px; padding: 0; line-height: 28px;">
+                      <i class="fa fa-plus small"></i>
+                    </a>
+                  </div>
                 </div>
               </div>
             </td>
             <td>
-              <p class="mb-0 py-4">2.99 $</p>
+              <span class="text-primary fw-bold" id="item-total-{{ item.id }}">₹{{ item.total_price }}</span>
             </td>
-            <td class="py-4">
-              <button class="btn btn-md rounded-circle bg-light border">
-                <i class="fa fa-times text-danger"></i>
-              </button>
+            <td class="pe-4 text-center">
+              <a href="{% url 'update_cart' item.id 'remove' %}"
+                class="btn btn-outline-danger btn-sm rounded-circle shadow-sm ajax-update-cart" data-cid="{{ item.id }}"
+                style="width: 35px; height: 35px; line-height: 23px;">
+                <i class="fa fa-trash"></i>
+              </a>
             </td>
           </tr>
+          {% empty %}
           <tr>
-            <th scope="row">
-              <p class="mb-0 py-4">Apple iPad Mini</p>
-            </th>
-            <td>
-              <p class="mb-0 py-4">G2356</p>
-            </td>
-            <td>
-              <p class="mb-0 py-4">2.99 $</p>
-            </td>
-            <td>
-              <div class="input-group quantity py-4" style="width: 100px">
-                <div class="input-group-btn">
-                  <button
-                    class="btn btn-sm btn-minus rounded-circle bg-light border"
-                  >
-                    <i class="fa fa-minus"></i>
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  class="form-control form-control-sm text-center border-0"
-                  value="1"
-                />
-                <div class="input-group-btn">
-                  <button
-                    class="btn btn-sm btn-plus rounded-circle bg-light border"
-                  >
-                    <i class="fa fa-plus"></i>
-                  </button>
-                </div>
+            <td colspan="5" class="text-center py-5">
+              <div class="py-5">
+                <i class="fa fa-shopping-cart fa-4x text-muted mb-3 d-block"></i>
+                <h4 class="text-muted">Your cart is empty.</h4>
+                <a href="{% url 'shop' %}" class="btn btn-primary mt-3 rounded-pill px-4">Continue Shopping</a>
               </div>
             </td>
-            <td>
-              <p class="mb-0 py-4">2.99 $</p>
-            </td>
-            <td class="py-4">
-              <button class="btn btn-md rounded-circle bg-light border">
-                <i class="fa fa-times text-danger"></i>
-              </button>
-            </td>
           </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
-    <div class="mt-5">
-      <input
-        type="text"
-        class="border-0 border-bottom rounded me-5 py-3 mb-4"
-        placeholder="Coupon Code"
-      />
-      <button class="btn btn-primary rounded-pill px-4 py-3" type="button">
-        Apply Coupon
-      </button>
-    </div>
-    <div class="row g-4 justify-content-end">
-      <div class="col-8"></div>
-      <div class="col-sm-8 col-md-7 col-lg-6 col-xl-4">
-        <div class="bg-light rounded">
-          <div class="p-4">
-            <h1 class="display-6 mb-4">
-              Cart <span class="fw-normal">Total</span>
-            </h1>
+    <div class="row g-4 mt-5">
+      <div class="col-lg-6">
+        <div class="p-4 rounded-3 border bg-light h-100">
+          <h4 class="mb-4">Coupon Discount</h4>
+          <p class="text-muted small mb-4">Have a coupon code? Enter it below to get amazing discounts on your order.
+          </p>
+          <div class="input-group mb-0" style="max-width: 400px;">
+            <input type="text" class="form-control border-secondary rounded-start-pill py-3 ps-4"
+              placeholder="Enter coupon code">
+            <button class="btn btn-primary rounded-end-pill px-4 py-3 text-white" type="button">Apply</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-body p-4">
+            <h4 class="card-title mb-4 pb-2 border-bottom">Cart Summary</h4>
+
+            <div class="d-flex justify-content-between mb-3">
+              <span class="text-muted font-weight-normal">Subtotal</span>
+              <span class="fw-bold" id="cart-subtotal">₹{{ subtotal }}</span>
+            </div>
+
             <div class="d-flex justify-content-between mb-4">
-              <h5 class="mb-0 me-4">Subtotal:</h5>
-              <p class="mb-0">$96.00</p>
+              <span class="text-muted font-weight-normal">Shipping Charge</span>
+              <span class="text-success fw-bold" id="cart-shipping">₹{{ shipping }}</span>
             </div>
-            <div class="d-flex justify-content-between">
-              <h5 class="mb-0 me-4">Shipping</h5>
-              <div>
-                <p class="mb-0">Flat rate: $3.00</p>
-              </div>
+
+            <div class="py-3 border-top border-bottom d-flex justify-content-between align-items-center mb-4">
+              <h5 class="mb-0 fw-bold">Grand Total</h5>
+              <h4 class="mb-0 text-primary fw-bold" id="cart-total">₹{{ total }}</h4>
             </div>
-            <p class="mb-0 text-end">Shipping to Ukraine.</p>
+
+            {% if cart_items %}
+            <div class="d-grid">
+              <a href="{% url 'checkout' %}"
+                class="btn btn-primary btn-lg rounded-pill py-3 text-uppercase fw-bold shadow-sm">
+                Proceed to Checkout <i class="fa fa-arrow-right ms-2"></i>
+              </a>
+            </div>
+            {% endif %}
+
+            <div class="text-center mt-3">
+              <a href="{% url 'shop' %}" class="text-muted small text-decoration-none">
+                <i class="fa fa-shopping-bag me-1"></i> Continue Shopping
+              </a>
+            </div>
           </div>
-          <div
-            class="py-4 mb-4 border-top border-bottom d-flex justify-content-between"
-          >
-            <h5 class="mb-0 ps-4 me-4">Total</h5>
-            <p class="mb-0 pe-4">$99.00</p>
-          </div>
-          <button
-            class="btn btn-primary rounded-pill px-4 py-3 text-uppercase mb-4 ms-4"
-            type="button"
-          >
-            Proceed Checkout
-          </button>
         </div>
       </div>
     </div>
   </div>
 </div>
 <!-- Cart Page End -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('click', function (e) {
+    const updateBtn = e.target.closest('.ajax-update-cart');
+    if (updateBtn) {
+      e.preventDefault();
+      const url = updateBtn.getAttribute('href');
+      const cid = updateBtn.dataset.cid;
+
+      fetch(url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            if (data.removed) {
+              const row = document.getElementById(`cart-item-${cid}`);
+              if (row) row.remove();
+              showNotification("Item removed from cart");
+              if (data.cart_count === 0) {
+                location.reload(); // Show empty cart state
+              }
+            } else if (data.item) {
+              document.getElementById(`qty-${cid}`).value = data.item.quantity;
+              document.getElementById(`item-total-${cid}`).innerText = '₹' + data.item.total_price;
+            }
+
+            document.getElementById('cart-subtotal').innerText = '₹' + data.subtotal;
+            document.getElementById('cart-shipping').innerText = '₹' + data.shipping;
+            document.getElementById('cart-total').innerText = '₹' + data.total;
+            updateCartHeader(data.total);
+          } else {
+            showNotification(data.message, 'error');
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  });
+</script>
 {% endblock %}

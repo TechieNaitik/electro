@@ -31,9 +31,30 @@
 
     <!-- Template Stylesheet -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        #notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast-notify {
+            background: white;
+            border-left: 5px solid #ff6600;
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            transition: all 0.5s ease;
+            display: flex;
+            align-items: center;
+        }
+    </style>
 </head>
 
 <body>
+    <div id="notification-container"></div>
     <!-- Spinner Start -->
     <div id="spinner"
         class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -83,7 +104,7 @@
                         <a href="#" class="dropdown-toggle text-muted ms-2" data-bs-toggle="dropdown"><small><i
                                     class="fa fa-home me-2"></i> My Dashboard</small></a>
                         <div class="dropdown-menu rounded">
-                            <a href="{% url 'login' %}" class="dropdown-item" > Login</a>
+                            <a href="{% url 'login' %}" class="dropdown-item"> Login</a>
                             <a href="{% url 'register' %}" class="dropdown-item"> Register</a>
                             <a href="#" class="dropdown-item"> Wishlist</a>
                             <a href="#" class="dropdown-item"> My Card</a>
@@ -114,15 +135,17 @@
                 <div class="position-relative ps-4">
                     <div class="d-flex border rounded-pill">
                         <input id="headerSearchInput" class="form-control border-0 rounded-pill w-100 py-3" type="text"
-                            data-bs-target="#dropdownToggle123" placeholder="Search Looking For?" value="{{ search_query|default:'' }}">
-                        <select id="headerCategorySelect" class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 200px;">
+                            data-bs-target="#dropdownToggle123" placeholder="Search Looking For?"
+                            value="{{ search_query|default:'' }}">
+                        <select id="headerCategorySelect"
+                            class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 200px;">
                             <option value="0">All Category</option>
                             {% for category in categories %}
-                                <option value="{{ category.id }}" {% if selected_category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                            <option value="{{ category.id }}" {% if selected_category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
                             {% endfor %}
                         </select>
-                        <button id="headerSearchBtn" type="button" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;"><i
-                                class="fas fa-search"></i></button>
+                        <button id="headerSearchBtn" type="button" class="btn btn-primary rounded-pill py-3 px-5"
+                            style="border: 0;"><i class="fas fa-search"></i></button>
                     </div>
                 </div>
             </div>
@@ -132,9 +155,10 @@
                             class="rounded-circle btn-md-square border"><i class="fas fa-random"></i></i></a>
                     <a href="#" class="text-muted d-flex align-items-center justify-content-center me-3"><span
                             class="rounded-circle btn-md-square border"><i class="fas fa-heart"></i></a>
-                    <a href="#" class="text-muted d-flex align-items-center justify-content-center"><span
-                            class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span>
-                        <span class="text-dark ms-2">$0.00</span></a>
+                    <a href="{% url 'cart' %}" class="text-muted d-flex align-items-center justify-content-center">
+                        <span class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span>
+                        <span class="text-dark ms-2" id="header-cart-total">₹{{ global_cart_total|default:"0.00" }}</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -178,15 +202,25 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarCollapse">
                         <div class="navbar-nav ms-auto py-0">
-                            <a href="{% url 'index' %}" class="nav-item nav-link {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
-                            <a href="{% url 'shop' %}" class="nav-item nav-link {% if request.resolver_match.url_name == 'shop' %}active{% endif %}">Shop</a>
+                            <a href="{% url 'index' %}"
+                                class="nav-item nav-link {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
+                            <a href="{% url 'shop' %}"
+                                class="nav-item nav-link {% if request.resolver_match.url_name == 'shop' %}active{% endif %}">Shop</a>
                             <div class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'bestseller' or request.resolver_match.url_name == 'cart' or request.resolver_match.url_name == 'checkout' or request.resolver_match.url_name == 'error' %}active{% endif %}" data-bs-toggle="dropdown">Pages</a>
+                                <a href="#"
+                                    class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'bestseller' or request.resolver_match.url_name == 'cart' or request.resolver_match.url_name == 'checkout' or request.resolver_match.url_name == 'error' %}active{% endif %}"
+                                    data-bs-toggle="dropdown">Pages</a>
                                 <div class="dropdown-menu m-0">
-                                    <a href="{% url 'bestseller' %}" class="dropdown-item {% if request.resolver_match.url_name == 'bestseller' %}active{% endif %}">Bestseller</a>
-                                    <a href="{% url 'cart' %}" class="dropdown-item {% if request.resolver_match.url_name == 'cart' %}active{% endif %}">Cart Page</a>
-                                    <a href="{% url 'checkout' %}" class="dropdown-item {% if request.resolver_match.url_name == 'checkout' %}active{% endif %}">Checkout</a>
-                                    <a href="{% url 'error' %}" class="dropdown-item {% if request.resolver_match.url_name == 'error' %}active{% endif %}">404 Page</a>
+                                    <a href="{% url 'bestseller' %}"
+                                        class="dropdown-item {% if request.resolver_match.url_name == 'bestseller' %}active{% endif %}">Bestseller</a>
+                                    <a href="{% url 'cart' %}"
+                                        class="dropdown-item {% if request.resolver_match.url_name == 'cart' %}active{% endif %}">Cart
+                                        Page</a>
+                                    <a href="{% url 'checkout' %}"
+                                        class="dropdown-item {% if request.resolver_match.url_name == 'checkout' %}active{% endif %}">Checkout</a>
+                                    <a href="{% url 'error' %}"
+                                        class="dropdown-item {% if request.resolver_match.url_name == 'error' %}active{% endif %}">404
+                                        Page</a>
                                 </div>
                             </div>
                             <div class="nav-item dropdown d-block d-lg-none mb-3">
@@ -212,7 +246,7 @@
         </div>
     </div>
     <!-- Navbar & Hero End -->
-{% block content %}
+    {% block content %}
 
     <!-- Carousel Start -->
     <div class="container-fluid carousel bg-light px-0">
@@ -251,7 +285,8 @@
             </div>
             <div class="col-12 col-lg-5 col-xl-3 wow fadeInRight" data-wow-delay="0.1s">
                 <div class="carousel-header-banner h-100">
-                    <img src="{% static 'img/header-img.jpg' %}" class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Image">
+                    <img src="{% static 'img/header-img.jpg' %}" class="img-fluid w-100 h-100"
+                        style="object-fit: cover;" alt="Image">
                     <div class="carousel-banner-offer">
                         <p class="bg-primary text-white rounded fs-5 py-2 px-4 mb-0 me-3">Save $48.00</p>
                         <p class="text-primary fs-5 fw-bold mb-0">Special Offer</p>
@@ -457,7 +492,7 @@
                                     </div>
                                 </div>
                             </div> -->
-                            
+
                             {% for product in products %}
                             <div class="col-md-6 col-lg-4 col-xl-3">
                                 <div class="product-item rounded wow fadeInUp">
@@ -475,8 +510,10 @@
                                         </div>
                                     </div>
                                     <!-- ADD TO CART -->
-                                    <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <a href="#" class="btn btn-primary rounded-pill py-2 px-4">
+                                    <div
+                                        class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
+                                        <a href="{% url 'add_to_cart' product.id %}"
+                                            class="btn btn-primary rounded-pill py-2 px-4 ajax-add-to-cart">
                                             <i class="fas fa-shopping-cart me-2"></i> Add To Cart
                                         </a>
                                     </div>
@@ -502,7 +539,8 @@
             <div class="mx-auto text-center mb-5" style="max-width: 900px;">
                 <h4 class="text-primary border-bottom border-primary border-2 d-inline-block p-2 title-border-radius wow fadeInUp"
                     data-wow-delay="0.1s">Products</h4>
-                <h1 class="mb-0 display-3 wow fadeInUp" data-wow-delay="0.3s">{% if selected_category %}{{ selected_category.name }}{% else %}All Product Items{% endif %}</h1>
+                <h1 class="mb-0 display-3 wow fadeInUp" data-wow-delay="0.3s">{% if selected_category %}{{
+                    selected_category.name }}{% else %}All Product Items{% endif %}</h1>
             </div>
             <div class="productList-carousel owl-carousel pt-4 wow fadeInUp" data-wow-delay="0.3s">
                 {% for product in products %}
@@ -513,20 +551,23 @@
                                 <div class="products-mini-img border-end h-100">
                                     <img src="{{ product.image.url }}" class="img-fluid w-100 h-100" alt="Image">
                                     <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="{% url 'single' product.id %}"><i class="fa fa-eye fa-1x text-white"></i></a>
+                                        <a href="{% url 'single' product.id %}"><i
+                                                class="fa fa-eye fa-1x text-white"></i></a>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-7">
                                 <div class="products-mini-content p-3">
-                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
+                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{
+                                        product.category_id.name }}</a>
                                     <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                     <span class="text-primary fs-5">₹{{ product.price }}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="products-mini-add border p-3">
-                            <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
+                            <a href="{% url 'add_to_cart' product.id %}"
+                                class="btn btn-primary border-secondary rounded-pill py-2 px-4 ajax-add-to-cart"><i
                                     class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                             <div class="d-flex">
                                 <a href="#"
@@ -552,9 +593,12 @@
             <div class="mx-auto text-center mb-5" style="max-width: 700px;">
                 <h4 class="text-primary mb-4 border-bottom border-primary border-2 d-inline-block p-2 title-border-radius wow fadeInUp"
                     data-wow-delay="0.1s">Bestseller Products</h4>
-                <p class="mb-0 wow fadeInUp" data-wow-delay="0.2s">Our Best Sellers are the products customers love most — tried, 
-                    trusted, and highly rated. From top-quality essentials to trending must-haves, each item here stands out for 
-                    its performance, value, and popularity. Discover what everyone is choosing and find your next favorite today.
+                <p class="mb-0 wow fadeInUp" data-wow-delay="0.2s">Our Best Sellers are the products customers love most
+                    — tried,
+                    trusted, and highly rated. From top-quality essentials to trending must-haves, each item here stands
+                    out for
+                    its performance, value, and popularity. Discover what everyone is choosing and find your next
+                    favorite today.
                 </p>
             </div>
             <div class="row g-4">
@@ -566,20 +610,23 @@
                                 <div class="products-mini-img border-end h-100">
                                     <img src="{{ product.image.url }}" class="img-fluid w-100 h-100" alt="Image">
                                     <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="{% url 'single' product.id %}"><i class="fa fa-eye fa-1x text-white"></i></a>
+                                        <a href="{% url 'single' product.id %}"><i
+                                                class="fa fa-eye fa-1x text-white"></i></a>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-7">
                                 <div class="products-mini-content p-3">
-                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
+                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{
+                                        product.category_id.name }}</a>
                                     <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                     <span class="text-primary fs-5">₹{{ product.price }}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="products-mini-add border p-3">
-                            <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
+                            <a href="{% url 'add_to_cart' product.id %}"
+                                class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
                                     class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                             <div class="d-flex">
                                 <a href="#"
@@ -598,7 +645,7 @@
         </div>
     </div>
     <!-- Bestseller Products End -->
-{% endblock %}
+    {% endblock %}
 
     <!-- Footer Start -->
     <div class="container-fluid footer py-5 wow fadeIn" data-wow-delay="0.2s">
@@ -658,7 +705,8 @@
                     <div class="footer-item d-flex flex-column">
                         <div class="footer-item">
                             <h4 class="text-primary mb-4">Newsletter</h4>
-                            <p class="mb-3">To receive daily announcements for offers and sale, sing up for our Newsletter.</p>
+                            <p class="mb-3">To receive daily announcements for offers and sale, sing up for our
+                                Newsletter.</p>
                             <div class="position-relative mx-auto rounded-pill">
                                 <input class="form-control rounded-pill w-100 py-3 ps-4 pe-5" type="text"
                                     placeholder="Enter your email">
@@ -685,8 +733,10 @@
                         <h4 class="text-primary mb-4">Information</h4>
                         <a href="{% url 'about' %}" class=""><i class="fas fa-angle-right me-2"></i> About Us</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Delivery infomation</a>
-                        <a href="{% url 'privacy_policy' %}" class=""><i class="fas fa-angle-right me-2"></i> Privacy Policy</a>
-                        <a href="{% url 'terms' %}" class=""><i class="fas fa-angle-right me-2"></i> Terms & Conditions</a>
+                        <a href="{% url 'privacy_policy' %}" class=""><i class="fas fa-angle-right me-2"></i> Privacy
+                            Policy</a>
+                        <a href="{% url 'terms' %}" class=""><i class="fas fa-angle-right me-2"></i> Terms &
+                            Conditions</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Warranty</a>
                         <a href="{% url 'faq' %}" class=""><i class="fas fa-angle-right me-2"></i> FAQ</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Seller Login</a>
@@ -722,7 +772,8 @@
                     <!--/*** This template is free as long as you keep the below author’s credit link/attribution link/backlink. ***/-->
                     <!--/*** If you'd like to use the template without the below author’s credit link/attribution link/backlink, ***/-->
                     <!--/*** you can purchase the Credit Removal License from "https://htmlcodex.com/credit-removal". ***/-->
-                    Designed By <a class="border-bottom text-white" href="https://github.com/TechieNaitik">Naitik Shah</a>.
+                    Designed By <a class="border-bottom text-white" href="https://github.com/TechieNaitik">Naitik
+                        Shah</a>.
                     <!--Designed By <a class="border-bottom text-white" href="https://htmlcodex.com">HTML Codex</a>.
                     Distributed By <a class="border-bottom text-white" href="https://themewagon.com">ThemeWagon</a> -->
                 </div>
@@ -744,11 +795,11 @@
     <script src="{% static 'js/main.js' %}"></script>
 
     <script>
-        document.getElementById('headerSearchBtn').addEventListener('click', function() {
+        document.getElementById('headerSearchBtn').addEventListener('click', function () {
             var categoryId = document.getElementById('headerCategorySelect').value;
             var query = document.getElementById('headerSearchInput').value;
             var url = "{% url 'shop' %}?";
-            
+
             if (categoryId != "0") {
                 url += "cid=" + categoryId + "&";
             }
@@ -764,7 +815,48 @@
                 document.getElementById('headerSearchBtn').click();
             }
         });
+        // Global AJAX Cart Helper
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notification-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-notify';
+            if (type === 'error') toast.style.borderLeftColor = '#dc3545';
+            toast.innerHTML = `<div><i class="fa ${type === 'success' ? 'fa-check-circle text-success' : 'fa-exclamation-circle text-danger'} me-2"></i> ${message}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.transform = 'translateX(120%)'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+        }
+
+        function updateCartHeader(total) {
+            const headerTotal = document.getElementById('header-cart-total');
+            if (headerTotal) headerTotal.innerText = '₹' + parseFloat(total).toFixed(2);
+        }
+
+        // Handle AJAX "Add to Cart" clicks
+        document.addEventListener('click', function (e) {
+            const addToCartBtn = e.target.closest('.ajax-add-to-cart');
+            if (addToCartBtn) {
+                e.preventDefault();
+                const url = addToCartBtn.getAttribute('href') || addToCartBtn.dataset.url;
+                if (!url) return;
+
+                fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            showNotification(data.message);
+                            updateCartHeader(data.cart_total);
+                        } else {
+                            showNotification(data.message, 'error');
+                            if (data.redirect) window.location.href = data.redirect;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
     </script>
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>

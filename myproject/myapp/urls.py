@@ -20,7 +20,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('home', views.home, name="home"),
+    path('home', views.home, name='home'),
     path('login', views.login, name='login'),
     path('register', views.register, name='register'),
     path('shop/', views.shop, name='shop'),
@@ -40,4 +40,6 @@ urlpatterns = [
     path('terms/', views.terms, name='terms'),
     path('sitemap/', views.sitemap, name='sitemap'),
     path('faq/', views.faq, name='faq'),
+    path('add-to-cart/<int:pid>/', views.add_to_cart, name='add_to_cart'),
+    path('update-cart/<int:cid>/<str:action>/', views.update_cart, name='update_cart'),
 ]
