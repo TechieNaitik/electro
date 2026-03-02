@@ -4,17 +4,19 @@ A Django-based E-commerce application.
 
 ## Features
 
-- **User Authentication**: Custom customer registration and login system.
-- **Product Browsing**: Shop page, single product view, bestsellers.
-- **Shopping Cart**: Cart management and checkout process.
-- **Contact & Support**: Contact page.
-- **Responsive Design**: Compatible with various devices.
+- **User Authentication**: Custom customer registration, login system, and password reset via OTP.
+- **Product Browsing**: Shop page with sorting/filtering, single product view, bestsellers, and dynamic inventory status.
+- **Shopping Cart**: Interactive AJAX-powered cart with real-time updates and toast notifications.
+- **Checkout Process**: Streamlined checkout flow with logical payment method selections.
+- **Inventory Management**: Real-time stock validation and automatic stock deduction upon order completion.
+- **Contact & Support**: Support pages and contact functionality.
+- **Responsive Design**: Friendly interfaces with a premium aesthetic.
 
 ## Tech Stack
 
 - **Backend**: Django 6.0+
 - **Database**: SQLite (default)
-- **Frontend**: HTML, CSS (Django Templates)
+- **Frontend**: HTML, CSS, JavaScript (AJAX)
 
 ## Getting Started
 
