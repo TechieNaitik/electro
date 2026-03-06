@@ -157,7 +157,7 @@
                             class="rounded-circle btn-md-square border"><i class="fas fa-heart"></i></a>
                     <a href="{% url 'cart' %}" class="text-muted d-flex align-items-center justify-content-center">
                         <span class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span>
-                        <span class="text-dark ms-2" id="header-cart-total">₹{{ global_cart_total|default:"0.00" }}</span>
+                        <span class="text-dark ms-2" id="header-cart-total">{{ global_cart_count|default:"0.00" }}</span>
                     </a>
                 </div>
             </div>

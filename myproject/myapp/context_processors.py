@@ -6,7 +6,7 @@ def cart_data(request):
         if customer:
             cart_items = Cart.objects.filter(customer=customer)
             subtotal = sum(item.total_price() for item in cart_items)
-            shipping = 15 if subtotal > 0 else 0
+            shipping = 100 if subtotal > 0 else 0
             total = subtotal + shipping
             count = sum(item.quantity for item in cart_items)
             return {

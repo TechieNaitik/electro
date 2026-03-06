@@ -298,8 +298,7 @@ def checkout(request):
     total = subtotal + shipping
     
     if request.method == "POST":
-        first_name = request.POST.get('first_name', '')
-        last_name = request.POST.get('last_name', '')
+        full_name = request.POST.get('full_name', '')
         address = request.POST.get('address', '')
         town_city = request.POST.get('town_city', '')
         country = request.POST.get('country', '')
@@ -315,7 +314,7 @@ def checkout(request):
         elif pm_value == 'Paypal': payment_method = 'Paypal'
         elif pm_value == 'Delivery': payment_method = 'Cash On Delivery'
         
-        if not all([first_name, last_name, address, town_city, country, postcode_zip, mobile, email]):
+        if not all([full_name, address, town_city, country, postcode_zip, mobile, email]):
             messages.error(request, "Please fill in all required fields.")
             return redirect('checkout')
             
@@ -327,8 +326,7 @@ def checkout(request):
 
         order = Order.objects.create(
             customer=customer,
-            first_name=first_name,
-            last_name=last_name,
+            full_name=full_name,
             address=address,
             town_city=town_city,
             country=country,

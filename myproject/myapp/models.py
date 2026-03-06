@@ -14,6 +14,7 @@ class Category(models.Model):
 
     class Meta:
         verbose_name_plural = "Categories"
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -42,8 +43,7 @@ class Cart(models.Model):
 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
+    full_name = models.CharField(max_length=255, null=True, blank=True)
     address = models.CharField(max_length=255)
     town_city = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
