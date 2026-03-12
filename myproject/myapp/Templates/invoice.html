@@ -1,0 +1,350 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice #{{ order.id }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            box-sizing: border-box; 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+        }
+
+        @page { 
+            size: A4 portrait; 
+            margin: 0; 
+        }
+
+        body { 
+            font-family: "Inter", Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 297mm; 
+            width: 210mm; 
+            color: #111; 
+            background-color: white; 
+        }
+
+        .header { 
+            background-color: #5d4286; 
+            color: white; 
+            padding: 50px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+        }
+
+        .header-left { 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .header-icon { 
+            width: 80px; 
+            height: 80px; 
+            border: 3px solid white; 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-bottom: 15px; 
+        }
+
+        .header-icon svg { 
+            width: 50px; 
+            height: 50px; 
+            fill: white; 
+        }
+
+        .invoice-title { 
+            font-size: 52px; 
+            margin: 0; 
+            letter-spacing: -1px; 
+            font-weight: 400; 
+        }
+
+        .header-right { 
+            text-align: right; 
+            padding-top: 10px; 
+        }
+
+        .company-name { 
+            font-size: 24px; 
+            font-weight: 600; 
+            margin: 0 0 20px 0; 
+        }
+
+        .company-info { 
+            font-size: 13px; 
+            line-height: 1.8; 
+            opacity: 0.9; 
+        }
+
+        .main-content { 
+            padding: 50px; 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .info-section { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 50px; 
+        }
+
+        .bill-to h4 { 
+            font-size: 11px; 
+            color: #000; 
+            margin: 0 0 10px 0; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+        }
+
+        .bill-to .name { 
+            font-size: 18px; 
+            margin: 0 0 8px 0; 
+            color: #000; 
+        }
+
+        .bill-to .address { 
+            font-size: 13px; 
+            line-height: 1.6; 
+            color: #111; 
+        }
+
+        .meta-info { 
+            text-align: right; 
+        }
+
+        .meta-group { 
+            margin-bottom: 15px; 
+        }
+
+        .meta-label { 
+            font-size: 11px; 
+            font-weight: 700; 
+            margin-bottom: 5px; 
+            text-transform: uppercase; 
+            color: #000; 
+        }
+
+        .meta-value { 
+            font-size: 13px; 
+            color: #111; 
+        }
+
+        .table-container { 
+            flex-grow: 1; 
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 20px; 
+        }
+
+        th { 
+            text-align: left; 
+            font-size: 11px; 
+            font-weight: 700; 
+            padding: 12px 5px; 
+            border-top: 1px solid #e0e0e0; 
+            border-bottom: 1px solid #e0e0e0; 
+            text-transform: uppercase; 
+            color: #000; 
+        }
+
+        th.right { text-align: right; }
+        th.center { text-align: center; }
+
+        td { 
+            padding: 15px 5px; 
+            border-bottom: 1px solid #f2f2f2; 
+            font-size: 13px; 
+        }
+
+        td.right { text-align: right; }
+        td.center { text-align: center; }
+
+        .bottom-section { 
+            display: flex; 
+            align-items: stretch; 
+            min-height: 160px; 
+        }
+
+        .notes { 
+            background-color: #eff2f6; 
+            padding: 40px 50px; 
+            flex: 1; 
+        }
+
+        .notes-title { 
+            font-size: 11px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            margin-bottom: 15px; 
+            color: #000; 
+        }
+
+        .notes-content { 
+            font-size: 13px; 
+            line-height: 1.6; 
+            color: #111; 
+        }
+
+        .total-box { 
+            background-color: #5d4286; 
+            color: white; 
+            padding: 40px 50px; 
+            width: 40%; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: flex-end; 
+        }
+
+        .total-label { 
+            font-size: 11px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            margin-bottom: 15px; 
+        }
+
+        .total-amount { 
+            font-size: 42px; 
+            font-weight: 700; 
+            margin: 0; 
+            line-height: 1; 
+        }
+
+        .footer { 
+            text-align: center; 
+            padding: 30px; 
+            font-size: 11px; 
+            color: #555; 
+            background: white; 
+        }
+
+        .footer strong { color: #111; }
+    </style>
+</head>
+<body>
+    
+    <div class="header">
+        <div class="header-left">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.654 3h16.208c1.373 0 1.933 1.61.942 2.552l-1.071 1.018a1.5 1.5 0 0 1-1.034.43H6.845L7.54 11h9.813c1.036 0 1.564 1.28.847 2.016l-3.328 3.42A1.25 1.25 0 0 1 13.974 17H8.685c-1.332 0-2.28-1.284-1.928-2.57l1.706-6.262L5.875 4.5l-2.03-1.015A1 1 0 0 1 4.292 1.7L5.056.936a1.5 1.5 0 0 1 1.06-.436h.61c.451 0 .864.223 1.11.593L9.654 3H4.654z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <circle cx="9.5" cy="20.5" r="1.5" fill="currentColor"/>
+                    <circle cx="15.5" cy="20.5" r="1.5" fill="currentColor"/>
+                    <path d="M7 6h12M11 2v4M15 2v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h1 class="invoice-title">Invoice</h1>
+        </div>
+        <div class="header-right">
+            <h2 class="company-name">Electro Inc.</h2>
+            <div class="company-info">
+                123 Avenue of Quality<br>
+                Manhattan, New York, 10001<br>
+                United States<br>
+                electro.com
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="info-section">
+            <div class="bill-to">
+                <h4>Bill To:</h4>
+                <h3 class="name">{{ order.full_name }}</h3>
+                <div class="address">
+                    {{ order.address }}<br>
+                    {{ order.town_city }}<br>
+                    {{ order.country }}<br>
+                    {{ order.postcode_zip }}
+                </div>
+            </div>
+            
+            <div class="meta-info">
+                <div class="meta-group">
+                    <div class="meta-label">Invoice #</div>
+                    <div class="meta-value">{{ order.id|stringformat:"06d" }}</div>
+                </div>
+                <div class="meta-group">
+                    <div class="meta-label">Date</div>
+                    <div class="meta-value">{{ order.created_at|date:"m/d/y" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Items</th>
+                        <th class="center">Quantity</th>
+                        <th class="right">Price</th>
+                        <th class="right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: #111; margin-bottom: 3px;">{{ item.product.name }}</div>
+                            <div style="font-size: 11px; color: #555;">{{ item.product.category_id.name }}</div>
+                        </td>
+                        <td class="center">{{ item.quantity }}</td>
+                        <td class="right">₹{{ item.price }}</td>
+                        <td class="right">₹{{ item.line_total }}</td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <tr>
+                        <td colspan="3" class="right" style="padding-top: 20px; border-bottom: none; font-size: 12px; font-weight: 600;">Subtotal</td>
+                        <td class="right" style="padding-top: 20px; border-bottom: none;">₹{{ order.subtotal }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="right" style="border-bottom: none; font-size: 12px; font-weight: 600;">Shipping</td>
+                        <td class="right" style="border-bottom: none;">₹{{ order.shipping_charge }}</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bottom-section">
+        <div class="notes">
+            {% if order.order_notes %}
+            <div class="notes-title">Notes:</div>
+            <div class="notes-content">
+                {{ order.order_notes }}
+            </div>
+            {% else %}
+            <div class="notes-title">Notes:</div>
+            <div class="notes-content">
+                Thank you for your business. For any questions regarding this invoice, please contact support.
+            </div>
+            {% endif %}
+        </div>
+        <div class="total-box">
+            <div class="total-label">Total Due</div>
+            <div class="total-amount">₹{{ order.total_amount }}</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Powered by <strong>Electro</strong><br><br>
+        This invoice was generated automatically.<br>
+        To learn more, visit electro.com
+    </div>
+
+</body>
+</html>

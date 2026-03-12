@@ -16,21 +16,27 @@
 <div class="container-fluid py-5">
     <div class="container py-5">
         <div class="row g-5">
-            <!-- Main Pages -->
+            <!-- Account & Orders -->
             <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.1s">
                 <div class="border rounded p-4 h-100">
                     <h5 class="text-primary fw-bold mb-4 border-bottom pb-2">
-                        <i class="fas fa-home me-2"></i> Main Pages
+                        <i class="fas fa-user-circle me-2"></i> Account
                     </h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{% url 'bestseller' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Bestsellers</a></li>
-                        <li class="mb-2"><a href="{% url 'contact' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Contact Us</a></li>
-                        <li class="mb-2"><a href="{% url 'index' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Home</a></li>
-                        <li class="mb-2"><a href="{% url 'shop' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Shop</a></li>
+                        <li class="mb-2"><a href="{% url 'cart' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Cart</a></li>
+                        <li class="mb-2"><a href="{% url 'forgot_password' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Forgot Password</a></li>
+                        <li class="mb-2"><a href="{% url 'login' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Login</a></li>
+                        <li class="mb-2"><a href="{% url 'my_account' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>My Account</a></li>
+                        <li class="mb-2"><a href="{% url 'order_history' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Order History</a></li>
+                        <li class="mb-2"><a href="{% url 'register' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Register</a></li>
+                        <li class="mb-2"><a href="{% url 'wishlist' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Wishlist</a></li>
                     </ul>
                 </div>
             </div>
@@ -42,7 +48,7 @@
                         <i class="fas fa-th-large me-2"></i> Categories
                     </h5>
                     <ul class="list-unstyled">
-                        {% for category in categories %}
+                        {% for category in categories|dictsort:"name" %}
                         <li class="mb-2">
                             <a href="{% url 'shop_category' category.id %}" class="text-dark text-decoration-none">
                                 <i class="fas fa-angle-right text-primary me-2"></i>{{ category.name }}
@@ -55,29 +61,8 @@
                 </div>
             </div>
 
-            <!-- Account & Orders -->
-            <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.3s">
-                <div class="border rounded p-4 h-100">
-                    <h5 class="text-primary fw-bold mb-4 border-bottom pb-2">
-                        <i class="fas fa-user-circle me-2"></i> Account
-                    </h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{% url 'cart' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Cart</a></li>
-                        <li class="mb-2"><a href="{% url 'forgot_password' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Forgot Password</a></li>
-                        <li class="mb-2"><a href="{% url 'login' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Login</a></li>
-                        <li class="mb-2"><a href="{% url 'register' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Register</a></li>
-                        <li class="mb-2"><a href="{% url 'wishlist' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Wishlist</a></li>
-                    </ul>
-                </div>
-            </div>
-
             <!-- Legal & Info -->
-            <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.4s">
+            <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.3s">
                 <div class="border rounded p-4 h-100">
                     <h5 class="text-primary fw-bold mb-4 border-bottom pb-2">
                         <i class="fas fa-file-alt me-2"></i> Legal & Info
@@ -97,6 +82,25 @@
                                 <i class="fas fa-angle-right text-primary me-2"></i>Site Map</a></li>
                         <li class="mb-2"><a href="{% url 'terms' %}" class="text-dark text-decoration-none">
                                 <i class="fas fa-angle-right text-primary me-2"></i>Terms & Conditions</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Pages -->
+            <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.4s">
+                <div class="border rounded p-4 h-100">
+                    <h5 class="text-primary fw-bold mb-4 border-bottom pb-2">
+                        <i class="fas fa-home me-2"></i> Main Pages
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'bestseller' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Bestsellers</a></li>
+                        <li class="mb-2"><a href="{% url 'contact' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Contact Us</a></li>
+                        <li class="mb-2"><a href="{% url 'index' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Home</a></li>
+                        <li class="mb-2"><a href="{% url 'shop' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Shop</a></li>
                     </ul>
                 </div>
             </div>

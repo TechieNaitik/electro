@@ -5,7 +5,14 @@ from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse
 from django.conf import settings
 from django.db.models.functions import Lower
+from datetime import timedelta
+from django.utils import timezone
+from django.core.paginator import Paginator
 from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist
+
+# Invoice PDF Generation Imports
+from playwright.sync_api import sync_playwright
+from django.template.loader import render_to_string
 
 # =========================================================================
 #  PAGE VIEWS  —  These render full HTML pages
@@ -23,6 +30,50 @@ def bestseller(request):
         'products': Product.objects.all(),
     }
     return render(request, 'bestseller.html', context)
+
+def buy_again(request, oid):
+    if 'email' not in request.session:
+        return redirect('login')
+        
+    customer = Customer.objects.get(email=request.session['email'])
+    old_order = get_object_or_404(Order, pk=oid, customer=customer)
+    
+    for item in old_order.items.all():
+        # Add to cart
+        if item.product.stock_quantity > 0:
+            cart_item, created = Cart.objects.get_or_create(customer=customer, product=item.product)
+            if not created:
+                # If already in cart, check stock
+                if item.product.stock_quantity > cart_item.quantity:
+                    cart_item.quantity += 1
+                    cart_item.save()
+            else:
+                cart_item.quantity = 1
+                cart_item.save()
+                
+    messages.success(request, f"Items from Order #{oid} added to your cart.")
+    return redirect('cart')
+
+def cancel_order(request, oid):
+    if 'email' not in request.session:
+        return redirect('login')
+        
+    customer = Customer.objects.get(email=request.session['email'])
+    order = get_object_or_404(Order, pk=oid, customer=customer)
+    
+    if order.status == 'Pending':
+        order.status = 'Cancelled'
+        # Revert stock
+        for item in order.items.all():
+            product = item.product
+            product.stock_quantity += item.quantity
+            product.save()
+        order.save()
+        messages.success(request, f"Order #{oid} has been cancelled.")
+    else:
+        messages.error(request, "This order cannot be cancelled.")
+        
+    return redirect('order_detail', oid=oid)
 
 def cart(request):
     if 'email' not in request.session:
@@ -118,7 +169,8 @@ def checkout(request):
             email=email,
             order_notes=order_notes,
             total_amount=total,
-            payment_method=payment_method
+            payment_method=payment_method,
+            shipping_charge=shipping
         )
         
         for item in cart_items:
@@ -159,6 +211,38 @@ def contact(request):
     }
     return render(request, 'contact.html', context)
 
+def download_invoice(request, oid):
+    is_admin = '_site_admin_user_id' in request.session
+    is_customer = 'email' in request.session
+
+    if not is_admin and not is_customer:
+        return redirect('login')
+        
+    if is_admin:
+        order = get_object_or_404(Order, pk=oid)
+    else:
+        customer = Customer.objects.get(email=request.session['email'])
+        order = get_object_or_404(Order, pk=oid, customer=customer)
+    
+    context = {
+        'order': order,
+        'items': order.items.all(),
+    }
+    
+    html_string = render_to_string('invoice.html', context)
+    
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.set_content(html_string)
+        pdf_bytes = page.pdf(format="A4", print_background=True)
+        browser.close()
+    
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="invoice_{order.id}.pdf"'
+    
+    return response
+
 def error(request):
     context = {
         'categories': Category.objects.all(),
@@ -177,7 +261,7 @@ def forgot_password(request):
 
         if not email:
             messages.error(request, "Please enter your email.")
-            return render(request, 'forgot_password.html', {'categories': Category.objects.all()})
+            return render(request, 'forgot_password.html', {'categories': Category.objects.get_all_if_any()}) # Category logic dummy
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             messages.error(request, "Please enter a valid email address.")
@@ -214,18 +298,18 @@ def forgot_password(request):
 
     return render(request, 'forgot_password.html', {'categories': Category.objects.all()})
 
+def help(request):
+    context = {
+        'categories': Category.objects.all(),
+    }
+    return render(request, 'help.html', context)
+
 def home(request):
     context = {
         'categories': Category.objects.all(),
         'products': Product.objects.all(),
     }
     return render(request, 'index.html', context)
-
-def help(request):
-    context = {
-        'categories': Category.objects.all(),
-    }
-    return render(request, 'help.html', context)
 
 def index(request):
     context = {
@@ -271,6 +355,109 @@ def logout(request):
     request.session.flush()
     messages.success(request, "You have been logged out.")
     return redirect('login')
+
+def my_account(request):
+    if 'email' not in request.session:
+        return redirect('login')
+    
+    customer = Customer.objects.get(email=request.session['email'])
+    active_tab = request.GET.get('tab', 'dashboard')
+    
+    context = {
+        'categories': Category.objects.all(),
+        'customer': customer,
+        'active_tab': active_tab,
+    }
+    
+    if active_tab == 'orders':
+        orders = Order.objects.filter(customer=customer).prefetch_related('items__product').order_by('-created_at')
+        
+        # 1. Date range filter
+        date_filter = request.GET.get('date_range')
+        now = timezone.now()
+        if date_filter == '30d':
+            orders = orders.filter(created_at__gte=now - timedelta(days=30))
+        elif date_filter == '3m':
+            orders = orders.filter(created_at__gte=now - timedelta(days=90))
+        elif date_filter == '6m':
+            orders = orders.filter(created_at__gte=now - timedelta(days=180))
+        elif date_filter == '1y':
+            orders = orders.filter(created_at__gte=now - timedelta(days=365))
+            
+        # 2. Status filter
+        status_filter = request.GET.get('status')
+        if status_filter:
+            orders = orders.filter(status=status_filter)
+            
+        # 3. Search (Order # or Product Name)
+        query = request.GET.get('q')
+        if query:
+            if query.isdigit():
+                orders = orders.filter(id=int(query))
+            else:
+                orders = orders.filter(items__product__name__icontains=query).distinct()
+                
+        # 4. Pagination (10 per page)
+        paginator = Paginator(orders, 10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context.update({
+            'orders': page_obj,
+            'date_filter': date_filter,
+            'status_filter': status_filter,
+            'search_query': query,
+        })
+    
+    elif active_tab == 'wishlist':
+        wishlist_items = Wishlist.objects.filter(customer=customer).select_related('product')
+        context['wishlist_items'] = wishlist_items
+        
+    elif active_tab == 'profile':
+        if request.method == "POST":
+            full_name = request.POST.get('full_name')
+            email = request.POST.get('email')
+            if email != customer.email and Customer.objects.filter(email=email).exists():
+                messages.error(request, "Email already exists.")
+            else:
+                customer.full_name = full_name
+                customer.email = email
+                customer.save()
+                request.session['email'] = email
+                request.session['name'] = full_name
+                messages.success(request, "Profile updated successfully.")
+                return redirect('my_account')
+    
+    elif active_tab == 'dashboard':
+        context['recent_orders'] = Order.objects.filter(customer=customer).order_by('-created_at')[:3]
+        context['wishlist_count'] = Wishlist.objects.filter(customer=customer).count()
+        context['total_orders'] = Order.objects.filter(customer=customer).count()
+
+    return render(request, 'my_account.html', context)
+
+def order_detail(request, oid):
+    if 'email' not in request.session:
+        return redirect('login')
+    
+    customer = Customer.objects.get(email=request.session['email'])
+    order = get_object_or_404(Order, pk=oid, customer=customer)
+    
+    # Mask payment method for display if it's more than just COD
+    masked_payment = order.payment_method
+    if "Visa" in order.payment_method or "Master" in order.payment_method:
+        # Example: Visa ****4242 (assuming it's stored that way, but if it's just a string, we might just show it)
+        pass 
+        
+    context = {
+        'categories': Category.objects.all(),
+        'order': order,
+        'items': order.items.all(),
+        'masked_payment': masked_payment,
+    }
+    return render(request, 'order_detail.html', context)
+
+def order_history(request):
+    return redirect('/my-account/?tab=orders')
 
 def privacy_policy(request):
     context = {
@@ -367,6 +554,22 @@ def reset_password(request):
 
     return render(request, 'reset_password.html', {'categories': Category.objects.all()})
 
+def return_order(request, oid):
+    if 'email' not in request.session:
+        return redirect('login')
+        
+    customer = Customer.objects.get(email=request.session['email'])
+    order = get_object_or_404(Order, pk=oid, customer=customer)
+    
+    if order.status == 'Delivered':
+        order.status = 'Returned'
+        order.save()
+        messages.success(request, f"Return initiated for Order #{oid}.")
+    else:
+        messages.error(request, "This order is not eligible for return.")
+        
+    return redirect('order_detail', oid=oid)
+
 def shop(request, cid=0):
     context = {
         'categories': Category.objects.all(),
@@ -456,17 +659,7 @@ def terms(request):
     return render(request, 'terms.html', context)
 
 def wishlist(request):
-    if 'email' not in request.session:
-        return redirect('login')
-
-    customer = Customer.objects.get(email=request.session['email'])
-    wishlist_items = Wishlist.objects.filter(customer=customer).select_related('product')
-
-    context = {
-        'categories': Category.objects.all(),
-        'wishlist_items': wishlist_items,
-    }
-    return render(request, 'wishlist.html', context)
+    return redirect('/my-account/?tab=wishlist')
 
 # =========================================================================
 #  AJAX VIEWS  —  These return JSON responses

@@ -47,6 +47,13 @@ urlpatterns = [
     path('support/', views.support, name='support'),
     path('terms/', views.terms, name='terms'),
     path('wishlist', views.wishlist, name='wishlist'),
+    path('my-account/', views.my_account, name='my_account'),
+    path('order-history/', views.order_history, name='order_history'),
+    path('order-detail/<int:oid>/', views.order_detail, name='order_detail'),
+    path('buy-again/<int:oid>/', views.buy_again, name='buy_again'),
+    path('cancel-order/<int:oid>/', views.cancel_order, name='cancel_order'),
+    path('return-order/<int:oid>/', views.return_order, name='return_order'),
+    path('download-invoice/<int:oid>/', views.download_invoice, name='download_invoice'),
 
     # =========================================================================
     #  AJAX URLs  —  These return JSON responses

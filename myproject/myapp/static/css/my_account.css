@@ -1,0 +1,12 @@
+.account-nav .list-group-item.active {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+.account-nav .list-group-item:hover:not(.active) {
+  background-color: #f8f9fa;
+  color: var(--bs-primary);
+}
+.account-content h4 {
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}

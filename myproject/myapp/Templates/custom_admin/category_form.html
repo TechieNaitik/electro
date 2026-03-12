@@ -1,3 +1,4 @@
+{% load static %}
 {% extends 'custom_admin/base.html' %}
 
 {% block title %}{{ title }} | Admin{% endblock %}
@@ -47,23 +48,5 @@
     </div>
 </div>
 
-<style>
-    .form-input {
-        width: 100%;
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-sm);
-        padding: 12px 16px;
-        color: var(--text-primary);
-        font-family: inherit;
-        font-size: 0.95rem;
-        transition: all var(--transition);
-        outline: none;
-    }
-
-    .form-input:focus {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-</style>
+<link href="{% static 'css/custom_admin_category_form.css' %}" rel="stylesheet">
 {% endblock %}

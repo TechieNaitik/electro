@@ -138,3 +138,7 @@ Thumbs.db
 # Documentation related to the project
 Docs/
 reset_db.py
+extract_assets.py
+
+# Generated files
+*.pdf

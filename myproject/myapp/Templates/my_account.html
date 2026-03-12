@@ -1,0 +1,283 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block title %}My Account{% endblock %}
+
+{% block content %}
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">My Account</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+        <li class="breadcrumb-item active text-white">My Account</li>
+    </ol>
+</div>
+<!-- Single Page Header End -->
+
+<!-- My Account Start -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row g-4">
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="card border shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush account-nav">
+                            <a href="?tab=dashboard" class="list-group-item list-group-item-action {% if active_tab == 'dashboard' %}active{% endif %} py-3">
+                                <i class="fas fa-th-large me-2"></i> Dashboard
+                            </a>
+                            <a href="?tab=orders" class="list-group-item list-group-item-action {% if active_tab == 'orders' %}active{% endif %} py-3">
+                                <i class="fas fa-shopping-bag me-2"></i> Orders
+                            </a>
+                            <a href="?tab=wishlist" class="list-group-item list-group-item-action {% if active_tab == 'wishlist' %}active{% endif %} py-3">
+                                <i class="fas fa-heart me-2"></i> Wishlist
+                            </a>
+                            <a href="?tab=profile" class="list-group-item list-group-item-action {% if active_tab == 'profile' %}active{% endif %} py-3">
+                                <i class="fas fa-user-circle me-2"></i> Account Details
+                            </a>
+                            <a href="{% url 'logout' %}" class="list-group-item list-group-item-action py-3 text-danger">
+                                <i class="fas fa-sign-out-alt me-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="col-lg-9">
+                <div class="account-content">
+                    {% if active_tab == 'dashboard' %}
+                        <!-- Dashboard Section -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-4">
+                                <div class="card border rounded shadow-sm text-center p-4 h-100">
+                                    <div class="bg-light rounded-circle p-3 d-inline-block mx-auto mb-3">
+                                        <i class="fas fa-box fa-2x text-primary"></i>
+                                    </div>
+                                    <h3 class="fw-bold">{{ total_orders }}</h3>
+                                    <p class="text-muted mb-0">Total Orders</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border rounded shadow-sm text-center p-4 h-100">
+                                    <div class="bg-light rounded-circle p-3 d-inline-block mx-auto mb-3">
+                                        <i class="fas fa-heart fa-2x text-primary"></i>
+                                    </div>
+                                    <h3 class="fw-bold">{{ wishlist_count }}</h3>
+                                    <p class="text-muted mb-0">In Wishlist</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border rounded shadow-sm text-center p-4 h-100">
+                                    <div class="bg-light rounded-circle p-3 d-inline-block mx-auto mb-3">
+                                        <i class="fas fa-wallet fa-2x text-primary"></i>
+                                    </div>
+                                    <h3 class="fw-bold">₹ - </h3>
+                                    <p class="text-muted mb-0">Wallet Balance</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h4 class="mb-0">Recent Orders</h4>
+                            </div>
+                            <div class="card-body">
+                                {% if recent_orders %}
+                                    <div class="table-responsive">
+                                        <table class="table align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order #</th>
+                                                    <th>Date</th>
+                                                    <th>Status</th>
+                                                    <th>Total</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for order in recent_orders %}
+                                                <tr>
+                                                    <td>#{{ order.id }}</td>
+                                                    <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                                    <td>
+                                                        <span class="badge {% if order.status == 'Delivered' %}bg-success{% elif order.status == 'Cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                                            {{ order.status }}
+                                                        </span>
+                                                    </td>
+                                                    <td>₹{{ order.total_amount }}</td>
+                                                    <td><a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary rounded-pill">View</a></td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <a href="?tab=orders" class="btn btn-link">View all orders</a>
+                                    </div>
+                                {% else %}
+                                    <p class="text-center py-4 text-muted">No recent orders found.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    {% elif active_tab == 'orders' %}
+                        <!-- Orders Section (Consolidated from order_history.html) -->
+                        <div class="mb-4 d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">Order History</h4>
+                            <form method="get" class="d-flex">
+                                <input type="hidden" name="tab" value="orders">
+                                <select name="date_range" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                                    <option value="">All Time</option>
+                                    <option value="30d" {% if date_filter == '30d' %}selected{% endif %}>Last 30 days</option>
+                                    <option value="3m" {% if date_filter == '3m' %}selected{% endif %}>Last 3 months</option>
+                                    <option value="1y" {% if date_filter == '1y' %}selected{% endif %}>Last year</option>
+                                </select>
+                            </form>
+                        </div>
+
+                        {% if orders %}
+                            {% for order in orders %}
+                            <div class="card border mb-4 shadow-sm">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center p-3">
+                                    <div>
+                                        <span class="text-muted small fw-bold">Order #{{ order.id }}</span> | 
+                                        <span class="text-muted small">{{ order.created_at|date:"F d, Y" }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold text-primary">₹{{ order.total_amount }}</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="d-flex flex-wrap mb-2">
+                                                {% for item in order.items.all|slice:":3" %}
+                                                <img src="{{ item.product.image.url }}" class="me-2 rounded border" style="width: 50px; height: 50px; object-fit: cover;" title="{{ item.product.name }}">
+                                                {% endfor %}
+                                                {% if order.items.count > 3 %}
+                                                <span class="text-muted align-self-center small">+ {{ order.items.count|add:"-3" }} more</span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="mb-0">Status: <span class="fw-bold">{{ order.status }}</span></p>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-secondary rounded-pill me-2">Details</a>
+                                            <a href="{% url 'buy_again' order.id %}" class="btn btn-sm btn-primary rounded-pill">Buy Again</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <!-- Pagination -->
+                            {% if orders.has_other_pages %}
+                            <nav aria-label="Order navigation">
+                                <ul class="pagination pagination-sm justify-content-center">
+                                    {% if orders.has_previous %}
+                                    <li class="page-item"><a class="page-link" href="?tab=orders&page={{ orders.previous_page_number }}{% if date_filter %}&date_range={{ date_filter }}{% endif %}">&laquo;</a></li>
+                                    {% endif %}
+                                    {% for num in orders.paginator.page_range %}
+                                        <li class="page-item {% if orders.number == num %}active{% endif %}"><a class="page-link" href="?tab=orders&page={{ num }}{% if date_filter %}&date_range={{ date_filter }}{% endif %}">{{ num }}</a></li>
+                                    {% endfor %}
+                                    {% if orders.has_next %}
+                                    <li class="page-item"><a class="page-link" href="?tab=orders&page={{ orders.next_page_number }}{% if date_filter %}&date_range={{ date_filter }}{% endif %}">&raquo;</a></li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                <p>No orders found.</p>
+                                <a href="{% url 'shop' %}" class="btn btn-primary rounded-pill">Start Shopping</a>
+                            </div>
+                        {% endif %}
+
+                    {% elif active_tab == 'wishlist' %}
+                        <!-- Wishlist Section (Consolidated from wishlist.html) -->
+                        <h4 class="mb-4">My Wishlist</h4>
+                        {% if wishlist_items %}
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Price</th>
+                                            <th>Stock</th>
+                                            <th class="text-end">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in wishlist_items %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="{{ item.product.image.url }}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    <a href="{% url 'single' item.product.id %}" class="fw-bold">{{ item.product.name }}</a>
+                                                </div>
+                                            </td>
+                                            <td>₹{{ item.product.price }}</td>
+                                            <td>
+                                                {% if item.product.stock_quantity > 0 %}
+                                                <span class="text-success small">In Stock</span>
+                                                {% else %}
+                                                <span class="text-danger small">Out of Stock</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{% url 'add_to_cart' item.product.id %}" class="btn btn-sm btn-primary rounded-pill ajax-add-to-cart me-2">Add to Cart</a>
+                                                <a href="javascript:void(0);" class="text-danger wishlist-btn wishlisted" data-product-id="{{ item.product.id }}"><i class="fas fa-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+                                <p>Your wishlist is empty.</p>
+                                <a href="{% url 'shop' %}" class="btn btn-outline-primary rounded-pill">Go to Shop</a>
+                            </div>
+                        {% endif %}
+
+                    {% elif active_tab == 'profile' %}
+                        <!-- Profile Section -->
+                        <h4 class="mb-4">Account Details</h4>
+                        <div class="card border shadow-sm">
+                            <div class="card-body p-4">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Full Name</label>
+                                            <input type="text" name="full_name" class="form-control" value="{{ customer.full_name }}" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Email Address</label>
+                                            <input type="email" name="email" class="form-control" value="{{ customer.email }}" required>
+                                        </div>
+                                        <div class="col-12 mt-4">
+                                            <button type="submit" class="btn btn-primary rounded-pill py-2 px-4">Save Changes</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <hr class="my-5">
+
+                                <h5>Security</h5>
+                                <p class="text-muted small">To change your password, please use the forgot password link in the login page or contact support.</p>
+                                <a href="{% url 'forgot_password' %}" class="btn btn-outline-secondary btn-sm rounded-pill">Reset Password</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- My Account End -->
+
+<link href="{% static 'css/my_account.css' %}" rel="stylesheet">
+{% endblock %}

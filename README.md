@@ -15,6 +15,7 @@ A Django-based E-commerce application.
     - **Session Isolation**: Independent admin sessions that don't conflict with the main site or standard Django-admin.
     - **Resource Management**: Complete CRUD operations for Products and Categories.
     - **Inventory Insights**: Real-time stock alerts and business statistics.
+- **Invoice Generation**: Pixel-perfect, downloadable A4 PDFs rendered via headless Playwright, featuring a luxury editorial layout using modern CSS Grid and Flexbox.
 - **Contact & Support**: Support pages and contact functionality.
 - **Responsive Design**: Modern, glassmorphism-inspired dark mode aesthetic.
 
@@ -55,6 +56,7 @@ A Django-based E-commerce application.
 
    ```bash
    pip install -r requirements.txt
+   playwright install chromium
    ```
 
 4. **Apply database migrations**:

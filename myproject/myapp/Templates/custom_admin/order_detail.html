@@ -3,9 +3,12 @@
 {% block page_title %}Order #{{ order.id }}{% endblock %}
 
 {% block content %}
-<div style="margin-bottom:16px;">
+<div style="margin-bottom:16px; display: flex; justify-content: space-between; align-items: center;">
     <a href="{% url 'custom_admin:orders' %}" class="btn btn-secondary btn-sm">
         <i class="fas fa-arrow-left"></i> Back to Orders
+    </a>
+    <a href="{% url 'download_invoice' order.id %}" target="_blank" class="btn btn-primary btn-sm" style="background:var(--accent); color:white; border:none;">
+        <i class="fas fa-file-pdf"></i> Download Invoice
     </a>
 </div>
 
@@ -13,42 +16,53 @@
     <!-- ═══ Customer & Shipping Info ═══ -->
     <div class="section-card animate-in">
         <div class="section-header">
-            <h2><i class="fas fa-user" style="margin-right:8px; color:var(--accent-light);"></i>Customer Details</h2>
+            <h2><i class="fas fa-user-tie" style="margin-right:8px; color:var(--accent-light);"></i>Customer Details</h2>
         </div>
         <div class="section-body" style="padding:24px;">
             <div class="detail-grid">
-                <div class="detail-item">
-                    <label>Full Name</label>
-                    <span>{{ order.full_name }}</span>
+                <!-- 1. Full Name -->
+                <div class="detail-item" style="grid-column: 1/-1;">
+                    <label><i class="fas fa-user" style="width:20px;"></i> Full Name</label>
+                    <span style="font-weight:600;">{{ order.full_name }}</span>
                 </div>
+
+                <!-- 2. Email & Mobile -->
                 <div class="detail-item">
-                    <label>Email</label>
+                    <label><i class="fas fa-envelope" style="width:20px;"></i> Email</label>
                     <span>{{ order.email }}</span>
                 </div>
                 <div class="detail-item">
-                    <label>Mobile</label>
+                    <label><i class="fas fa-phone-alt" style="width:20px;"></i> Mobile Number</label>
                     <span>{{ order.mobile }}</span>
                 </div>
-                <div class="detail-item">
-                    <label>Country</label>
-                    <span>{{ order.country }}</span>
+
+                <!-- 3. Address -->
+                <div class="detail-item" style="grid-column: 1/-1;">
+                    <label><i class="fas fa-map-marked-alt" style="width:20px;"></i> Address</label>
+                    <span>{{ order.address }}</span>
                 </div>
+
+                <!-- 4. Town / City & Postcode -->
                 <div class="detail-item">
-                    <label>Town / City</label>
+                    <label><i class="fas fa-city" style="width:20px;"></i> Town / City</label>
                     <span>{{ order.town_city }}</span>
                 </div>
                 <div class="detail-item">
-                    <label>Postcode / ZIP</label>
+                    <label><i class="fas fa-map-pin" style="width:20px;"></i> Postcode / ZIP</label>
                     <span>{{ order.postcode_zip }}</span>
                 </div>
-                <div class="detail-item" style="grid-column:1/-1;">
-                    <label>Address</label>
-                    <span>{{ order.address }}</span>
+
+                <!-- 5. Country -->
+                <div class="detail-item" style="grid-column: 1/-1;">
+                    <label><i class="fas fa-globe" style="width:20px;"></i> Country</label>
+                    <span>{{ order.country }}</span>
                 </div>
+
+                <!-- 6. Order Notes -->
                 {% if order.order_notes %}
-                <div class="detail-item" style="grid-column:1/-1;">
-                    <label>Order Notes</label>
-                    <span style="color:var(--text-secondary);">{{ order.order_notes }}</span>
+                <div class="detail-item" style="grid-column: 1/-1;">
+                    <label><i class="fas fa-comment-alt" style="width:20px;"></i> Order Notes</label>
+                    <span>{{ order.order_notes }}</span>
                 </div>
                 {% endif %}
             </div>
@@ -63,20 +77,62 @@
         <div class="section-body" style="padding:24px;">
             <div class="detail-grid">
                 <div class="detail-item">
-                    <label>Order ID</label>
-                    <span>#{{ order.id }}</span>
+                    <label><i class="fas fa-hashtag" style="width:20px;"></i> Order ID</label>
+                    <span style="font-weight:700;">#{{ order.id }}</span>
                 </div>
                 <div class="detail-item">
-                    <label>Placed On</label>
+                    <label><i class="fas fa-calendar-alt" style="width:20px;"></i> Placed On</label>
                     <span>{{ order.created_at|date:"M d, Y · h:i A" }}</span>
                 </div>
                 <div class="detail-item">
-                    <label>Payment Method</label>
+                    <label><i class="fas fa-info-circle" style="width:20px;"></i> Status</label>
+                    <span>
+                        <span class="badge {% if order.status == 'Delivered' %}badge-success{% elif order.status == 'Cancelled' %}badge-danger{% elif order.status == 'Shipped' %}badge-info{% elif order.status == 'Returned' %}badge-warning{% else %}badge-warning{% endif %}">
+                            {{ order.status }}
+                        </span>
+                    </span>
+                </div>
+                {% if order.return_reason %}
+                <div class="detail-item" style="grid-column: 1/-1;">
+                    <label><i class="fas fa-undo-alt" style="width:20px;"></i> Return Reason</label>
+                    <span style="color:var(--danger); font-style: italic;">"{{ order.return_reason }}"</span>
+                </div>
+                {% endif %}
+                <div class="detail-item">
+                    <label><i class="fas fa-credit-card" style="width:20px;"></i> Payment Method</label>
                     <span><span class="badge badge-purple">{{ order.payment_method }}</span></span>
                 </div>
+                
+                {% if order.tracking_number %}
+                <div style="grid-column: 1/-1; height: 1px; background: rgba(0,0,0,0.05); margin: 8px 0;"></div>
                 <div class="detail-item">
-                    <label>Total Amount</label>
-                    <span style="font-size:1.4rem; font-weight:800; color:var(--success);">₹{{ order.total_amount }}</span>
+                    <label><i class="fas fa-shipping-fast" style="width:20px;"></i> Tracking ID</label>
+                    <span style="font-family: monospace; font-weight: 700; color: var(--accent-light);">{{ order.tracking_number }}</span>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fas fa-box-open" style="width:20px;"></i> Carrier</label>
+                    <span>
+                        {{ order.shipping_carrier }}
+                        {% if order.carrier_url %}
+                        <a href="{{ order.carrier_url }}" target="_blank" style="margin-left: 8px; font-size: 0.8rem; color: var(--accent-light);"><i class="fas fa-external-link-alt"></i></a>
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                
+                <div style="grid-column: 1/-1; height: 1px; background: rgba(0,0,0,0.05); margin: 8px 0;"></div>
+                
+                <div class="detail-item">
+                    <label><i class="fas fa-shopping-basket" style="width:20px;"></i> Subtotal</label>
+                    <span style="font-weight:600;">₹{{ order.subtotal }}</span>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fas fa-truck-loading" style="width:20px;"></i> Shipping</label>
+                    <span style="font-weight:600; color:var(--text-secondary);">₹{{ order.shipping_charge }}</span>
+                </div>
+                <div class="detail-item" style="grid-column: 1/-1; margin-top: 8px; padding-top: 16px; border-top: 2px dashed rgba(0,0,0,0.05);">
+                    <label style="font-size: 1.1rem; color: var(--text-primary);"><i class="fas fa-file-invoice-dollar" style="width:20px; color:var(--success);"></i> Total Amount</label>
+                    <span style="font-size:1.8rem; font-weight:900; color:var(--success);">₹{{ order.total_amount }}</span>
                 </div>
             </div>
         </div>
@@ -93,19 +149,30 @@
         <table class="data-table">
             <thead>
                 <tr>
+                    <th style="width:100px;">Image</th>
                     <th>Product</th>
-                    <th>Price</th>
-                    <th>Qty</th>
-                    <th>Subtotal</th>
+                    <th class="text-center">Price</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-right">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in items %}
                 <tr>
-                    <td><strong>{{ item.product.name }}</strong></td>
-                    <td>₹{{ item.price }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td><strong>₹{{ item.price|floatformat:0 }}</strong></td>
+                    <td>
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05);">
+                    </td>
+                    <td>
+                        <div style="font-weight: 700; color: var(--text-primary);">{{ item.product.name }}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">SKU: #{{ item.product.id|stringformat:"04d" }}</div>
+                    </td>
+                    <td class="text-center" style="font-size: 1.1rem;">₹{{ item.price }}</td>
+                    <td class="text-center">
+                        <span style="background: rgba(0,0,0,0.05); padding: 4px 12px; border-radius: 20px; font-weight: 700;">{{ item.quantity }}</span>
+                    </td>
+                    <td class="text-right">
+                        <strong style="font-size: 1.2rem; color: var(--text-primary);">₹{{ item.line_total }}</strong>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

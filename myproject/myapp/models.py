@@ -53,6 +53,16 @@ class Cart(models.Model):
         return f"{self.customer.full_name} - {self.product.name}"
 
 class Order(models.Model):
+    ORDER_STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Processing', 'Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+        ('Returned', 'Returned'),
+        ('Exchanged', 'Exchanged'),
+    ]
+
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255, null=True, blank=True)
     address = models.CharField(max_length=255)
@@ -64,13 +74,25 @@ class Order(models.Model):
     order_notes = models.TextField(blank=True, null=True)
     total_amount = models.IntegerField()
     payment_method = models.CharField(max_length=50)
+    status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Pending')
+    shipping_charge = models.IntegerField(default=0)
+    tracking_number = models.CharField(max_length=100, null=True, blank=True)
+    shipping_carrier = models.CharField(max_length=100, null=True, blank=True)
+    carrier_url = models.URLField(null=True, blank=True)
+    return_reason = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def subtotal(self):
+        return self.total_amount - self.shipping_charge
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.IntegerField()
     quantity = models.PositiveIntegerField(default=1)
+
+    def line_total(self):
+        return self.price * self.quantity
 
 class Wishlist(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)

@@ -1,0 +1,157 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block title %}Order Details #{{ order.id }}{% endblock %}
+
+{% block content %}
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Order Details</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_history' %}">Order History</a></li>
+        <li class="breadcrumb-item active text-white">#{{ order.id }}</li>
+    </ol>
+</div>
+<!-- Single Page Header End -->
+
+<!-- Order Details Start -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row g-4 mb-5">
+            <div class="col-lg-8">
+                <div class="card border mb-4 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">Order #{{ order.id }}</h4>
+                            <span class="badge {% if order.status == 'Delivered' %}bg-success{% elif order.status == 'Cancelled' %}bg-danger{% elif order.status == 'Shipped' %}bg-info{% else %}bg-warning text-dark{% endif %} p-2">
+                                {{ order.status }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle mb-0">
+                                <thead class="border-bottom">
+                                    <tr>
+                                        <th scope="col">Product</th>
+                                        <th scope="col" class="text-center">Quantity</th>
+                                        <th scope="col" class="text-end">Price</th>
+                                        <th scope="col" class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in items %}
+                                    <tr class="border-bottom">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{{ item.product.image.url }}" class="img-fluid rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="">
+                                                <div>
+                                                    <a href="{% url 'single' item.product.id %}" class="fw-bold">{{ item.product.name }}</a>
+                                                    <p class="text-muted small mb-0">{{ item.product.category_id.name }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">{{ item.quantity }}</td>
+                                        <td class="text-end">₹{{ item.price }}</td>
+                                        <td class="text-end fw-bold">₹{{ item.line_total }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end pt-3">Subtotal</td>
+                                        <td class="text-end pt-3 fw-bold">₹{{ order.subtotal }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end pb-3">Shipping</td>
+                                        <td class="text-end pb-3 fw-bold">₹{{ order.shipping_charge }}</td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td colspan="3" class="text-end h4 pt-3">Order Total</td>
+                                        <td class="text-end h4 pt-3 text-primary fw-bold">₹{{ order.total_amount }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Tracking -->
+                {% if order.tracking_number %}
+                <div class="card border mb-4 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="mb-0">Track Shipment</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-4 text-center">
+                                <i class="fas fa-shipping-fast fa-3x text-primary p-3 bg-light rounded-circle"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Carrier: {{ order.shipping_carrier }}</h5>
+                                <p class="mb-1">Tracking ID: <strong>{{ order.tracking_number }}</strong></p>
+                                {% if order.carrier_url %}
+                                <a href="{{ order.carrier_url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">Track on Carrier Site</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border mb-4 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="mb-0">Deliver To</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1 fw-bold">{{ order.full_name }}</p>
+                        <p class="mb-1 text-muted"><i class="fas fa-map-marker-alt me-2 text-primary"></i> {{ order.address }}</p>
+                        <p class="mb-1 text-muted ms-4">{{ order.town_city }}, {{ order.country }} - {{ order.postcode_zip }}</p>
+                        <p class="mb-0 text-muted"><i class="fas fa-phone me-2 text-primary"></i> {{ order.mobile }}</p>
+                    </div>
+                </div>
+
+                <div class="card border mb-4 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="mb-0">Payment Method</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-credit-card fa-2x me-3 text-primary"></i>
+                            <div>
+                                <p class="mb-0 fw-bold">{{ masked_payment }}</p>
+                                <p class="mb-0 text-muted small">Transaction date: {{ order.created_at|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border mb-4 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="mb-0">Manage Order</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'download_invoice' order.id %}" class="btn btn-outline-primary rounded-pill"><i class="fas fa-file-download me-2"></i> Download Invoice</a>
+                            
+                            {% if order.status == 'Pending' %}
+                            <a href="{% url 'cancel_order' order.id %}" class="btn btn-outline-danger rounded-pill" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</a>
+                            {% endif %}
+
+                            {% if order.status == 'Delivered' %}
+                            <a href="{% url 'return_order' order.id %}" class="btn btn-outline-warning rounded-pill" onclick="return confirm('Are you sure you want to initiate a return?')">Return / Exchange</a>
+                            {% endif %}
+
+                            <a href="{% url 'buy_again' order.id %}" class="btn btn-primary rounded-pill mt-3">Buy items again</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Order Details End -->
+{% endblock %}
