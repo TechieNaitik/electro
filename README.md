@@ -6,9 +6,11 @@ A Django-based E-commerce application.
 
 - **User Authentication**: Custom customer registration, login system, and password reset via OTP.
 - **Product Browsing**: Shop page with sorting/filtering, single product view, bestsellers, and dynamic inventory status.
+- **Wishlist**: Per-user product saving system with AJAX-powered live updates and a dedicated wishlist management page.
 - **Shopping Cart**: Interactive AJAX-powered cart with real-time updates and toast notifications.
 - **Checkout Process**: Streamlined checkout flow with logical payment method selections.
 - **Inventory Management**: Real-time stock validation and automatic stock deduction upon order completion.
+- **Custom Site Administration**: A dedicated administration dashboard separate from the default Django admin, featuring key business statistics and streamlined store management tools.
 - **Contact & Support**: Support pages and contact functionality.
 - **Responsive Design**: Friendly interfaces with a premium aesthetic.
 
