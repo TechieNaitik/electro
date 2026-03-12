@@ -600,6 +600,21 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--text-secondary);
         }
+
+        /* ───────── Alerts ───────── */
+        .alert-message {
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+        .alert-success {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+        .alert-danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
     </style>
 </head>
 
@@ -645,6 +660,10 @@
                 <a href="/django-admin/" class="nav-link" id="nav-django-admin">
                     <i class="fas fa-cog"></i> Django Admin
                 </a>
+                <div class="nav-section-label">Account</div>
+                <a href="{% url 'custom_admin:logout' %}" class="nav-button nav-link" style="color: var(--danger);" id="nav-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -663,6 +682,17 @@
                     <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
                 </div>
                 <div class="topbar-right">
+                    {% if request.site_admin %}
+                    <div style="display: flex; align-items: center; gap: 12px; margin-right: 16px;">
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.85rem; font-weight: 600;">{{ request.site_admin.username }}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">Site Administrator</div>
+                        </div>
+                        <div style="width: 36px; height: 36px; background: var(--bg-hover); border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border-color);">
+                            <i class="fas fa-user-shield" style="font-size: 0.9rem; color: var(--accent-light);"></i>
+                        </div>
+                    </div>
+                    {% endif %}
                     <a href="{% url 'home' %}" class="topbar-btn" title="Storefront"><i
                             class="fas fa-external-link-alt"></i></a>
                 </div>

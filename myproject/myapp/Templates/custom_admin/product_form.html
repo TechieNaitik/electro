@@ -1,0 +1,112 @@
+{% extends 'custom_admin/base.html' %}
+
+{% block title %}{{ title }} | Admin{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="animate-in" style="max-width: 800px; margin: 0 auto;">
+    <div class="section-card">
+        <div class="section-header">
+            <h2>{{ title }}</h2>
+            <a href="{% url 'custom_admin:products' %}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+        <div class="section-body" style="padding: 32px;">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div style="background: var(--danger-bg); color: var(--danger); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 24px; font-size: 0.9rem;">
+                    <strong>Fix the following errors:</strong>
+                    <ul style="margin-top: 8px; margin-left: 20px;">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field|title }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <div class="detail-item">
+                        <label>Product Name</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="detail-item">
+                        <label>Category</label>
+                        {{ form.category_id }}
+                    </div>
+                </div>
+
+                <div class="detail-item" style="margin: 24px 0;">
+                    <label>Description</label>
+                    {{ form.description }}
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div class="detail-item">
+                        <label>Price (₹)</label>
+                        {{ form.price }}
+                    </div>
+                    <div class="detail-item">
+                        <label>Stock Quantity</label>
+                        {{ form.stock_quantity }}
+                    </div>
+                </div>
+
+                <div class="detail-item" style="margin-bottom: 32px;">
+                    <label>Product Image</label>
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        {{ form.image }}
+                        {% if product.image %}
+                        <div style="padding: 12px; background: var(--bg-primary); border-radius: var(--radius); border: 1px dashed var(--border-color); width: fit-content;">
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Current Image:</p>
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 150px; border-radius: var(--radius-sm);">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 32px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Product
+                    </button>
+                    <a href="{% url 'custom_admin:products' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-input, .form-select, .form-input-file {
+        width: 100%;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all var(--transition);
+        outline: none;
+    }
+
+    .form-input:focus, .form-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .detail-item label {
+        display: block;
+        font-size: .7rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}

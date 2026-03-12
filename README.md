@@ -10,9 +10,13 @@ A Django-based E-commerce application.
 - **Shopping Cart**: Interactive AJAX-powered cart with real-time updates and toast notifications.
 - **Checkout Process**: Streamlined checkout flow with logical payment method selections.
 - **Inventory Management**: Real-time stock validation and automatic stock deduction upon order completion.
-- **Custom Site Administration**: A dedicated administration dashboard separate from the default Django admin, featuring key business statistics and streamlined store management tools.
+- **Custom Site Administration**: A premium, isolated administration dashboard (separate from Django-admin) featuring:
+    - **Password Authentication**: Secure login wall with hashed passwords and brute-force protection.
+    - **Session Isolation**: Independent admin sessions that don't conflict with the main site or standard Django-admin.
+    - **Resource Management**: Complete CRUD operations for Products and Categories.
+    - **Inventory Insights**: Real-time stock alerts and business statistics.
 - **Contact & Support**: Support pages and contact functionality.
-- **Responsive Design**: Friendly interfaces with a premium aesthetic.
+- **Responsive Design**: Modern, glassmorphism-inspired dark mode aesthetic.
 
 ## Tech Stack
 

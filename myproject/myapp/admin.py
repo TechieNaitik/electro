@@ -1,5 +1,56 @@
 from django.contrib import admin
-from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist
+from django.contrib.auth.models import User
+from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, SiteAdmin
+
+from django import forms
+
+class SiteAdminForm(forms.ModelForm):
+    username = forms.CharField(max_length=150, required=True, help_text="Enter unique username for the site admin.")
+    email = forms.EmailField(required=True)
+    password = forms.CharField(widget=forms.PasswordInput(), required=False, help_text="Required for new users.")
+
+    class Meta:
+        model = SiteAdmin
+        fields = ('username', 'email', 'password')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            # If editing, username/email are read-only or pre-filled
+            self.fields['username'].initial = self.instance.user.username
+            self.fields['email'].initial = self.instance.user.email
+            self.fields['password'].help_text = "Leave blank to keep current password."
+            self.fields['password'].required = False
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if not self.instance.pk and User.objects.filter(username=username).exists():
+            raise forms.ValidationError("A user with this username already exists.")
+        return username
+
+@admin.register(SiteAdmin)
+class SiteAdminAdmin(admin.ModelAdmin):
+    form = SiteAdminForm
+    list_display = ('user', 'created_at')
+    search_fields = ('user__username', 'user__email')
+
+    def save_model(self, request, obj, form, change):
+        username = form.cleaned_data.get('username')
+        email = form.cleaned_data.get('email')
+        password = form.cleaned_data.get('password')
+
+        if not change:  # Creating new SiteAdmin
+            user = User.objects.create_user(username=username, email=email, password=password)
+            obj.user = user
+        else:  # Updating existing SiteAdmin
+            user = obj.user
+            user.username = username
+            user.email = email
+            if password:
+                user.set_password(password)
+            user.save()
+        
+        super().save_model(request, obj, form, change)
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):

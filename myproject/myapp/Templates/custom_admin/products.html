@@ -1,57 +1,103 @@
-{% extends "custom_admin/base.html" %}
-{% load static %}
-{% block title %}Products{% endblock %}
-{% block page_title %}Products{% endblock %}
+{% extends 'custom_admin/base.html' %}
+
+{% block title %}Products | Admin{% endblock %}
+{% block page_title %}Products Management{% endblock %}
 
 {% block content %}
-<div class="section-card animate-in">
-    <div class="section-header">
-        <h2><i class="fas fa-box" style="margin-right:8px; color:var(--success);"></i>All Products</h2>
-        <span class="badge badge-success">{{ products|length }} total</span>
-    </div>
-    <div class="section-body">
-        {% if products %}
-        <table class="data-table" id="products-table">
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in products %}
-                <tr>
-                    <td>
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-thumb" />
-                        {% else %}
-                        <div class="product-thumb"
-                            style="background:var(--bg-hover); display:grid; place-items:center;"><i
-                                class="fas fa-image" style="color:var(--text-muted); font-size:.7rem;"></i></div>
-                        {% endif %}
-                    </td>
-                    <td><strong>{{ product.name }}</strong></td>
-                    <td><span class="badge badge-purple">{{ product.category_id.name }}</span></td>
-                    <td>₹{{ product.price }}</td>
-                    <td>
-                        {% if product.stock_quantity == 0 %}
-                        <span class="badge badge-danger">Out of Stock</span>
-                        {% elif product.stock_quantity <= 5 %} <span class="badge badge-warning">{{ product.stock_quantity }} left</span>
-                            {% else %}
-                            <span class="badge badge-success">{{ product.stock_quantity }} in stock</span>
-                            {% endif %}
-                    </td>
-                </tr>
+<div class="animate-in">
+    <div class="section-card">
+        <div class="section-header">
+            <h2>All Products</h2>
+            <a href="{% url 'custom_admin:product_add' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add New Product
+            </a>
+        </div>
+        <div class="section-body">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert-message {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}">
+                    {{ message }}
+                </div>
                 {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-box-open"></i>
-            <p>No products added yet.</p>
+            {% endif %}
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" class="product-thumb" alt="{{ product.name }}">
+                                {% else %}
+                                    <div class="product-thumb" style="background: var(--bg-primary); display: grid; place-items: center;">
+                                        <i class="fas fa-image" style="opacity: .3;"></i>
+                                    </div>
+                                {% endif %}
+                                <span style="font-weight: 600;">{{ product.name }}</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-purple">{{ product.category_id.name }}</span></td>
+                        <td><span style="color: var(--success); font-weight: 700;">₹{{ product.price }}</span></td>
+                        <td>
+                            {% if product.stock_quantity <= 5 %}
+                                <span class="badge badge-danger">{{ product.stock_quantity }} Low</span>
+                            {% else %}
+                                <span class="badge badge-success">{{ product.stock_quantity }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="{% url 'custom_admin:product_edit' product.id %}" class="btn btn-secondary btn-icon" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'custom_admin:product_delete' product.id %}" class="btn btn-secondary btn-icon" title="Delete" style="color: var(--danger);">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i class="fas fa-box-open"></i>
+                                <p>No products found.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if products.has_other_pages %}
+        <div style="padding: 20px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: center; gap: 8px;">
+            {% if products.has_previous %}
+                <a href="?page={{ products.previous_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            
+            {% for i in products.paginator.page_range %}
+                {% if products.number == i %}
+                    <span class="btn btn-primary btn-sm">{{ i }}</span>
+                {% else %}
+                    <a href="?page={{ i }}" class="btn btn-secondary btn-sm">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if products.has_next %}
+                <a href="?page={{ products.next_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
         </div>
         {% endif %}
     </div>

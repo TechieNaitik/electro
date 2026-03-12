@@ -1,7 +1,15 @@
+from django.contrib.auth.models import User
 import os
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+
+class SiteAdmin(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='site_admin_profile')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.username
 
 class Customer(models.Model):
     full_name  = models.CharField(max_length=50)
@@ -28,7 +36,7 @@ class Product(models.Model):
     image       = models.ImageField(upload_to='img/')
     description = models.TextField()
     price       = models.IntegerField()
-    stock_quantity = models.PositiveIntegerField(default=5)
+    stock_quantity = models.PositiveIntegerField(default=50)
 
     def __str__(self):
         return self.name
