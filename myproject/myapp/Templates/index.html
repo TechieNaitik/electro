@@ -50,11 +50,34 @@
             display: flex;
             align-items: center;
         }
+
+        .wishlist-btn i {
+            font-weight: 400 !important;
+        }
+
+        .wishlist-btn.wishlisted i {
+            font-weight: 900 !important;
+            color: #ff4444 !important;
+        }
+
+        .wishlist-btn:hover i {
+            color: #ff4444 !important;
+            transition: color 0.3s ease;
+        }
     </style>
 </head>
 
 <body>
     <div id="notification-container"></div>
+    
+    <!-- Hidden element to store Django messages for JavaScript consumption -->
+    <div id="django-messages" style="display: none;">
+        {% if messages %}
+            {% for message in messages %}
+                <span class="django-message" data-message="{{ message|escapejs }}" data-tags="{{ message.tags }}"></span>
+            {% endfor %}
+        {% endif %}
+    </div>
     <!-- Spinner Start -->
     <div id="spinner"
         class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -69,50 +92,53 @@
         <div class="row gx-0 align-items-center">
             <div class="col-lg-4 text-center text-lg-start mb-lg-0">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <a href="#" class="text-muted me-2"> Help</a><small> / </small>
-                    <a href="#" class="text-muted mx-2"> Support</a><small> / </small>
+                    <a href="{% url 'help' %}" class="text-muted me-2"> Help</a><small> / </small>
+                    <a href="{% url 'support' %}" class="text-muted mx-2"> Support</a><small> / </small>
                     <a href="{% url 'contact' %}" class="text-muted ms-2"> Contact</a>
-
                 </div>
             </div>
             <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
-                <small class="text-dark">Call Us:</small>
-                <a href="#" class="text-muted">(+91) 7016823822</a>
+                {% if request.session.email %}
+                <small class="text-dark">Welcome,</small>
+                <a href="#" class="text-muted">{{ request.session.name }}</a>
+                {% endif %}
             </div>
 
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
                     <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>
-                                USD</small></a>
+                        <a href="#" class="dropdown-toggle text-muted me-2"
+                            data-bs-toggle="dropdown"><small>INR</small></a>
                         <div class="dropdown-menu rounded">
+                            <a href="#" class="dropdown-item"> INR</a>
                             <a href="#" class="dropdown-item"> Euro</a>
                             <a href="#" class="dropdown-item"> Dollar</a>
                         </div>
                     </div>
                     <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown"><small>
-                                English</small></a>
+                        <a href="#" class="dropdown-toggle text-muted mx-2"
+                            data-bs-toggle="dropdown"><small>English</small></a>
                         <div class="dropdown-menu rounded">
                             <a href="#" class="dropdown-item"> English</a>
-                            <a href="#" class="dropdown-item"> Turkish</a>
-                            <a href="#" class="dropdown-item"> Spanol</a>
-                            <a href="#" class="dropdown-item"> Italiano</a>
+                            <a href="#" class="dropdown-item"> Chinese</a>
+                            <a href="#" class="dropdown-item"> Spanish</a>
                         </div>
                     </div>
                     <div class="dropdown">
+                        {% if request.session.email %}
+                        <a href="#" class="dropdown-toggle text-muted ms-2" data-bs-toggle="dropdown"><small><i
+                                    class="fa fa-home me-2"></i>{{ request.session.name }}</small></a>
+                        {% else %}
                         <a href="#" class="dropdown-toggle text-muted ms-2" data-bs-toggle="dropdown"><small><i
                                     class="fa fa-home me-2"></i> My Dashboard</small></a>
+                        {% endif %}
                         <div class="dropdown-menu rounded">
-                            <a href="{% url 'login' %}" class="dropdown-item"> Login</a>
-                            <a href="{% url 'register' %}" class="dropdown-item"> Register</a>
-                            <a href="#" class="dropdown-item"> Wishlist</a>
-                            <a href="#" class="dropdown-item"> My Card</a>
-                            <a href="#" class="dropdown-item"> Notifications</a>
                             <a href="#" class="dropdown-item"> Account Settings</a>
-                            <a href="#" class="dropdown-item"> My Account</a>
-                            <a href="{% url 'logout' %}" class="dropdown-item"> Log Out</a>
                             <a href="{% url 'forgot_password' %}" class="dropdown-item"> Forgot Password</a>
+                            <a href="{% url 'login' %}" class="dropdown-item"> Login</a>
+                            <a href="{% url 'logout' %}" class="dropdown-item"> Logout</a>
+                            <a href="#" class="dropdown-item"> My Account</a>
+                            <a href="{% url 'register' %}" class="dropdown-item"> Register</a>
                         </div>
                     </div>
                 </div>
@@ -151,13 +177,17 @@
             </div>
             <div class="col-md-4 col-lg-3 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center">
-                    <a href="#" class="text-muted d-flex align-items-center justify-content-center me-3"><span
-                            class="rounded-circle btn-md-square border"><i class="fas fa-random"></i></i></a>
-                    <a href="#" class="text-muted d-flex align-items-center justify-content-center me-3"><span
-                            class="rounded-circle btn-md-square border"><i class="fas fa-heart"></i></a>
-                    <a href="{% url 'cart' %}" class="text-muted d-flex align-items-center justify-content-center">
-                        <span class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span>
-                        <span class="text-dark ms-2" id="header-cart-total">{{ global_cart_count|default:"0.00" }}</span>
+                    <a href="#" class="text-primary d-flex align-items-center justify-content-center me-3"><span
+                            class="rounded-circle btn-md-square border border-primary"><i
+                                class="fas fa-random"></i></span></a>
+                    <a href="{% url 'wishlist' %}"
+                        class="text-primary d-flex align-items-center justify-content-center me-3"><span
+                            class="rounded-circle btn-md-square border border-primary"><i
+                                class="fas fa-heart"></i></span></a>
+                    <a href="{% url 'cart' %}" class="text-primary d-flex align-items-center justify-content-center">
+                        <span class="rounded-circle btn-md-square border border-primary"><i
+                                class="fas fa-shopping-cart"></i></span>
+                        <span class="text-primary ms-2 fw-bold" id="header-cart-total">{{ global_cart_count|default:"0" }}</span>
                     </a>
                 </div>
             </div>
@@ -194,7 +224,6 @@
                     <a href="" class="navbar-brand d-block d-lg-none">
                         <h1 class="display-5 text-secondary m-0"><i
                                 class="fas fa-shopping-bag text-white me-2"></i>Electro</h1>
-                        <!-- <img src="{% static 'img/logo.png' %}" alt="Logo"> -->
                     </a>
                     <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarCollapse">
@@ -206,40 +235,9 @@
                                 class="nav-item nav-link {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
                             <a href="{% url 'shop' %}"
                                 class="nav-item nav-link {% if request.resolver_match.url_name == 'shop' %}active{% endif %}">Shop</a>
-                            <div class="nav-item dropdown">
-                                <a href="#"
-                                    class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'bestseller' or request.resolver_match.url_name == 'cart' or request.resolver_match.url_name == 'checkout' or request.resolver_match.url_name == 'error' %}active{% endif %}"
-                                    data-bs-toggle="dropdown">Pages</a>
-                                <div class="dropdown-menu m-0">
-                                    <a href="{% url 'bestseller' %}"
-                                        class="dropdown-item {% if request.resolver_match.url_name == 'bestseller' %}active{% endif %}">Bestseller</a>
-                                    <a href="{% url 'cart' %}"
-                                        class="dropdown-item {% if request.resolver_match.url_name == 'cart' %}active{% endif %}">Cart
-                                        Page</a>
-                                    <a href="{% url 'checkout' %}"
-                                        class="dropdown-item {% if request.resolver_match.url_name == 'checkout' %}active{% endif %}">Checkout</a>
-                                    <a href="{% url 'error' %}"
-                                        class="dropdown-item {% if request.resolver_match.url_name == 'error' %}active{% endif %}">404
-                                        Page</a>
-                                </div>
-                            </div>
-                            <div class="nav-item dropdown d-block d-lg-none mb-3">
-                                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">All Category</a>
-                                <div class="dropdown-menu m-0">
-                                    <ul class="list-unstyled categories-bars">
-                                        {% for category in categories %}
-                                        <li>
-                                            <div class="categories-bars-item">
-                                                <a href="{% url 'shop_category' category.id %}">{{ category.name }}</a>
-                                            </div>
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
+                            <a href="{% url 'bestseller' %}"
+                                class="nav-item nav-link {% if request.resolver_match.url_name == 'bestseller' %}active{% endif %}">Bestsellers</a>
                         </div>
-                        <a href="" class="btn btn-secondary rounded-pill py-2 px-4 px-lg-3 mb-3 mb-md-3 mb-lg-0"><i
-                                class="fa fa-mobile-alt me-2"></i> +91 7016823822</a>
                     </div>
                 </nav>
             </div>
@@ -307,7 +305,7 @@
     </div>
     <!-- Carousel End -->
 
-    <!-- Searvices Start -->
+    <!-- Services Start -->
     <div class="container-fluid px-0">
         <div class="row g-0">
             <div class="col-6 col-md-4 col-lg-2 border-start border-end wow fadeInUp" data-wow-delay="0.1s">
@@ -326,8 +324,8 @@
                     <div class="d-flex align-items-center">
                         <i class="fab fa-telegram-plane fa-2x text-primary"></i>
                         <div class="ms-4">
-                            <h6 class="text-uppercase mb-2">Free Shipping</h6>
-                            <p class="mb-0">Free shipping on all order</p>
+                            <h6 class="text-uppercase mb-2">Standard Shipping</h6>
+                            <p class="mb-0">₹100 charge per product</p>
                         </div>
                     </div>
                 </div>
@@ -378,7 +376,7 @@
             </div>
         </div>
     </div>
-    <!-- Searvices End -->
+    <!-- Services End -->
 
     <!-- Products Offer Start -->
     <div class="container-fluid bg-light py-5">
@@ -448,74 +446,46 @@
                 <div class="tab-content">
                     <div id="tab-1" class="tab-pane fade show p-0 active">
                         <div class="row g-4">
-                            <!-- <div class="col-md-6 col-lg-4 col-xl-3">
+                            {% for product in products %}
+                            <div class="col-md-6 col-lg-4 col-xl-3">
                                 <div class="product-item rounded wow fadeInUp" data-wow-delay="0.1s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
-                                            <img src="{% static 'img/product-3.png' %}" class="img-fluid w-100 rounded-top" alt="">
-                                            <div class="product-new">New</div>
+                                            <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top"
+                                                alt="">
+                                            <!-- <div class="product-new">New</div> -->
                                             <div class="product-details">
-                                                <a href="#"><i class="fa fa-eye fa-1x"></i></a>
+                                                <a href="{% url 'single' product.id %}"><i
+                                                        class="fa fa-eye fa-1x"></i></a>
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="{% url 'shop_category' product.category_id.id %}"
+                                                class="d-block mb-2">{{ product.category_id.name }}</a>
+                                            <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name  }}</a>
+                                            <span class="text-primary fs-5">₹{{ product.price }}</span>
                                         </div>
                                     </div>
                                     <div
                                         class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <a href="#"
-                                            class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
+                                        <a href="{% url 'add_to_cart' product.id %}"
+                                            class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4 ajax-add-to-cart"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
+
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
                                                         class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-random"></i></i></a>
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-heart"></i></a>
+                                                            class="fas fa-random"></i></span></a>
+                                                <a href="javascript:void(0);"
+                                                    class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-0 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
+                                                    data-product-id="{{ product.id }}">
+                                                    <span class="rounded-circle btn-sm-square border"><i
+                                                            class="fas fa-heart"></i></span>
+                                                </a>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div> -->
-
-                            {% for product in products %}
-                            <div class="col-md-6 col-lg-4 col-xl-3">
-                                <div class="product-item rounded wow fadeInUp">
-                                    <div class="product-item-inner border rounded">
-                                        <div class="product-item-inner-item">
-                                            <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top">
-                                            <div class="product-details">
-                                                <a href="{% url 'single' product.id %}"><i class="fa fa-eye"></i></a>
-                                            </div>
-                                        </div>
-                                        <div class="text-center rounded-bottom p-4">
-                                            <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
-                                            <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
-                                            <span class="text-primary fs-5">₹{{ product.price }}</span>
-                                        </div>
-                                    </div>
-                                    <!-- ADD TO CART -->
-                                    <div
-                                        class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <a href="{% url 'add_to_cart' product.id %}"
-                                            class="btn btn-primary rounded-pill py-2 px-4 ajax-add-to-cart">
-                                            <i class="fas fa-shopping-cart me-2"></i> Add To Cart
-                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -558,8 +528,7 @@
                             </div>
                             <div class="col-7">
                                 <div class="products-mini-content p-3">
-                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{
-                                        product.category_id.name }}</a>
+                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
                                     <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                     <span class="text-primary fs-5">₹{{ product.price }}</span>
                                 </div>
@@ -573,10 +542,13 @@
                                 <a href="#"
                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
                                         class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-random"></i></i></a>
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                        class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></a>
+                                            class="fas fa-random"></i></span></a>
+                                <a href="javascript:void(0);"
+                                    class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-0 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
+                                    data-product-id="{{ product.id }}">
+                                    <span class="rounded-circle btn-sm-square border"><i
+                                            class="fas fa-heart"></i></span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -617,8 +589,7 @@
                             </div>
                             <div class="col-7">
                                 <div class="products-mini-content p-3">
-                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{
-                                        product.category_id.name }}</a>
+                                    <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
                                     <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                     <span class="text-primary fs-5">₹{{ product.price }}</span>
                                 </div>
@@ -626,16 +597,19 @@
                         </div>
                         <div class="products-mini-add border p-3">
                             <a href="{% url 'add_to_cart' product.id %}"
-                                class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
+                                class="btn btn-primary border-secondary rounded-pill py-2 px-4 ajax-add-to-cart"><i
                                     class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                             <div class="d-flex">
                                 <a href="#"
                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
                                         class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-random"></i></i></a>
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                        class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></a>
+                                            class="fas fa-random"></i></span></a>
+                                <a href="javascript:void(0);"
+                                    class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-0 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
+                                    data-product-id="{{ product.id }}">
+                                    <span class="rounded-circle btn-sm-square border"><i
+                                            class="fas fa-heart"></i></span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -701,56 +675,53 @@
                 </div>
             </div>
             <div class="row g-5">
-                <div class="col-md-6 col-lg-6 col-xl-3">
-                    <div class="footer-item d-flex flex-column">
-                        <div class="footer-item">
-                            <h4 class="text-primary mb-4">Newsletter</h4>
-                            <p class="mb-3">To receive daily announcements for offers and sale, sing up for our
-                                Newsletter.</p>
-                            <div class="position-relative mx-auto rounded-pill">
-                                <input class="form-control rounded-pill w-100 py-3 ps-4 pe-5" type="text"
-                                    placeholder="Enter your email">
-                                <button type="button"
-                                    class="btn btn-primary rounded-pill position-absolute top-0 end-0 py-2 mt-2 me-2">SignUp</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-3">
-                    <div class="footer-item d-flex flex-column">
-                        <h4 class="text-primary mb-4">Customer Service</h4>
-                        <a href="{% url 'contact' %}" class=""><i class="fas fa-angle-right me-2"></i> Contact Us</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Returns</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Order History</a>
-                        <a href="{% url 'sitemap' %}" class=""><i class="fas fa-angle-right me-2"></i> Site Map</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Testimonials</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> My Account</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Unsubscribe Notification</a>
-                    </div>
-                </div>
+                <!-- Column 1: Information -->
                 <div class="col-md-6 col-lg-6 col-xl-3">
                     <div class="footer-item d-flex flex-column">
                         <h4 class="text-primary mb-4">Information</h4>
                         <a href="{% url 'about' %}" class=""><i class="fas fa-angle-right me-2"></i> About Us</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Delivery infomation</a>
-                        <a href="{% url 'privacy_policy' %}" class=""><i class="fas fa-angle-right me-2"></i> Privacy
-                            Policy</a>
-                        <a href="{% url 'terms' %}" class=""><i class="fas fa-angle-right me-2"></i> Terms &
-                            Conditions</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Warranty</a>
                         <a href="{% url 'faq' %}" class=""><i class="fas fa-angle-right me-2"></i> FAQ</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Seller Login</a>
+                        <a href="{% url 'privacy_policy' %}" class=""><i class="fas fa-angle-right me-2"></i> Privacy Policy</a>
+                        <a href="{% url 'terms' %}" class=""><i class="fas fa-angle-right me-2"></i> Terms & Conditions</a>
+                        <a href="{% url 'sitemap' %}" class=""><i class="fas fa-angle-right me-2"></i> Site Map</a>
                     </div>
                 </div>
+
+                <!-- Column 2: Customer Service -->
                 <div class="col-md-6 col-lg-6 col-xl-3">
                     <div class="footer-item d-flex flex-column">
-                        <h4 class="text-primary mb-4">Extras</h4>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Brands</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Gift Vouchers</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Affiliates</a>
-                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Wishlist</a>
+                        <h4 class="text-primary mb-4">Customer Service</h4>
+                        <a href="{% url 'help' %}" class=""><i class="fas fa-angle-right me-2"></i> Help Center</a>
+                        <a href="{% url 'support' %}" class=""><i class="fas fa-angle-right me-2"></i> Customer Support</a>
+                        <a href="{% url 'contact' %}" class=""><i class="fas fa-angle-right me-2"></i> Contact Us</a>
+                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Returns</a>
+                        <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Warranty</a>
+                    </div>
+                </div>
+
+                <!-- Column 3: My Account -->
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="footer-item d-flex flex-column">
+                        <h4 class="text-primary mb-4">My Account</h4>
+                        <a href="{% url 'wishlist' %}" class=""><i class="fas fa-angle-right me-2"></i> Wishlist</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Order History</a>
                         <a href="#" class=""><i class="fas fa-angle-right me-2"></i> Track Your Order</a>
+                        <a href="{% url 'login' %}" class=""><i class="fas fa-angle-right me-2"></i> Login</a>
+                        <a href="{% url 'register' %}" class=""><i class="fas fa-angle-right me-2"></i> Register</a>
+                    </div>
+                </div>
+
+                <!-- Column 4: Newsletter -->
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="footer-item">
+                        <h4 class="text-primary mb-4">Newsletter</h4>
+                        <p class="mb-3">To receive daily announcements for offers and sale, sign up for our Newsletter.</p>
+                        <div class="position-relative mx-auto rounded-pill">
+                            <input class="form-control rounded-pill w-100 py-3 ps-4 pe-5" type="text"
+                                placeholder="Enter your email">
+                            <button type="button"
+                                class="btn btn-primary rounded-pill position-absolute top-0 end-0 py-2 mt-2 me-2">SignUp</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -820,15 +791,33 @@
             const container = document.getElementById('notification-container');
             const toast = document.createElement('div');
             toast.className = 'toast-notify';
-            if (type === 'error') toast.style.borderLeftColor = '#dc3545';
-            toast.innerHTML = `<div><i class="fa ${type === 'success' ? 'fa-check-circle text-success' : 'fa-exclamation-circle text-danger'} me-2"></i> ${message}</div>`;
+            
+            // Map Django message tags to appropriate colors/icons
+            if (type === 'error' || type === 'danger') {
+                toast.style.borderLeftColor = '#dc3545';
+                type = 'error';
+            } else if (type === 'warning') {
+                toast.style.borderLeftColor = '#ffc107';
+            } else if (type === 'info') {
+                toast.style.borderLeftColor = '#0dcaf0';
+            } else {
+                toast.style.borderLeftColor = '#28a745';
+                type = 'success';
+            }
+
+            toast.innerHTML = `<div><i class="fa ${type === 'success' ? 'fa-check-circle text-success' : (type === 'error' ? 'fa-exclamation-circle text-danger' : 'fa-info-circle text-info')} me-2"></i> ${message}</div>`;
             container.appendChild(toast);
-            setTimeout(() => { toast.style.transform = 'translateX(120%)'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+            
+            setTimeout(() => { 
+                toast.style.transform = 'translateX(120%)'; 
+                toast.style.opacity = '0'; 
+                setTimeout(() => toast.remove(), 500); 
+            }, 4000);
         }
 
-        function updateCartHeader(total) {
+        function updateCartHeader(count) {
             const headerTotal = document.getElementById('header-cart-total');
-            if (headerTotal) headerTotal.innerText = '₹' + parseFloat(total).toFixed(2);
+            if (headerTotal) headerTotal.innerText = count;
         }
 
         // Handle AJAX "Add to Cart" clicks
@@ -846,7 +835,7 @@
                     .then(data => {
                         if (data.status === 'success') {
                             showNotification(data.message);
-                            updateCartHeader(data.cart_total);
+                            updateCartHeader(data.cart_count);
                         } else {
                             showNotification(data.message, 'error');
                             if (data.redirect) window.location.href = data.redirect;
@@ -854,6 +843,53 @@
                     })
                     .catch(error => console.error('Error:', error));
             }
+        });
+
+        // Wishlist Toggle Logic
+        $(document).on('click', '.wishlist-btn', function (e) {
+            e.preventDefault();
+            const button = $(this);
+            const productId = button.data('product-id');
+
+            fetch(`/toggle-wishlist/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Update ALL heart buttons for this product across the page
+                        $(`.wishlist-btn[data-product-id="${productId}"]`).each(function () {
+                            $(this).toggleClass('wishlisted');
+                        });
+
+                        // If we are on the wishlist page and the item was removed, remove the card visually
+                        if (window.location.pathname.includes('/wishlist') && data.action === 'removed') {
+                            button.closest('.col-md-6, .col-lg-4, .col-lg-6, .col-xl-3').fadeOut(300, function () {
+                                $(this).remove();
+                                // Reload page to show empty state if all items are removed
+                                if ($('.wishlist-btn').length === 0) {
+                                    window.location.reload();
+                                }
+                            });
+                        }
+
+                        showNotification(data.message);
+                    } else {
+                        showNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Auto-show Django Messages
+        window.addEventListener('load', function() {
+            document.querySelectorAll('#django-messages .django-message').forEach(el => {
+                showNotification(el.dataset.message, el.dataset.tags);
+            });
         });
     </script>
     {% block extra_js %}{% endblock %}

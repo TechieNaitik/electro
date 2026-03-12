@@ -1,0 +1,37 @@
+{% extends "custom_admin/base.html" %}
+{% block title %}Categories{% endblock %}
+{% block page_title %}Categories{% endblock %}
+
+{% block content %}
+<div class="section-card animate-in">
+    <div class="section-header">
+        <h2><i class="fas fa-tags" style="margin-right:8px; color:var(--warning);"></i>All Categories</h2>
+        <span class="badge badge-info">{{ categories|length }} total</span>
+    </div>
+    <div class="section-body">
+        {% if categories %}
+        <table class="data-table" id="categories-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td style="color:var(--text-muted);">{{ category.id }}</td>
+                    <td><strong>{{ category.name }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
+            <p>No categories created yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

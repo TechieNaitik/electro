@@ -1,0 +1,118 @@
+{% extends 'index.html' %}
+{% block title %}Help Center{% endblock %}
+{% load static %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Help Center</h1>
+    <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+        <li class="breadcrumb-item active text-white">Help</li>
+    </ol>
+</div>
+
+<!-- Help Content -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row g-5">
+            <!-- Sidebar Navigation -->
+            <div class="col-lg-4">
+                <div class="bg-light rounded p-4 shadow-sm wow fadeInUp" data-wow-delay="0.1s">
+                    <h5 class="fw-bold mb-4">Quick Links</h5>
+                    <div class="list-group list-group-flush help-list">
+                        <a href="#ordering" class="list-group-item list-group-item-action bg-transparent border-0"><i class="fas fa-shopping-cart text-primary me-2"></i> How to Place an Order</a>
+                        <a href="#payment" class="list-group-item list-group-item-action bg-transparent border-0"><i class="fas fa-credit-card text-primary me-2"></i> Payment Methods</a>
+                        <a href="#shipping" class="list-group-item list-group-item-action bg-transparent border-0"><i class="fas fa-truck text-primary me-2"></i> Shipping Info</a>
+                        <a href="#account" class="list-group-item list-group-item-action bg-transparent border-0"><i class="fas fa-user text-primary me-2"></i> Account Management</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="col-lg-8">
+                <div class="wow fadeInUp" data-wow-delay="0.2s">
+                    <section id="ordering" class="mb-5">
+                        <h3 class="fw-bold text-primary mb-3">How to Place an Order</h3>
+                        <p class="text-muted">Shopping at Electro is simple and secure. Follow these steps to place your first order:</p>
+                        <ol class="text-muted">
+                            <li>Browse our categories or use the search bar to find your desired electronics.</li>
+                            <li>Click on the product to view detailed specifications and features.</li>
+                            <li>Click "Add to Cart" to save the item. You can continue shopping or go to your cart.</li>
+                            <li>In the cart page, review your items and click "Proceed to Checkout".</li>
+                            <li>Enter your billing details and select your preferred payment method.</li>
+                            <li>Review your order and click "Place Order". Your electronics will be on their way!</li>
+                        </ol>
+                    </section>
+
+                    <section id="payment" class="mb-5">
+                        <h3 class="fw-bold text-primary mb-3">Payment Methods</h3>
+                        <p class="text-muted">We offer various secure payment options for a smooth checkout experience:</p>
+                        <ul class="text-muted">
+                            <li><strong>UPI:</strong> Pay via Google Pay, PhonePe, or BHIM.</li>
+                            <li><strong>Cards:</strong> All major Credit and Debit cards (Visa, Mastercard, RuPay).</li>
+                            <li><strong>Net Banking:</strong> Direct payment from all leading banks.</li>
+                            <li><strong>EMI:</strong> Available on selected credit cards and products.</li>
+                            <li><strong>Cash on Delivery (COD):</strong> Available for eligible pin codes and orders.</li>
+                        </ul>
+                    </section>
+
+                    <section id="shipping" class="mb-5">
+                        <h3 class="fw-bold text-primary mb-3">Shipping & Delivery</h3>
+                        <p class="text-muted">Detailed information about our logistics and shipping policy:</p>
+                        <div class="table-responsive mt-3">
+                            <table class="table table-bordered text-muted">
+                                <thead class="bg-primary text-white">
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Timeline</th>
+                                        <th>Charges</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Standard Delivery</td>
+                                        <td>3 - 7 Business Days</td>
+                                        <td>₹100 per item</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Express Delivery</td>
+                                        <td>1 - 2 Business Days</td>
+                                        <td>₹250 per item</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section id="account" class="mb-5">
+                        <h3 class="fw-bold text-primary mb-3">Account Management</h3>
+                        <p class="text-muted">Manage your Electro profile and preferences with ease:</p>
+                        <ul class="text-muted">
+                            <li><strong>Profile Settings:</strong> Update your name, email, and primary contact number from your dashboard.</li>
+                            <li><strong>Security:</strong> Change your password regularly to keep your account safe. Use the "Forgot Password" link if you cannot access your account.</li>
+                            <li><strong>Wishlist:</strong> Save products you love for later by clicking the heart icon on any product card.</li>
+                            <li><strong>Order History:</strong> View your past purchases, current order status, and download invoices directly from your account.</li>
+                            <li><strong>Address Book:</strong> Save multiple shipping addresses to make your checkout process even faster.</li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .help-list .list-group-item {
+        padding: 12px 0;
+        transition: 0.3s;
+    }
+    .help-list .list-group-item:hover {
+        color: var(--bs-primary);
+        padding-left: 10px;
+    }
+    section h3 {
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+</style>
+{% endblock %}

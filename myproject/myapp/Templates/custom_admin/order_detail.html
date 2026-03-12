@@ -1,0 +1,115 @@
+{% extends "custom_admin/base.html" %}
+{% block title %}Order #{{ order.id }}{% endblock %}
+{% block page_title %}Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:16px;">
+    <a href="{% url 'custom_admin:orders' %}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left"></i> Back to Orders
+    </a>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+    <!-- ═══ Customer & Shipping Info ═══ -->
+    <div class="section-card animate-in">
+        <div class="section-header">
+            <h2><i class="fas fa-user" style="margin-right:8px; color:var(--accent-light);"></i>Customer Details</h2>
+        </div>
+        <div class="section-body" style="padding:24px;">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Full Name</label>
+                    <span>{{ order.full_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Email</label>
+                    <span>{{ order.email }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Mobile</label>
+                    <span>{{ order.mobile }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Country</label>
+                    <span>{{ order.country }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Town / City</label>
+                    <span>{{ order.town_city }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Postcode / ZIP</label>
+                    <span>{{ order.postcode_zip }}</span>
+                </div>
+                <div class="detail-item" style="grid-column:1/-1;">
+                    <label>Address</label>
+                    <span>{{ order.address }}</span>
+                </div>
+                {% if order.order_notes %}
+                <div class="detail-item" style="grid-column:1/-1;">
+                    <label>Order Notes</label>
+                    <span style="color:var(--text-secondary);">{{ order.order_notes }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Order Summary ═══ -->
+    <div class="section-card animate-in">
+        <div class="section-header">
+            <h2><i class="fas fa-receipt" style="margin-right:8px; color:var(--success);"></i>Order Summary</h2>
+        </div>
+        <div class="section-body" style="padding:24px;">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Order ID</label>
+                    <span>#{{ order.id }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Placed On</label>
+                    <span>{{ order.created_at|date:"M d, Y · h:i A" }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Payment Method</label>
+                    <span><span class="badge badge-purple">{{ order.payment_method }}</span></span>
+                </div>
+                <div class="detail-item">
+                    <label>Total Amount</label>
+                    <span style="font-size:1.4rem; font-weight:800; color:var(--success);">₹{{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Ordered Items ═══ -->
+<div class="section-card animate-in" style="margin-top:24px;">
+    <div class="section-header">
+        <h2><i class="fas fa-boxes" style="margin-right:8px; color:var(--warning);"></i>Ordered Items</h2>
+        <span class="badge badge-info">{{ items|length }} items</span>
+    </div>
+    <div class="section-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.product.name }}</strong></td>
+                    <td>₹{{ item.price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td><strong>₹{{ item.price|floatformat:0 }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

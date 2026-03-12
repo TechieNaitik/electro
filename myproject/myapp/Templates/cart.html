@@ -118,7 +118,10 @@
             </div>
 
             <div class="d-flex justify-content-between mb-4">
-              <span class="text-muted font-weight-normal">Shipping Charge</span>
+              <div class="d-flex flex-column">
+                <span class="text-muted font-weight-normal">Shipping Charge</span>
+                <small class="text-muted" id="shipping-calculation">₹100 x {{ cart_count }} items</small>
+              </div>
               <span class="text-success fw-bold" id="cart-shipping">₹{{ shipping }}</span>
             </div>
 
@@ -129,7 +132,7 @@
 
             {% if cart_items %}
             <div class="d-grid">
-              <a href="{% url 'checkout' %}"
+              <a href="{% url 'proceed_to_checkout' %}"
                 class="btn btn-primary btn-lg rounded-pill py-3 text-uppercase fw-bold shadow-sm">
                 Proceed to Checkout <i class="fa fa-arrow-right ms-2"></i>
               </a>
@@ -180,7 +183,10 @@
             document.getElementById('cart-subtotal').innerText = '₹' + data.subtotal;
             document.getElementById('cart-shipping').innerText = '₹' + data.shipping;
             document.getElementById('cart-total').innerText = '₹' + data.total;
-            updateCartHeader(data.total);
+            if (document.getElementById('shipping-calculation')) {
+              document.getElementById('shipping-calculation').innerText = `₹100 x ${data.cart_count} items`;
+            }
+            updateCartHeader(data.cart_count);
           } else {
             showNotification(data.message, 'error');
           }

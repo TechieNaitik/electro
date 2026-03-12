@@ -19,27 +19,39 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # =========================================================================
+    #  PAGE URLs  —  These render full HTML pages
+    # =========================================================================
     path('', views.index, name='index'),
-    path('home', views.home, name='home'),
-    path('login', views.login, name='login'),
-    path('register', views.register, name='register'),
-    path('shop/', views.shop, name='shop'),
-    path('shop/<int:cid>/', views.shop, name='shop_category'),
-    path('single/<int:pid>/', views.single, name='single'),
+    path('about/', views.about, name='about'),
+    path('bestseller', views.bestseller, name='bestseller'),
     path('cart', views.cart, name='cart'),
+    path('category/<int:cid>/', views.category_products, name='category_products'),
     path('checkout', views.checkout, name='checkout'),
     path('contact', views.contact, name='contact'),
     path('error', views.error, name='error'),
-    path('bestseller', views.bestseller, name='bestseller'),
-    path('logout', views.logout, name='logout'),
-    path('forgot_password', views.forgot_password, name='forgot_password'),
-    path('reset_password', views.reset_password, name='reset_password'),
-    path('category/<int:cid>/', views.category_products, name='category_products'),
-    path('about/', views.about, name='about'),
-    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
-    path('terms/', views.terms, name='terms'),
-    path('sitemap/', views.sitemap, name='sitemap'),
     path('faq/', views.faq, name='faq'),
+    path('forgot_password', views.forgot_password, name='forgot_password'),
+    path('help/', views.help, name='help'),
+    path('home', views.home, name='home'),
+    path('login', views.login, name='login'),
+    path('logout', views.logout, name='logout'),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('proceed-to-checkout/', views.proceed_to_checkout, name='proceed_to_checkout'),
+    path('register', views.register, name='register'),
+    path('reset_password', views.reset_password, name='reset_password'),
+    path('shop/', views.shop, name='shop'),
+    path('shop/<int:cid>/', views.shop, name='shop_category'),
+    path('single/<int:pid>/', views.single, name='single'),
+    path('sitemap/', views.sitemap, name='sitemap'),
+    path('support/', views.support, name='support'),
+    path('terms/', views.terms, name='terms'),
+    path('wishlist', views.wishlist, name='wishlist'),
+
+    # =========================================================================
+    #  AJAX URLs  —  These return JSON responses
+    # =========================================================================
     path('add-to-cart/<int:pid>/', views.add_to_cart, name='add_to_cart'),
+    path('toggle-wishlist/<int:pid>/', views.toggle_wishlist, name='toggle_wishlist'),
     path('update-cart/<int:cid>/<str:action>/', views.update_cart, name='update_cart'),
 ]

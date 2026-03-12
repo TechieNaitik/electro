@@ -1,0 +1,158 @@
+{% extends "custom_admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- ═══ Stats Row ═══ -->
+<div class="stats-grid">
+    <div class="stat-card animate-in">
+        <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+        <div class="stat-info">
+            <h3>Total Customers</h3>
+            <div class="stat-number">{{ total_customers }}</div>
+        </div>
+    </div>
+    <div class="stat-card animate-in">
+        <div class="stat-icon green"><i class="fas fa-box"></i></div>
+        <div class="stat-info">
+            <h3>Total Products</h3>
+            <div class="stat-number">{{ total_products }}</div>
+        </div>
+    </div>
+    <div class="stat-card animate-in">
+        <div class="stat-icon blue"><i class="fas fa-shopping-bag"></i></div>
+        <div class="stat-info">
+            <h3>Total Orders</h3>
+            <div class="stat-number">{{ total_orders }}</div>
+        </div>
+    </div>
+    <div class="stat-card animate-in">
+        <div class="stat-icon orange"><i class="fas fa-indian-rupee-sign"></i></div>
+        <div class="stat-info">
+            <h3>Total Revenue</h3>
+            <div class="stat-number">₹{{ total_revenue }}</div>
+        </div>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+    <!-- ═══ Recent Orders ═══ -->
+    <div class="section-card animate-in">
+        <div class="section-header">
+            <h2><i class="fas fa-clock" style="margin-right:8px; color:var(--accent-light);"></i>Recent Orders</h2>
+            <a href="{% url 'custom_admin:orders' %}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        <div class="section-body">
+            {% if recent_orders %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td><a href="{% url 'custom_admin:order_detail' order.id %}"
+                                style="color:var(--accent-light);">#{{ order.id }}</a></td>
+                        <td>{{ order.full_name }}</td>
+                        <td><strong>₹{{ order.total_amount }}</strong></td>
+                        <td style="color:var(--text-secondary);">{{ order.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No orders yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ═══ Recent Customers ═══ -->
+    <div class="section-card animate-in">
+        <div class="section-header">
+            <h2><i class="fas fa-user-plus" style="margin-right:8px; color:var(--success);"></i>New Customers</h2>
+            <a href="{% url 'custom_admin:customers' %}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        <div class="section-body">
+            {% if recent_customers %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in recent_customers %}
+                    <tr>
+                        <td><strong>{{ customer.full_name }}</strong></td>
+                        <td style="color:var(--text-secondary);">{{ customer.email }}</td>
+                        <td style="color:var(--text-secondary);">{{ customer.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users-slash"></i>
+                <p>No customers yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Low Stock Alert ═══ -->
+{% if low_stock_products %}
+<div class="section-card animate-in" style="margin-top:24px;">
+    <div class="section-header">
+        <h2><i class="fas fa-exclamation-triangle" style="margin-right:8px; color:var(--warning);"></i>Low Stock Alert
+        </h2>
+    </div>
+    <div class="section-body">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in low_stock_products %}
+                <tr>
+                    <td><strong>{{ product.name }}</strong></td>
+                    <td>{{ product.category_id.name }}</td>
+                    <td>₹{{ product.price }}</td>
+                    <td>
+                        {% if product.stock_quantity == 0 %}
+                        <span class="badge badge-danger">Out of Stock</span>
+                        {% else %}
+                        <span class="badge badge-warning">{{ product.stock_quantity }} left</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    // Set active page for sidebar highlight
+    document.addEventListener('DOMContentLoaded', function () {
+        const navDashboard = document.getElementById('nav-dashboard');
+        if (navDashboard) navDashboard.classList.add('active');
+    });
+</script>
+{% endblock %}

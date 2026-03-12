@@ -107,8 +107,7 @@
                         </div>
                         <div class="d-flex flex-column mb-3">
                             <small>Product ID: #{{ product.id }}</small>
-                            <small>Available: <strong class="text-primary">{% if product.stock_quantity > 0 %}{{
-                                    product.stock_quantity }}
+                            <small>Available: <strong class="text-primary">{% if product.stock_quantity > 0 %}{{ product.stock_quantity }}
                                     In Stock{% else %}Out of Stock{% endif %}</strong></small>
                         </div>
                         <form id="ajax-add-to-cart-form" method="POST" action="{% url 'add_to_cart' product.id %}">
@@ -131,34 +130,14 @@
                                 class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary">
                                 <i class="fa fa-shopping-bag me-2 text-white"></i> Add to cart
                             </button>
+                            <a href="javascript:void(0);"
+                                class="btn border border-secondary rounded-pill px-4 py-2 mb-4 ms-2 wishlist-btn {% if product.id in wishlist_ids %}wishlisted{% endif %}"
+                                data-product-id="{{ product.id }}">
+                                <i class="fas fa-heart me-1"></i>
+                                <span>{% if product.id in wishlist_ids %}In Wishlist{% else %}Add to Wishlist{% endif %}</span>
+                            </a>
                         </form>
                     </div>
-
-                    {% block extra_js %}
-                    <script>
-                        document.getElementById('ajax-add-to-cart-form').addEventListener('submit', function (e) {
-                            e.preventDefault();
-                            const formData = new FormData(this);
-                            const url = this.getAttribute('action');
-
-                            fetch(url, {
-                                method: 'POST',
-                                body: formData,
-                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                            })
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.status === 'success') {
-                                        showNotification(data.message);
-                                        updateCartHeader(data.cart_total);
-                                    } else {
-                                        showNotification(data.message, 'error');
-                                    }
-                                })
-                                .catch(error => console.error('Error:', error));
-                        });
-                    </script>
-                    {% endblock %}
 
                     <!-- Tabs: Description & Reviews -->
                     <div class="col-lg-12">
@@ -184,13 +163,6 @@
                                         <p class="mb-2" style="font-size: 14px;">April 12, 2024</p>
                                         <div class="d-flex justify-content-between">
                                             <h5>Jason Smith</h5>
-                                            <div class="d-flex mb-3">
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star"></i>
-                                            </div>
                                         </div>
                                         <p>Great product! Works exactly as described. Very happy with this purchase.</p>
                                     </div>
@@ -202,13 +174,6 @@
                                         <p class="mb-2" style="font-size: 14px;">April 12, 2024</p>
                                         <div class="d-flex justify-content-between">
                                             <h5>Sam Peters</h5>
-                                            <div class="d-flex mb-3">
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                            </div>
                                         </div>
                                         <p class="text-dark">Good quality, fast delivery. Would recommend to others.</p>
                                     </div>
@@ -260,4 +225,27 @@
 <script src="{% static 'lib/waypoints/waypoints.min.js' %}"></script>
 <script src="{% static 'lib/counterup/counterup.min.js' %}"></script>
 <script src="{% static 'lib/lightbox/js/lightbox.min.js' %}"></script>
+<script>
+    document.getElementById('ajax-add-to-cart-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const url = this.getAttribute('action');
+
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message);
+                    updateCartHeader(data.cart_count);
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
 {% endblock %}

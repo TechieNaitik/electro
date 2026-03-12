@@ -1,0 +1,41 @@
+{% extends "custom_admin/base.html" %}
+{% block title %}Customers{% endblock %}
+{% block page_title %}Customers{% endblock %}
+
+{% block content %}
+<div class="section-card animate-in">
+    <div class="section-header">
+        <h2><i class="fas fa-users" style="margin-right:8px; color:var(--accent-light);"></i>All Customers</h2>
+        <span class="badge badge-purple">{{ customers|length }} total</span>
+    </div>
+    <div class="section-body">
+        {% if customers %}
+        <table class="data-table" id="customers-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td style="color:var(--text-muted);">{{ customer.id }}</td>
+                    <td><strong>{{ customer.full_name }}</strong></td>
+                    <td style="color:var(--text-secondary);">{{ customer.email }}</td>
+                    <td style="color:var(--text-secondary);">{{ customer.created_at|date:"M d, Y · h:i A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users-slash"></i>
+            <p>No customers registered yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

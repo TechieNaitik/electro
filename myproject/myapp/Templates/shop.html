@@ -32,8 +32,8 @@
                 <div class="d-flex align-items-center">
                     <i class="fab fa-telegram-plane fa-2x text-primary"></i>
                     <div class="ms-4">
-                        <h6 class="text-uppercase mb-2">Free Shipping</h6>
-                        <p class="mb-0">Free shipping on all order</p>
+                        <h6 class="text-uppercase mb-2">Standard Shipping</h6>
+                        <p class="mb-0">₹100 charge per product</p>
                     </div>
                 </div>
             </div>
@@ -138,13 +138,7 @@
                         </div>
                         <div class="d-flex flex-column justify-content-center">
                             <h6 class="mb-2">{{ product.name }}</h6>
-                            <div class="d-flex mb-2">
-                                <i class="fa fa-star text-secondary"></i>
-                                <i class="fa fa-star text-secondary"></i>
-                                <i class="fa fa-star text-secondary"></i>
-                                <i class="fa fa-star text-secondary"></i>
-                                <i class="fa fa-star"></i>
-                            </div>
+
                             <div class="d-flex mb-2">
                                 <h5 class="text-primary fw-bold me-2">₹{{ product.price }}</h5>
                                 <!-- <h5 class="text-danger text-decoration-line-through">4.11 $</h5> -->
@@ -175,7 +169,7 @@
                                 <option value="Name, A-Z" {% if current_sort == 'Name, A-Z' or not current_sort %}selected{% endif %}>Name, ASC</option>
                                 <option value="Name, Z-A" {% if current_sort == 'Name, Z-A' %}selected{% endif %}>Name, DESC</option>
                                 <option value="Price, ASC" {% if current_sort == 'Price, ASC' %}selected{% endif %}>Price, Low to High</option>
-                                <option value="Price, DESC" {% if current_sort == 'Price, DESC' %}selected{% endif %}>Price, High to Low</option>
+                                <option value="Price, DESC" {% if current_sort == 'Price, DESC' %}selected{% endif %}> Price, High to Low</option>
                             </select>
                         </div>
                     </div>
@@ -206,11 +200,13 @@
                                                 alt="">
                                             <!-- <div class="product-new">New</div> -->
                                             <div class="product-details">
-                                                <a href="{% url 'single' product.id %}"><i class="fa fa-eye fa-1x"></i></a>
+                                                <a href="{% url 'single' product.id %}"><i
+                                                        class="fa fa-eye fa-1x"></i></a>
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
+                                            <a href="{% url 'shop_category' product.category_id.id %}"
+                                                class="d-block mb-2">{{ product.category_id.name }}</a>
                                             <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.name }}</a>
                                             <!-- <del class="me-2 fs-5">$1,250.00</del> -->
                                             <span class="text-primary fs-5">₹{{ product.price }}</span>
@@ -222,22 +218,18 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4 ajax-add-to-cart"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
+
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
                                                         class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-random"></i></i></a>
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-heart"></i></a>
+                                                            class="fas fa-random"></i></span></a>
+                                                <a href="javascript:void(0);"
+                                                    class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-0 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
+                                                    data-product-id="{{ product.id }}">
+                                                    <span class="rounded-circle btn-sm-square border"><i
+                                                            class="fas fa-heart"></i></span>
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -293,16 +285,16 @@
                                         <a href="{% url 'add_to_cart' product.id %}"
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 ajax-add-to-cart"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                                        <div class="d-flex">
-                                            <a href="#"
-                                                class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                                    class="rounded-circle btn-sm-square border"><i
-                                                        class="fas fa-random"></i></i></a>
-                                            <a href="#"
-                                                class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                                    class="rounded-circle btn-sm-square border"><i
-                                                        class="fas fa-heart"></i></a>
-                                        </div>
+                                            <div class="d-flex">
+                                                <a href="#"
+                                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
+                                                        class="rounded-circle btn-sm-square border"><i
+                                                            class="fas fa-random"></i></span></a>
+                                                <a href="#"
+                                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
+                                                        class="rounded-circle btn-sm-square border"><i
+                                                            class="fas fa-heart"></i></span></a>
+                                            </div>
                                     </div>
                                 </div>
                             </div>

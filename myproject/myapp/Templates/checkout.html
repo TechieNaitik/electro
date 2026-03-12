@@ -4,11 +4,11 @@
 {% block content %}
 <!-- Single Page Header start -->
 <div class="container-fluid page-header py-5">
-    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Cheackout Page</h1>
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Checkout Page</h1>
     <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
         <li class="breadcrumb-item"><a href="#">Home</a></li>
         <li class="breadcrumb-item"><a href="#">Pages</a></li>
-        <li class="breadcrumb-item active text-white">Cheackout</li>
+        <li class="breadcrumb-item active text-white">Checkout</li>
     </ol>
 </div>
 <!-- Single Page Header End -->
@@ -32,8 +32,8 @@
                 <div class="d-flex align-items-center">
                     <i class="fab fa-telegram-plane fa-2x text-primary"></i>
                     <div class="ms-4">
-                        <h6 class="text-uppercase mb-2">Free Shipping</h6>
-                        <p class="mb-0">Free shipping on all order</p>
+                        <h6 class="text-uppercase mb-2">Standard Shipping</h6>
+                        <p class="mb-0">₹100 charge per product</p>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                     <i class="fas fa-credit-card fa-2x text-primary"></i>
                     <div class="ms-4">
                         <h6 class="text-uppercase mb-2">Receive Gift Card</h6>
-                        <p class="mb-0">Recieve gift all over oder $50</p>
+                        <p class="mb-0">Recieve gift all over oder ₹500</p>
                     </div>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                     <i class="fas fa-blog fa-2x text-primary"></i>
                     <div class="ms-4">
                         <h6 class="text-uppercase mb-2">Online Service</h6>
-                        <p class="mb-0">Free return products in 30 days</p>
+                        <p class="mb-0">Free return products in 15 days</p>
                     </div>
                 </div>
             </div>
@@ -179,7 +179,10 @@
                                     <td class="py-4"></td>
                                     <td class="py-4"></td>
                                     <td class="py-4">
-                                        <p class="mb-0 text-dark py-4">Shipping</p>
+                                        <div class="d-flex flex-column py-4">
+                                            <p class="mb-0 text-dark">Shipping</p>
+                                            <small class="text-muted">₹100 x {{ cart_count }} items</small>
+                                        </div>
                                     </td>
                                     <td class="py-4 text-center">
                                         <div class="py-4 border-bottom border-top">
@@ -245,7 +248,8 @@
                     </div>
                     <div class="row g-4 text-center align-items-center justify-content-center pt-4">
                         <button type="submit"
-                            class="btn btn-primary border-secondary py-3 px-4 text-uppercase w-100 text-primary">Place Order
+                            class="btn btn-primary border-secondary py-3 px-4 text-uppercase w-100 text-primary">Place
+                            Order
                         </button>
                     </div>
                 </div>

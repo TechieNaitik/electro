@@ -1,0 +1,103 @@
+{% extends 'index.html' %}
+{% block title %}Customer Support{% endblock %}
+{% load static %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Customer Support</h1>
+    <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+        <li class="breadcrumb-item active text-white">Support</li>
+    </ol>
+</div>
+
+<!-- Support Content -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row g-4 mb-5">
+            <!-- Support Channels -->
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="bg-light rounded p-4 text-center h-100 shadow-sm border-bottom border-primary border-3">
+                    <i class="fas fa-phone-alt fa-3x text-primary mb-3"></i>
+                    <h4 class="fw-bold">Call Us</h4>
+                    <p class="text-muted">Direct assistance for quick queries and support.</p>
+                    <h5 class="text-primary">+91 7016823822</h5>
+                    <p class="small text-muted">9:00 AM - 8:00 PM (Mon-Sat)</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="bg-light rounded p-4 text-center h-100 shadow-sm border-bottom border-primary border-3">
+                    <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                    <h4 class="fw-bold">Email Support</h4>
+                    <p class="text-muted">Send us your technical issues or complaints.</p>
+                    <h5 class="text-primary">support@electro.com</h5>
+                    <p class="small text-muted">Response within 24 hours</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="bg-light rounded p-4 text-center h-100 shadow-sm border-bottom border-primary border-3">
+                    <i class="fab fa-whatsapp fa-3x text-primary mb-3"></i>
+                    <h4 class="fw-bold">WhatsApp</h4>
+                    <p class="text-muted">Chat with our experts for instant product help.</p>
+                    <h5 class="text-primary">Chat with Us</h5>
+                    <p class="small text-muted">Automated 24/7 help</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-5">
+            <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.1s">
+                <h3 class="fw-bold mb-4">Technical & Warranty Support</h3>
+                <div class="support-info p-4 bg-white border rounded shadow-sm">
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-primary"><i class="fas fa-certificate me-2"></i> Warranty Support</h5>
+                        <p class="text-muted mb-0">All our products carry an official brand warranty. If you face any manufacturing defects, we'll help you connect with the service center or facilitate the repair/replacement.</p>
+                    </div>
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-primary"><i class="fas fa-tools me-2"></i> Installation Assistance</h5>
+                        <p class="text-muted mb-0">Need help setting up your new laptop, smartphone, or smart home device? Our technical team is available for remote or in-person installation assistance.</p>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-primary"><i class="fas fa-shield-alt me-2"></i> Protection Plans</h5>
+                        <p class="text-muted mb-0">Extend your product life with our custom protection plans covering accidental damage and liquid spills.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.1s">
+                <h3 class="fw-bold mb-4">Raise a Support Ticket</h3>
+                <div class="bg-light rounded p-4 shadow-sm">
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control border-0 py-3" placeholder="Your Name">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="email" class="form-control border-0 py-3" placeholder="Your Email">
+                            </div>
+                            <div class="col-12">
+                                <select class="form-select border-0 py-3">
+                                    <option selected>Select Issue Type</option>
+                                    <option value="1">Technical Problem</option>
+                                    <option value="2">Order Tracking</option>
+                                    <option value="3">Refund/Return Request</option>
+                                    <option value="4">General Query</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <textarea class="form-control border-0 py-3" rows="4" placeholder="Describe your issue in detail"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary w-100 py-3 rounded-pill text-white fw-bold">Submit Ticket</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
