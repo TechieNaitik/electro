@@ -25,6 +25,11 @@ urlpatterns = [
     path('', include('myapp.urls')),
 ]
 
+handler404 = 'myapp.views.error_404'
+handler500 = 'myapp.views.error_500'
+handler403 = 'myapp.views.error_403'
+handler400 = 'myapp.views.error_400'
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -230,11 +230,41 @@ def download_invoice(request, oid):
     
     return response
 
-def error(request):
+def error_404(request, exception=None):
     context = {
-        'categories': Category.objects.all(),
+        'error_type': '404 Not Found',
+        'error_message': 'The page you are looking for does not exist.',
+        'status_code': 404,
+        'debug': settings.DEBUG,
     }
-    return render(request, 'error.html', context)
+    return render(request, 'error.html', context, status=404)
+
+def error_500(request):
+    context = {
+        'error_type': '500 Server Error',
+        'error_message': 'An unexpected error occurred on our server.',
+        'status_code': 500,
+        'debug': settings.DEBUG,
+    }
+    return render(request, 'error.html', context, status=500)
+
+def error_403(request, exception=None):
+    context = {
+        'error_type': '403 Forbidden',
+        'error_message': 'You do not have permission to access this resource.',
+        'status_code': 403,
+        'debug': settings.DEBUG,
+    }
+    return render(request, 'error.html', context, status=403)
+
+def error_400(request, exception=None):
+    context = {
+        'error_type': '400 Bad Request',
+        'error_message': 'Your browser sent a request that this server could not understand.',
+        'status_code': 400,
+        'debug': settings.DEBUG,
+    }
+    return render(request, 'error.html', context, status=400)
 
 def faq(request):
     context = {

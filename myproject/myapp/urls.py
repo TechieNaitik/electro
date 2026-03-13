@@ -29,7 +29,6 @@ urlpatterns = [
     path('category/<int:cid>/', views.category_products, name='category_products'),
     path('checkout', views.checkout, name='checkout'),
     path('contact', views.contact, name='contact'),
-    path('error', views.error, name='error'),
     path('faq/', views.faq, name='faq'),
     path('forgot_password', views.forgot_password, name='forgot_password'),
     path('help/', views.help, name='help'),
