@@ -659,6 +659,14 @@ def shop(request, cid=0):
 
 def single(request, pid):
     product = get_object_or_404(Product, pk=pid)
+    
+    # Track view
+    from django.db.models import F
+    product.views_count = F('views_count') + 1
+    product.save(update_fields=['views_count'])
+    from .models import ProductView
+    ProductView.objects.create(product=product)
+
     related_products = Product.objects.filter(
         category_id=product.category_id
     ).exclude(pk=pid)[:3]

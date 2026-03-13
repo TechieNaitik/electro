@@ -12,6 +12,7 @@ A Django-based E-commerce application.
 - **Centralized Profile Management**: Comprehensive user dashboard for managing all personal, contact, and address details in one place.
 - **Inventory Management**: Real-time stock validation and automatic stock deduction upon order completion.
 - **Custom Site Administration**: A premium, isolated administration dashboard (separate from Django-admin) featuring:
+- **Advanced Analytical Dashboard**: Real-time business intelligence using Chart.js to visualize sales trends, category distribution, order activity heatmaps, and AI-powered 7-day sales forecasting via scikit-learn.
 - **Dynamic Data Export**: Advanced administrative tools to export Customers, Orders, and Products into multiple professional formats (.pdf, .xlsx, .docx, .csv).
 - **Security & Sessions**: Secure login wall with hashed passwords, brute-force protection, and independent admin session management.
 - **Resource Management**: Complete CRUD operations for Products and Categories with instant search capability.

@@ -1,0 +1,162 @@
+{% extends 'custom_admin/base.html' %}
+{% load static %}
+
+{% block title %}Analytical Dashboard{% endblock %}
+{% block page_title %}Analytics & Intelligence{% endblock %}
+
+{% block content %}
+<!-- External Dependencies -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="{% static 'css/analytical_dashboard.css' %}">
+
+<div class="analytical-wrapper">
+    
+    <!-- Top Bar: Title & Filters -->
+    <header class="analytical-header">
+        <div class="header-left">
+            <h1>Business Overview</h1>
+            <p>Real-time insights across your product catalog and sales channels.</p>
+        </div>
+
+        <div class="control-bar">
+            <div id="dateRangePicker" class="date-picker-trigger">
+                <i class="far fa-calendar-alt"></i>
+                <span id="dateRangeText">Last 30 Days</span>
+                <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
+            </div>
+
+            <select id="categoryFilter" class="form-control" style="width: auto; min-width: 200px; border-radius: 0.75rem;">
+                <option value="">All Departments</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+
+
+
+
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        
+        <!-- KPI Summary Section -->
+        <section class="kpi-section">
+            <div class="insight-card">
+                <div class="label-container">
+                    <span class="insight-label">Total Revenue</span>
+                    <span id="trend-revenue" class="insight-trend"></span>
+                </div>
+                <div class="insight-value">₹<span id="val-revenue">0</span></div>
+                <div class="card-icon"><i class="fas fa-rupee-sign" style="color: var(--accent-green);"></i></div>
+            </div>
+
+            <div class="insight-card">
+                <div class="label-container">
+                    <span class="insight-label">Orders Today</span>
+                </div>
+                <div class="insight-value" id="val-orders">0</div>
+                <div class="card-icon"><i class="fas fa-shopping-cart" style="color: var(--accent-blue);"></i></div>
+            </div>
+
+            <div class="insight-card">
+                <div class="label-container">
+                    <span class="insight-label">Avg. Order Value</span>
+                </div>
+                <div class="insight-value">₹<span id="val-aov">0</span></div>
+                <div class="card-icon"><i class="fas fa-receipt" style="color: var(--accent-purple);"></i></div>
+            </div>
+
+            <div class="insight-card">
+                <div class="label-container">
+                    <span class="insight-label">Low Stock</span>
+                </div>
+                <div class="insight-value" id="val-stock">0</div>
+                <div class="card-icon"><i class="fas fa-exclamation-triangle" style="color: var(--accent-red);"></i></div>
+            </div>
+
+        </section>
+
+        <!-- Main Revenue Chart -->
+        <section class="chart-container-large">
+            <div class="panel-header">
+                <h3 class="panel-title"><i class="fas fa-chart-line"></i> Revenue & Order Volume</h3>
+                <div class="refresh-indicator">Last 30 days performance</div>
+            </div>
+            <div style="height: 350px;">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Forecasting Panel -->
+        <section class="chart-container-side">
+            <div class="panel-header">
+                <h3 class="panel-title"><i class="fas fa-brain"></i> Sales Forecast</h3>
+                <span id="forecast-accuracy" class="badge-stock badge-in-stock">...</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1.5rem;">7-day predictive projection based on historical regression models.</p>
+            <div style="height: 250px;">
+                <canvas id="forecastChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Trending Products Table -->
+        <section class="table-panel">
+            <div class="panel-header">
+                <h3 class="panel-title"><i class="fas fa-fire" style="color: var(--accent-red);"></i> Trending Products</h3>
+                <button class="btn btn-sm btn-outline">Generate Detailed Report</button>
+            </div>
+            <div class="table-container">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Product Details</th>
+                            <th>Units Sold</th>
+                            <th>Views</th>
+                            <th>Revenue</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trendingBody">
+                        <!-- Polled Data -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Secondary Charts -->
+        <section class="chart-container-side">
+            <div class="panel-header">
+                <h3 class="panel-title"><i class="fas fa-pie-chart"></i> Revenue by Department</h3>
+            </div>
+            <div style="height: 250px;">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </section>
+
+        <section class="chart-container-large">
+            <div class="panel-header">
+                <h3 class="panel-title"><i class="fas fa-history"></i> Activity Peak Hours</h3>
+            </div>
+            <div style="height: 250px;">
+                <canvas id="heatmapChart"></canvas>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{% static 'js/analytical_dashboard.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dashboard = new AnalyticalDashboard({
+            apiUrl: "{% url 'custom_admin:api_dashboard_stats' %}",
+            pollingInterval: 60000
+        });
+    });
+</script>
+{% endblock %}

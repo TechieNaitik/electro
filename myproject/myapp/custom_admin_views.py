@@ -223,6 +223,18 @@ def admin_dashboard(request):
     }
     return render(request, 'custom_admin/dashboard.html', context)
 
+@site_admin_required
+def admin_analytical_dashboard(request):
+    """
+    Renders the new advanced analytical dashboard.
+    """
+    categories = Category.objects.all()
+    context = {
+        'active_page': 'analytical_dashboard',
+        'categories': categories,
+    }
+    return render(request, 'custom_admin/analytical_dashboard.html', context)
+
 def admin_login(request):
     # Check if already logged in via our custom session key
     if request.session.get('_site_admin_user_id'):
@@ -266,8 +278,24 @@ def admin_logout(request):
 @site_admin_required
 def admin_order_detail(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in dict(Order.ORDER_STATUS_CHOICES):
+            order.status = new_status
+            order.save()
+            messages.success(request, f"Order status successfully updated to {new_status}.")
+            return redirect('custom_admin:order_detail', order_id=order.id)
+        else:
+            messages.error(request, "Invalid order status.")
+            
     items = OrderItem.objects.filter(order=order).select_related('product')
-    context = {'active_page': 'orders', 'order': order, 'items': items}
+    context = {
+        'active_page': 'orders', 
+        'order': order, 
+        'items': items,
+        'status_choices': Order.ORDER_STATUS_CHOICES
+    }
     return render(request, 'custom_admin/order_detail.html', context)
 
 @site_admin_required

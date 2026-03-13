@@ -44,9 +44,20 @@ class Product(models.Model):
     description = models.TextField()
     price       = models.IntegerField()
     stock_quantity = models.PositiveIntegerField(default=50)
+    views_count = models.PositiveIntegerField(default=0)
+    reorder_threshold = models.PositiveIntegerField(default=10) # For KPI alerts
 
     def __str__(self):
         return self.name
+
+class ProductView(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='views')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['timestamp']),
+        ]
 
 class Cart(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)

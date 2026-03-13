@@ -34,7 +34,11 @@
                 <div class="nav-section-label">Main</div>
                 <a href="{% url 'custom_admin:dashboard' %}"
                     class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" id="nav-dashboard">
-                    <i class="fas fa-chart-pie"></i> Dashboard
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="{% url 'custom_admin:analytical_dashboard' %}"
+                    class="nav-link {% if active_page == 'analytical_dashboard' %}active{% endif %}" id="nav-analytical_dashboard">
+                    <i class="fas fa-chart-pie"></i> Analytical Dashboard
                 </a>
 
                 <div class="nav-section-label">Management</div>

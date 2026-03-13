@@ -1,5 +1,6 @@
 from django.urls import path
 from . import custom_admin_views as views
+from . import admin_api_views
 
 app_name = 'custom_admin'
 
@@ -7,6 +8,7 @@ urlpatterns = [
     path('login/', views.admin_login, name='login'),
     path('logout/', views.admin_logout, name='logout'),
     path('', views.admin_dashboard, name='dashboard'),
+    path('analytical/', views.admin_analytical_dashboard, name='analytical_dashboard'),
     path('customers/', views.admin_customers, name='customers'),
     
     # Products
@@ -27,4 +29,7 @@ urlpatterns = [
     
     # Export
     path('export/', views.admin_export, name='export'),
+    
+    # API Endpoints
+    path('api/dashboard/stats/', admin_api_views.dashboard_stats_api, name='api_dashboard_stats'),
 ]

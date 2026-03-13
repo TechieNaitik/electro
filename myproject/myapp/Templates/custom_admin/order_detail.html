@@ -84,13 +84,17 @@
                     <label><i class="fas fa-calendar-alt" style="width:20px;"></i> Placed On</label>
                     <span>{{ order.created_at|date:"M d, Y · h:i A" }}</span>
                 </div>
-                <div class="detail-item">
+                <div class="detail-item" style="grid-column: 1/-1;">
                     <label><i class="fas fa-info-circle" style="width:20px;"></i> Status</label>
-                    <span>
-                        <span class="badge {% if order.status == 'Delivered' %}badge-success{% elif order.status == 'Cancelled' %}badge-danger{% elif order.status == 'Shipped' %}badge-info{% elif order.status == 'Returned' %}badge-warning{% else %}badge-warning{% endif %}">
-                            {{ order.status }}
-                        </span>
-                    </span>
+                    <form method="POST" action="{% url 'custom_admin:order_detail' order.id %}" style="display: flex; gap: 12px; align-items: center; margin: 0;">
+                        {% csrf_token %}
+                        <select name="status" class="form-control" style="width:auto; min-width: 180px; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem;">
+                            {% for status_val, status_name in status_choices %}
+                            <option value="{{ status_val }}" {% if order.status == status_val %}selected{% endif %}>{{ status_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm" style="background: var(--accent); border: none; padding: 6px 16px; font-weight: 600;">Update Status</button>
+                    </form>
                 </div>
                 {% if order.return_reason %}
                 <div class="detail-item" style="grid-column: 1/-1;">
