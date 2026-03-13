@@ -101,10 +101,148 @@
             </header>
 
             <main class="page-content">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert-message alert-{{ message.tags }} animate-in">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
                 {% block content %}{% endblock %}
             </main>
         </div>
     </div>
+
+    <!-- ═══════ Export Modal ═══════ -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-export" style="margin-right:10px; color:var(--accent-light);"></i>Export Data</h3>
+                <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:4px;">Configure your data export settings below.</p>
+            </div>
+            <form id="exportForm" action="{% url 'custom_admin:export' %}" method="GET">
+                <input type="hidden" name="module" id="exportModule" value="">
+                
+                <div class="form-group">
+                    <label>Export Format</label>
+                    <div class="form-row">
+                        <select name="format" class="form-control" required>
+                            <option value="pdf" selected>PDF Document (.pdf)</option>
+                            <option value="excel">Excel Spreadsheet (.xlsx)</option>
+                            <option value="csv">CSV Flat File (.csv)</option>
+                            <option value="word">Word Document (.docx)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Date Range (Optional)</label>
+                    <div class="form-row">
+                        <input type="date" name="start_date" class="form-control" placeholder="Start Date">
+                        <input type="date" name="end_date" class="form-control" placeholder="End Date">
+                    </div>
+                </div>
+
+                <div class="export-loading" id="exportLoading">
+                    <div class="spinner"></div>
+                    Preparing your file, please wait...
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeExportModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="exportSubmitBtn">Generate Export</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openExportModal(module) {
+            document.getElementById('exportModule').value = module;
+            
+            // Get current 'q' from URL and add to form if it exists
+            const urlParams = new URLSearchParams(window.location.search);
+            const q = urlParams.get('q');
+            
+            // Remove existing hidden q if any
+            const existingQ = document.getElementById('exportQ');
+            if (existingQ) existingQ.remove();
+            
+            if (q) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'q';
+                hiddenInput.id = 'exportQ';
+                hiddenInput.value = q;
+                document.getElementById('exportForm').appendChild(hiddenInput);
+            }
+
+            document.getElementById('exportModal').classList.add('open');
+            document.getElementById('exportLoading').style.display = 'none';
+            document.getElementById('exportSubmitBtn').disabled = false;
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('open');
+        }
+
+        document.getElementById('exportForm').addEventListener('submit', function(e) {
+            // Show loading state
+            document.getElementById('exportLoading').style.display = 'block';
+            document.getElementById('exportSubmitBtn').disabled = true;
+            
+            // The browser will handle the file download, so we want to close the modal after some time
+            // since we can't easily detect when the download starts/ends via standard form submission
+            setTimeout(() => {
+                closeExportModal();
+            }, 3000);
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('exportModal');
+            if (event.target == modal) {
+                closeExportModal();
+            }
+        }
+
+        // ───────── Instant Search ─────────
+        let searchTimeout = null;
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('instant-search')) {
+                clearTimeout(searchTimeout);
+                const query = e.target.value;
+                const form = e.target.closest('form');
+                const containerId = 'data-container';
+                
+                searchTimeout = setTimeout(() => {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('q', query);
+                    url.searchParams.delete('page'); // Reset to page 1 on search
+                    
+                    // Add a subtle fading effect
+                    const container = document.getElementById(containerId);
+                    if (container) container.style.opacity = '0.5';
+
+                    fetch(url)
+                        .then(response => response.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const newContent = doc.getElementById(containerId);
+                            if (newContent && container) {
+                                container.innerHTML = newContent.innerHTML;
+                                container.style.opacity = '1';
+                                
+                                // Update URL without reloading
+                                window.history.pushState({}, '', url);
+                            }
+                        })
+                        .catch(err => console.error('Search failed:', err));
+                }, 300); // 300ms debounce
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -15,6 +15,12 @@ class Customer(models.Model):
     full_name  = models.CharField(max_length=50)
     email      = models.EmailField(unique=True)
     password   = models.CharField(max_length=21)
+    phone      = models.CharField(max_length=15, null=True, blank=True)
+    address    = models.TextField(null=True, blank=True)
+    town_city  = models.CharField(max_length=100, null=True, blank=True)
+    country    = models.CharField(max_length=100, null=True, blank=True)
+    postcode_zip = models.CharField(max_length=20, null=True, blank=True)
+    status     = models.CharField(max_length=20, default='Active', choices=[('Active', 'Active'), ('Inactive', 'Inactive'), ('Blocked', 'Blocked')])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -33,6 +39,7 @@ class Category(models.Model):
 class Product(models.Model):
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
     name        = models.CharField(max_length=100)
+    sku         = models.CharField(max_length=50, unique=True, null=True, blank=True)
     image       = models.ImageField(upload_to='img/')
     description = models.TextField()
     price       = models.IntegerField()
@@ -64,13 +71,6 @@ class Order(models.Model):
     ]
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=255, null=True, blank=True)
-    address = models.CharField(max_length=255)
-    town_city = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
-    postcode_zip = models.CharField(max_length=20)
-    mobile = models.CharField(max_length=20)
-    email = models.EmailField()
     order_notes = models.TextField(blank=True, null=True)
     total_amount = models.IntegerField()
     payment_method = models.CharField(max_length=50)

@@ -5,3 +5,8 @@ dj-database-url
 psycopg2-binary
 python-dotenv
 playwright
+openpyxl
+python-docx
+reportlab
+django-bootstrap5
+pypdf2

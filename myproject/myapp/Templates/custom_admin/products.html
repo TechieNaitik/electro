@@ -8,98 +8,117 @@
     <div class="section-card">
         <div class="section-header">
             <h2>All Products</h2>
-            <a href="{% url 'custom_admin:product_add' %}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Add New Product
-            </a>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <button class="btn btn-secondary btn-sm" onclick="openExportModal('products')">
+                    <i class="fas fa-file-export"></i> Export
+                </button>
+                <a href="{% url 'custom_admin:product_add' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Add New Product
+                </a>
+            </div>
         </div>
         <div class="section-body">
-            {% if messages %}
-                {% for message in messages %}
-                <div class="alert-message {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
-
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                        <th>Stock</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                {% if product.image %}
-                                    <img src="{{ product.image.url }}" class="product-thumb" alt="{{ product.name }}">
-                                {% else %}
-                                    <div class="product-thumb" style="background: var(--bg-primary); display: grid; place-items: center;">
-                                        <i class="fas fa-image" style="opacity: .3;"></i>
-                                    </div>
-                                {% endif %}
-                                <span style="font-weight: 600;">{{ product.name }}</span>
-                            </div>
-                        </td>
-                        <td><span class="badge badge-purple">{{ product.category_id.name }}</span></td>
-                        <td><span style="color: var(--success); font-weight: 700;">₹{{ product.price }}</span></td>
-                        <td>
-                            {% if product.stock_quantity <= 5 %}
-                                <span class="badge badge-danger">{{ product.stock_quantity }} Low</span>
-                            {% else %}
-                                <span class="badge badge-success">{{ product.stock_quantity }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 8px;">
-                                <a href="{% url 'custom_admin:product_edit' product.id %}" class="btn btn-secondary btn-icon" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="{% url 'custom_admin:product_delete' product.id %}" class="btn btn-secondary btn-icon" title="Delete" style="color: var(--danger);">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5">
-                            <div class="empty-state">
-                                <i class="fas fa-box-open"></i>
-                                <p>No products found.</p>
-                            </div>
-                        </td>
-                    </tr>
+            <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; gap: 16px; align-items: center; background: rgba(0,0,0,0.05);">
+                <form action="" method="GET" style="flex: 1; display: flex; gap: 12px;" onsubmit="return false;">
+                    <div style="position: relative; flex: 1;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
+                        <input type="text" name="q" class="form-control instant-search" placeholder="Search by name or SKU..." value="{{ request.GET.q }}" style="padding-left: 36px;">
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+                    {% if request.GET.q %}
+                        <a href="?" class="btn btn-secondary btn-sm" title="Clear"><i class="fas fa-times"></i></a>
+                    {% endif %}
+                </form>
+            </div>
+            <div id="data-container" style="transition: opacity 0.2s ease;">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert-message {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}">
+                        {{ message }}
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        {% if products.has_other_pages %}
-        <div style="padding: 20px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: center; gap: 8px;">
-            {% if products.has_previous %}
-                <a href="?page={{ products.previous_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-left"></i></a>
-            {% endif %}
-            
-            {% for i in products.paginator.page_range %}
-                {% if products.number == i %}
-                    <span class="btn btn-primary btn-sm">{{ i }}</span>
-                {% else %}
-                    <a href="?page={{ i }}" class="btn btn-secondary btn-sm">{{ i }}</a>
                 {% endif %}
-            {% endfor %}
 
-            {% if products.has_next %}
-                <a href="?page={{ products.next_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-right"></i></a>
-            {% endif %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" class="product-thumb" alt="{{ product.name }}">
+                                    {% else %}
+                                        <div class="product-thumb" style="background: var(--bg-primary); display: grid; place-items: center;">
+                                            <i class="fas fa-image" style="opacity: .3;"></i>
+                                        </div>
+                                    {% endif %}
+                                    <span style="font-weight: 600;">{{ product.name }}</span>
+                                </div>
+                            </td>
+                            <td><span class="badge badge-purple">{{ product.category_id.name }}</span></td>
+                            <td><span style="color: var(--success); font-weight: 700;">₹{{ product.price }}</span></td>
+                            <td>
+                                {% if product.stock_quantity <= 5 %}
+                                    <span class="badge badge-danger">{{ product.stock_quantity }} Low</span>
+                                {% else %}
+                                    <span class="badge badge-success">{{ product.stock_quantity }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{% url 'custom_admin:product_edit' product.id %}" class="btn btn-secondary btn-icon" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'custom_admin:product_delete' product.id %}" class="btn btn-secondary btn-icon" title="Delete" style="color: var(--danger);">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <i class="fas fa-box-open"></i>
+                                    <p>No products found.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Pagination (Inside container) -->
+                {% if products.has_other_pages %}
+                <div style="padding: 20px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: center; gap: 8px;">
+                    {% if products.has_previous %}
+                        <a href="?page={{ products.previous_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-left"></i></a>
+                    {% endif %}
+                    
+                    {% for i in products.paginator.page_range %}
+                        {% if products.number == i %}
+                            <span class="btn btn-primary btn-sm">{{ i }}</span>
+                        {% else %}
+                            <a href="?page={{ i }}" class="btn btn-secondary btn-sm">{{ i }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if products.has_next %}
+                        <a href="?page={{ products.next_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-right"></i></a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

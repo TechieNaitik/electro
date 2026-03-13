@@ -95,44 +95,33 @@
             {% csrf_token %}
             <div class="row g-5">
                 <div class="col-md-12 col-lg-6 col-xl-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="row">
-                        <div class="col-md-12 col-lg-6">
-                            <div class="form-item w-100">
-                                <label class="form-label my-3">Full Name<sup>*</sup></label>
-                                <input type="text" class="form-control" name="full_name"
-                                    value="{{ customer.full_name|default:'' }}" required>
-                            </div>
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0 text-primary">Shipping Destination</h4>
+                            <a href="{% url 'my_account' %}?tab=profile" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                <i class="fas fa-edit me-1"></i> Edit Address
+                            </a>
                         </div>
+                        
+                        {% if customer.address %}
+                            <div class="p-3 bg-light rounded-3">
+                                <p class="mb-1 fw-bold text-dark">{{ customer.full_name }}</p>
+                                <p class="mb-1 text-muted"><i class="fas fa-map-marker-alt me-2"></i>{{ customer.address }}</p>
+                                <p class="mb-1 text-muted ms-4">{{ customer.town_city }}, {{ customer.country }} - {{ customer.postcode_zip }}</p>
+                                <p class="mb-0 text-muted"><i class="fas fa-phone me-2"></i>{{ customer.phone }}</p>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning rounded-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                No shipping address found. Please <a href="{% url 'my_account' %}?tab=profile" class="alert-link">update your profile</a> before placing an order.
+                            </div>
+                        {% endif %}
                     </div>
-                    <div class="form-item">
-                        <label class="form-label my-3">Address <sup>*</sup></label>
-                        <input type="text" class="form-control" name="address" placeholder="House Number Street Name"
-                            required>
-                    </div>
-                    <div class="form-item">
-                        <label class="form-label my-3">Town/City<sup>*</sup></label>
-                        <input type="text" class="form-control" name="town_city" required>
-                    </div>
-                    <div class="form-item">
-                        <label class="form-label my-3">Country<sup>*</sup></label>
-                        <input type="text" class="form-control" name="country" required>
-                    </div>
-                    <div class="form-item">
-                        <label class="form-label my-3">Postcode/Zip<sup>*</sup></label>
-                        <input type="text" class="form-control" name="postcode_zip" required>
-                    </div>
-                    <div class="form-item">
-                        <label class="form-label my-3">Mobile<sup>*</sup></label>
-                        <input type="tel" class="form-control" name="mobile" required>
-                    </div>
-                    <div class="form-item">
-                        <label class="form-label my-3">Email Address<sup>*</sup></label>
-                        <input type="email" class="form-control" name="email" value="{{ customer.email|default:'' }}"
-                            required>
-                    </div>
+
                     <div class="form-item mt-4">
-                        <textarea name="order_notes" class="form-control" spellcheck="false" cols="30" rows="11"
-                            placeholder="Order Notes (Optional)"></textarea>
+                        <label class="form-label mb-2 fw-bold text-dark">Order Notes (Optional)</label>
+                        <textarea name="order_notes" class="form-control rounded-3" spellcheck="false" cols="30" rows="8"
+                            placeholder="Add any special instructions for delivery..."></textarea>
                     </div>
                 </div>
                 <div class="col-md-12 col-lg-6 col-xl-6 wow fadeInUp" data-wow-delay="0.3s">

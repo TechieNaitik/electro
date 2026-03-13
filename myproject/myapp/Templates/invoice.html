@@ -262,12 +262,12 @@
         <div class="info-section">
             <div class="bill-to">
                 <h4>Bill To:</h4>
-                <h3 class="name">{{ order.full_name }}</h3>
+                <h3 class="name">{{ order.customer.full_name }}</h3>
                 <div class="address">
-                    {{ order.address }}<br>
-                    {{ order.town_city }}<br>
-                    {{ order.country }}<br>
-                    {{ order.postcode_zip }}
+                    {{ order.customer.address }}<br>
+                    {{ order.customer.town_city }}<br>
+                    {{ order.customer.country }}<br>
+                    {{ order.customer.postcode_zip }}
                 </div>
             </div>
             

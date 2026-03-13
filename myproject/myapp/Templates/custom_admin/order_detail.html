@@ -23,39 +23,39 @@
                 <!-- 1. Full Name -->
                 <div class="detail-item" style="grid-column: 1/-1;">
                     <label><i class="fas fa-user" style="width:20px;"></i> Full Name</label>
-                    <span style="font-weight:600;">{{ order.full_name }}</span>
+                    <span style="font-weight:600;">{{ order.customer.full_name }}</span>
                 </div>
 
                 <!-- 2. Email & Mobile -->
                 <div class="detail-item">
                     <label><i class="fas fa-envelope" style="width:20px;"></i> Email</label>
-                    <span>{{ order.email }}</span>
+                    <span>{{ order.customer.email }}</span>
                 </div>
                 <div class="detail-item">
                     <label><i class="fas fa-phone-alt" style="width:20px;"></i> Mobile Number</label>
-                    <span>{{ order.mobile }}</span>
+                    <span>{{ order.customer.phone }}</span>
                 </div>
 
                 <!-- 3. Address -->
                 <div class="detail-item" style="grid-column: 1/-1;">
                     <label><i class="fas fa-map-marked-alt" style="width:20px;"></i> Address</label>
-                    <span>{{ order.address }}</span>
+                    <span>{{ order.customer.address }}</span>
                 </div>
 
                 <!-- 4. Town / City & Postcode -->
                 <div class="detail-item">
                     <label><i class="fas fa-city" style="width:20px;"></i> Town / City</label>
-                    <span>{{ order.town_city }}</span>
+                    <span>{{ order.customer.town_city }}</span>
                 </div>
                 <div class="detail-item">
                     <label><i class="fas fa-map-pin" style="width:20px;"></i> Postcode / ZIP</label>
-                    <span>{{ order.postcode_zip }}</span>
+                    <span>{{ order.customer.postcode_zip }}</span>
                 </div>
 
                 <!-- 5. Country -->
                 <div class="detail-item" style="grid-column: 1/-1;">
                     <label><i class="fas fa-globe" style="width:20px;"></i> Country</label>
-                    <span>{{ order.country }}</span>
+                    <span>{{ order.customer.country }}</span>
                 </div>
 
                 <!-- 6. Order Notes -->

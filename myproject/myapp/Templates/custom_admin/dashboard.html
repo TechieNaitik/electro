@@ -59,7 +59,7 @@
                     <tr>
                         <td><a href="{% url 'custom_admin:order_detail' order.id %}"
                                 style="color:var(--accent-light);">#{{ order.id }}</a></td>
-                        <td>{{ order.full_name }}</td>
+                        <td>{{ order.customer.full_name }}</td>
                         <td><strong>₹{{ order.total_amount }}</strong></td>
                         <td style="color:var(--text-secondary);">{{ order.created_at|date:"M d, Y" }}</td>
                     </tr>

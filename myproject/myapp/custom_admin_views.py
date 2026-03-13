@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from .models import Customer, Category, Product, Cart, Order, OrderItem, SiteAdmin
 from .forms import CategoryForm, ProductForm
+from .exports import export_to_csv, export_to_excel, export_to_word, export_to_pdf
+from datetime import datetime
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Authentication Decorator
@@ -101,9 +103,100 @@ def admin_category_edit(request, category_id):
 
 @site_admin_required
 def admin_customers(request):
-    customers = Customer.objects.order_by('-created_at')
+    query = request.GET.get('q')
+    customers = Customer.objects.all().order_by('-created_at')
+    
+    if query:
+        customers = customers.filter(Q(full_name__icontains=query) | Q(email__icontains=query))
+        
     context = {'active_page': 'customers', 'customers': customers}
     return render(request, 'custom_admin/customers.html', context)
+
+@site_admin_required
+def admin_export(request):
+    module = request.GET.get('module')
+    export_format = request.GET.get('format', 'csv')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    query = request.GET.get('q')
+    
+    # Base queryset based on module
+    if module == 'customers':
+        queryset = Customer.objects.all().order_by('-created_at')
+        filename = f"customers_{datetime.now().strftime('%Y-%m-%d')}"
+        title = "Customer List"
+        headers = ['ID', 'Name', 'Email', 'Phone', 'Joined', 'Status', 'Address', 'City', 'Country', 'ZIP']
+        def data_func(obj):
+            return [obj.id, obj.full_name, obj.email, obj.phone or 'N/A', obj.created_at.strftime('%Y-%m-%d %H:%M'), obj.status, obj.address or 'N/A', obj.town_city or 'N/A', obj.country or 'N/A', obj.postcode_zip or 'N/A']
+            
+    elif module == 'orders':
+        queryset = Order.objects.select_related('customer').all().order_by('-created_at')
+        filename = f"orders_{datetime.now().strftime('%Y-%m-%d')}"
+        title = "Orders List"
+        headers = ['Order ID', 'Customer', 'Date', 'Total', 'Payment', 'Status']
+        def data_func(obj):
+            return [obj.id, obj.customer.full_name, obj.created_at.strftime('%Y-%m-%d %H:%M'), f"${obj.total_amount}", obj.payment_method, obj.status]
+
+    elif module == 'order_details':
+        queryset = OrderItem.objects.select_related('order', 'product').all().order_by('-order__created_at')
+        filename = f"order_details_{datetime.now().strftime('%Y-%m-%d')}"
+        title = "Order Details (Line Items)"
+        headers = ['Order ID', 'Product', 'SKU', 'Quantity', 'Unit Price', 'Subtotal']
+        def data_func(obj):
+            return [obj.order.id, obj.product.name, obj.product.sku or 'N/A', obj.quantity, f"${obj.price}", f"${obj.line_total()}"]
+
+    elif module == 'products':
+        queryset = Product.objects.select_related('category_id').all().order_by('id')
+        filename = f"products_{datetime.now().strftime('%Y-%m-%d')}"
+        title = "Product Listing"
+        headers = ['ID', 'Name', 'SKU', 'Category', 'Price', 'Stock', 'Status']
+        def data_func(obj):
+            status = 'In Stock' if obj.stock_quantity > 0 else 'Out of Stock'
+            return [obj.id, obj.name, obj.sku or 'N/A', obj.category_id.name, f"${obj.price}", obj.stock_quantity, status]
+            
+    else:
+        messages.error(request, "Invalid export module.")
+        return redirect('custom_admin:dashboard')
+
+    # Apply date range filtering if applicable
+    if start_date:
+        try:
+            sd = datetime.strptime(start_date, '%Y-%m-%d')
+            if module == 'customers': queryset = queryset.filter(created_at__date__gte=sd)
+            elif module == 'orders': queryset = queryset.filter(created_at__date__gte=sd)
+            elif module == 'order_details': queryset = queryset.filter(order__created_at__date__gte=sd)
+        except ValueError:
+            pass
+            
+    if end_date:
+        try:
+            ed = datetime.strptime(end_date, '%Y-%m-%d')
+            if module == 'customers': queryset = queryset.filter(created_at__date__lte=ed)
+            elif module == 'orders': queryset = queryset.filter(created_at__date__lte=ed)
+            elif module == 'order_details': queryset = queryset.filter(order__created_at__date__lte=ed)
+        except ValueError:
+            pass
+
+    # Apply search query filtering
+    if query:
+        if module == 'customers':
+            queryset = queryset.filter(Q(full_name__icontains=query) | Q(email__icontains=query))
+        elif module == 'orders':
+            queryset = queryset.filter(Q(full_name__icontains=query) | Q(id__icontains=query))
+        elif module == 'products':
+            queryset = queryset.filter(Q(name__icontains=query) | Q(sku__icontains=query))
+
+    # Export based on format
+    if export_format == 'csv':
+        return export_to_csv(queryset, filename, headers, data_func)
+    elif export_format == 'excel':
+        return export_to_excel(queryset, filename, headers, data_func)
+    elif export_format == 'word':
+        return export_to_word(queryset, filename, title, headers, data_func)
+    elif export_format == 'pdf':
+        return export_to_pdf(queryset, filename, 'custom_admin/export_pdf.html', title, headers, data_func)
+    
+    return redirect('custom_admin:dashboard')
 
 @site_admin_required
 def admin_dashboard(request):
@@ -113,7 +206,7 @@ def admin_dashboard(request):
     total_orders = Order.objects.count()
     total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
 
-    recent_orders = Order.objects.order_by('-created_at')[:5]
+    recent_orders = Order.objects.select_related('customer').order_by('-created_at')[:5]
     recent_customers = Customer.objects.order_by('-created_at')[:5]
     low_stock_products = Product.objects.filter(stock_quantity__lte=5).order_by('stock_quantity')
 
@@ -179,7 +272,12 @@ def admin_order_detail(request, order_id):
 
 @site_admin_required
 def admin_orders(request):
-    orders = Order.objects.order_by('-created_at')
+    query = request.GET.get('q')
+    orders = Order.objects.select_related('customer').all().order_by('-created_at')
+    
+    if query:
+        orders = orders.filter(Q(customer__full_name__icontains=query) | Q(id__icontains=query) | Q(customer__email__icontains=query))
+        
     context = {'active_page': 'orders', 'orders': orders}
     return render(request, 'custom_admin/orders.html', context)
 
@@ -225,7 +323,12 @@ def admin_product_edit(request, product_id):
 
 @site_admin_required
 def admin_products(request):
+    query = request.GET.get('q')
     product_list = Product.objects.select_related('category_id').order_by('name')
+    
+    if query:
+        product_list = product_list.filter(Q(name__icontains=query) | Q(sku__icontains=query))
+        
     paginator = Paginator(product_list, 10) # 10 products per page
     page_number = request.GET.get('page')
     products = paginator.get_page(page_number)

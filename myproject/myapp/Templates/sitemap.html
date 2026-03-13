@@ -61,15 +61,15 @@
                 </div>
             </div>
 
-            <!-- Legal & Info -->
+            <!-- Admin & Support -->
             <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.3s">
                 <div class="border rounded p-4 h-100">
                     <h5 class="text-primary fw-bold mb-4 border-bottom pb-2">
-                        <i class="fas fa-file-alt me-2"></i> Legal & Info
+                        <i class="fas fa-tools me-2"></i> Management
                     </h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{% url 'about' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>About Us</a></li>
+                        <li class="mb-2"><a href="{% url 'custom_admin:login' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Site Admin Panel</a></li>
                         <li class="mb-2"><a href="{% url 'support' %}" class="text-dark text-decoration-none">
                                 <i class="fas fa-angle-right text-primary me-2"></i>Customer Support</a></li>
                         <li class="mb-2"><a href="{% url 'faq' %}" class="text-dark text-decoration-none">
@@ -78,29 +78,27 @@
                                 <i class="fas fa-angle-right text-primary me-2"></i>Help Center</a></li>
                         <li class="mb-2"><a href="{% url 'privacy_policy' %}" class="text-dark text-decoration-none">
                                 <i class="fas fa-angle-right text-primary me-2"></i>Privacy Policy</a></li>
-                        <li class="mb-2"><a href="{% url 'sitemap' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Site Map</a></li>
-                        <li class="mb-2"><a href="{% url 'terms' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Terms & Conditions</a></li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Main Pages -->
+            <!-- Main Navigation -->
             <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.4s">
                 <div class="border rounded p-4 h-100">
                     <h5 class="text-primary fw-bold mb-4 border-bottom pb-2">
-                        <i class="fas fa-home me-2"></i> Main Pages
+                        <i class="fas fa-home me-2"></i> Explore
                     </h5>
                     <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'index' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Home</a></li>
+                        <li class="mb-2"><a href="{% url 'shop' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Full Shop</a></li>
                         <li class="mb-2"><a href="{% url 'bestseller' %}" class="text-dark text-decoration-none">
                                 <i class="fas fa-angle-right text-primary me-2"></i>Bestsellers</a></li>
                         <li class="mb-2"><a href="{% url 'contact' %}" class="text-dark text-decoration-none">
                                 <i class="fas fa-angle-right text-primary me-2"></i>Contact Us</a></li>
-                        <li class="mb-2"><a href="{% url 'index' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Home</a></li>
-                        <li class="mb-2"><a href="{% url 'shop' %}" class="text-dark text-decoration-none">
-                                <i class="fas fa-angle-right text-primary me-2"></i>Shop</a></li>
+                        <li class="mb-2"><a href="{% url 'terms' %}" class="text-dark text-decoration-none">
+                                <i class="fas fa-angle-right text-primary me-2"></i>Terms of Service</a></li>
                     </ul>
                 </div>
             </div>

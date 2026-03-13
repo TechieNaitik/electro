@@ -132,26 +132,20 @@ def checkout(request):
     total = subtotal + shipping
     
     if request.method == "POST":
-        full_name = request.POST.get('full_name', '')
-        address = request.POST.get('address', '')
-        town_city = request.POST.get('town_city', '')
-        country = request.POST.get('country', '')
-        postcode_zip = request.POST.get('postcode_zip', '')
-        mobile = request.POST.get('mobile', '')
-        email = request.POST.get('email', '')
         order_notes = request.POST.get('order_notes', '')
-        
         pm_value = request.POST.get('payment_method', 'Delivery')
+        
         payment_method = 'Cash On Delivery'
         if pm_value == 'Transfer': payment_method = 'Direct Bank Transfer'
         elif pm_value == 'Payments': payment_method = 'Check Payments'
         elif pm_value == 'Paypal': payment_method = 'Paypal'
         elif pm_value == 'Delivery': payment_method = 'Cash On Delivery'
         
-        if not all([full_name, address, town_city, country, postcode_zip, mobile, email]):
-            messages.error(request, "Please fill in all required fields.")
-            return redirect('checkout')
-            
+        # Ensure customer has an address before allowing order
+        if not all([customer.full_name, customer.address, customer.town_city, customer.country, customer.postcode_zip]):
+            messages.error(request, "Please update your shipping address in your profile before placing an order.")
+            return redirect('my_account')
+
         # Final stock check before processing order
         for item in cart_items:
             if item.product.stock_quantity < item.quantity:
@@ -160,13 +154,6 @@ def checkout(request):
 
         order = Order.objects.create(
             customer=customer,
-            full_name=full_name,
-            address=address,
-            town_city=town_city,
-            country=country,
-            postcode_zip=postcode_zip,
-            mobile=mobile,
-            email=email,
             order_notes=order_notes,
             total_amount=total,
             payment_method=payment_method,
@@ -417,12 +404,24 @@ def my_account(request):
         if request.method == "POST":
             full_name = request.POST.get('full_name')
             email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            address = request.POST.get('address')
+            town_city = request.POST.get('town_city')
+            country = request.POST.get('country')
+            postcode_zip = request.POST.get('postcode_zip')
+
             if email != customer.email and Customer.objects.filter(email=email).exists():
                 messages.error(request, "Email already exists.")
             else:
                 customer.full_name = full_name
                 customer.email = email
+                customer.phone = phone
+                customer.address = address
+                customer.town_city = town_city
+                customer.country = country
+                customer.postcode_zip = postcode_zip
                 customer.save()
+                
                 request.session['email'] = email
                 request.session['name'] = full_name
                 messages.success(request, "Profile updated successfully.")

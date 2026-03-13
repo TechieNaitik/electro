@@ -107,10 +107,10 @@
                         <h4 class="mb-0">Deliver To</h4>
                     </div>
                     <div class="card-body">
-                        <p class="mb-1 fw-bold">{{ order.full_name }}</p>
-                        <p class="mb-1 text-muted"><i class="fas fa-map-marker-alt me-2 text-primary"></i> {{ order.address }}</p>
-                        <p class="mb-1 text-muted ms-4">{{ order.town_city }}, {{ order.country }} - {{ order.postcode_zip }}</p>
-                        <p class="mb-0 text-muted"><i class="fas fa-phone me-2 text-primary"></i> {{ order.mobile }}</p>
+                        <p class="mb-1 fw-bold">{{ order.customer.full_name }}</p>
+                        <p class="mb-1 text-muted"><i class="fas fa-map-marker-alt me-2 text-primary"></i> {{ order.customer.address }}</p>
+                        <p class="mb-1 text-muted ms-4">{{ order.customer.town_city }}, {{ order.customer.country }} - {{ order.customer.postcode_zip }}</p>
+                        <p class="mb-0 text-muted"><i class="fas fa-phone me-2 text-primary"></i> {{ order.customer.phone }}</p>
                     </div>
                 </div>
 

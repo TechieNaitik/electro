@@ -8,14 +8,15 @@ A Django-based E-commerce application.
 - **Product Browsing**: Shop page with sorting/filtering, single product view, bestsellers, and dynamic inventory status.
 - **Wishlist**: Per-user product saving system with AJAX-powered live updates and a dedicated wishlist management page.
 - **Shopping Cart**: Interactive AJAX-powered cart with real-time updates and toast notifications.
-- **Checkout Process**: Streamlined checkout flow with logical payment method selections.
+- **One-Click Checkout**: Refactored checkout flow that pulls shipping and billing details directly from stored user profiles for maximum efficiency.
+- **Centralized Profile Management**: Comprehensive user dashboard for managing all personal, contact, and address details in one place.
 - **Inventory Management**: Real-time stock validation and automatic stock deduction upon order completion.
 - **Custom Site Administration**: A premium, isolated administration dashboard (separate from Django-admin) featuring:
-    - **Password Authentication**: Secure login wall with hashed passwords and brute-force protection.
-    - **Session Isolation**: Independent admin sessions that don't conflict with the main site or standard Django-admin.
-    - **Resource Management**: Complete CRUD operations for Products and Categories.
-    - **Inventory Insights**: Real-time stock alerts and business statistics.
-- **Invoice Generation**: Pixel-perfect, downloadable A4 PDFs rendered via headless Playwright, featuring a luxury editorial layout using modern CSS Grid and Flexbox.
+- **Dynamic Data Export**: Advanced administrative tools to export Customers, Orders, and Products into multiple professional formats (.pdf, .xlsx, .docx, .csv).
+- **Security & Sessions**: Secure login wall with hashed passwords, brute-force protection, and independent admin session management.
+- **Resource Management**: Complete CRUD operations for Products and Categories with instant search capability.
+- **Inventory Insights**: Real-time stock alerts and business analytics/statistics.
+- **Invoice Generation**: Pixel-perfect, downloadable A4 PDFs rendered via headless Playwright, featuring a luxury editorial layout.
 - **Contact & Support**: Support pages and contact functionality.
 - **Responsive Design**: Modern, glassmorphism-inspired dark mode aesthetic.
 

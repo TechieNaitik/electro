@@ -24,4 +24,7 @@ urlpatterns = [
     # Orders
     path('orders/', views.admin_orders, name='orders'),
     path('orders/<int:order_id>/', views.admin_order_detail, name='order_detail'),
+    
+    # Export
+    path('export/', views.admin_export, name='export'),
 ]
