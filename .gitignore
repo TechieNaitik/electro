@@ -1,10 +1,58 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# PYTHON & SYSTEM
+# ══════════════════════════════════════════════════════════════════════════════
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
+# OS specific files
+.DS_Store
+Thumbs.db
+
 # C extensions
 *.so
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DJANGO & WEB
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Django core
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Flask & Scrapy stuff
+instance/
+.webassets-cache
+.scrapy
+
+# ══════════════════════════════════════════════════════════════════════════════
+# VIRTUAL ENVIRONMENTS
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Standard environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project specific virtual environment folders (Windows/Local)
+Lib/
+Scripts/
+pyvenv.cfg
+Include/
+CACHEDIR.TAG
+
+# pyenv
+# .python-version
 
 # Distribution / packaging
 .Python
@@ -26,15 +74,39 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# PyInstaller
-*.manifest
-*.spec
+# ══════════════════════════════════════════════════════════════════════════════
+# IDE & TOOLS
+# ══════════════════════════════════════════════════════════════════════════════
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# VS Code
+.vscode/
 
-# Unit test / coverage reports
+# PyCharm
+.idea/
+
+# Jupyter / IPython
+.ipynb_checkpoints
+profile_default/
+ipython_config.py
+
+# Type Checkers & Analyzers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.pybuilder/
+target/
+
+# Spyder & Rope
+.spyderproject
+.spyproject
+.ropeproject
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TESTING & COVERAGE
+# ══════════════════════════════════════════════════════════════════════════════
+
 htmlcov/
 .tox/
 .nox/
@@ -49,96 +121,37 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# Translations
+# ══════════════════════════════════════════════════════════════════════════════
+# MISCELLANEOUS
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Documentation
+Docs/
+docs/_build/
+/site
 *.mo
 *.pot
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-media/
-staticfiles/
+# PyInstaller
+*.manifest
+*.spec
 
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-.pybuilder/
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-# .python-version
-
-# environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Project specific virtual environment folders
-Lib/
-Scripts/
-pyvenv.cfg
-Include/
-CACHEDIR.TAG
-
-# spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static analyzer
-.pytype/
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Cython debug symbols
 cython_debug/
 
-# PyCharm
-.idea/
+# ══════════════════════════════════════════════════════════════════════════════
+# PROJECTS SPECIFIC EXCLUSIONS
+# ══════════════════════════════════════════════════════════════════════════════
 
-# VS Code
-.vscode/
-
-# OS specific
-.DS_Store
-Thumbs.db
-
-# Documentation related to the project
-Docs/
+# Development Scripts (Kept out of repo to avoid DB resets)
 reset_db.py
-extract_assets.py
 
-# Generated files
+# Generated Output files
 *.pdf
+*.docx
+*.xlsx
+*.csv

@@ -266,15 +266,19 @@
                                             <label class="form-label">Street Address</label>
                                             <textarea name="address" class="form-control" rows="2">{{ customer.address|default:'' }}</textarea>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label class="form-label">Town / City</label>
                                             <input type="text" name="town_city" class="form-control" value="{{ customer.town_city|default:'' }}">
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
+                                            <label class="form-label">State</label>
+                                            <input type="text" name="state" class="form-control" value="{{ customer.state|default:'' }}">
+                                        </div>
+                                        <div class="col-md-6">
                                             <label class="form-label">Country</label>
                                             <input type="text" name="country" class="form-control" value="{{ customer.country|default:'' }}">
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label class="form-label">Postcode / ZIP</label>
                                             <input type="text" name="postcode_zip" class="form-control" value="{{ customer.postcode_zip|default:'' }}">
                                         </div>

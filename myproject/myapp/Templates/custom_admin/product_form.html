@@ -32,12 +32,23 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                     <div class="detail-item">
-                        <label>Product Name</label>
-                        {{ form.name }}
+                        <label>Brand</label>
+                        {{ form.brand }}
                     </div>
                     <div class="detail-item">
                         <label>Category</label>
                         {{ form.category_id }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;">
+                    <div class="detail-item">
+                        <label>Model Name</label>
+                        {{ form.model_name }}
+                    </div>
+                    <div class="detail-item">
+                        <label>Variant Specs</label>
+                        {{ form.variant_specs }}
                     </div>
                 </div>
 

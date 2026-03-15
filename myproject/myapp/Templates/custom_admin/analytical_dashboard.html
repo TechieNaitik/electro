@@ -25,10 +25,17 @@
                 <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
             </div>
 
-            <select id="categoryFilter" class="form-control" style="width: auto; min-width: 200px; border-radius: 0.75rem;">
+            <select id="categoryFilter" class="form-control" style="width: auto; min-width: 180px; border-radius: 0.75rem;">
                 <option value="">All Departments</option>
                 {% for cat in categories %}
                 <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+
+            <select id="brandFilter" class="form-control" style="width: auto; min-width: 180px; border-radius: 0.75rem;">
+                <option value="">All Brands</option>
+                {% for brand in brands %}
+                <option value="{{ brand.id }}">{{ brand.name }}</option>
                 {% endfor %}
             </select>
 
@@ -94,8 +101,8 @@
                 <h3 class="panel-title"><i class="fas fa-brain"></i> Sales Forecast</h3>
                 <span id="forecast-accuracy" class="badge-stock badge-in-stock">...</span>
             </div>
-            <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1.5rem;">7-day predictive projection based on historical regression models.</p>
-            <div style="height: 250px;">
+            <p class="panel-subtitle">7-day predictive projection based on historical regression models.</p>
+            <div class="canvas-wrapper">
                 <canvas id="forecastChart"></canvas>
             </div>
         </section>
@@ -103,7 +110,7 @@
         <!-- Trending Products Table -->
         <section class="table-panel">
             <div class="panel-header">
-                <h3 class="panel-title"><i class="fas fa-fire" style="color: var(--accent-red);"></i> Trending Products</h3>
+                <h3 class="panel-title"><i class="fas fa-fire icon-hot"></i> Trending Products</h3>
                 <button class="btn btn-sm btn-outline">Generate Detailed Report</button>
             </div>
             <div class="table-container">
@@ -130,7 +137,7 @@
             <div class="panel-header">
                 <h3 class="panel-title"><i class="fas fa-pie-chart"></i> Revenue by Department</h3>
             </div>
-            <div style="height: 250px;">
+            <div class="canvas-wrapper">
                 <canvas id="categoryChart"></canvas>
             </div>
         </section>
@@ -139,8 +146,17 @@
             <div class="panel-header">
                 <h3 class="panel-title"><i class="fas fa-history"></i> Activity Peak Hours</h3>
             </div>
-            <div style="height: 250px;">
+            <div class="canvas-wrapper">
                 <canvas id="heatmapChart"></canvas>
+            </div>
+        </section>
+
+        <section class="chart-container-side">
+            <div class="panel-header">
+                <h3 class="panel-title"><i class="fas fa-tags"></i> Revenue by Brand</h3>
+            </div>
+            <div class="canvas-wrapper">
+                <canvas id="brandChart"></canvas>
             </div>
         </section>
 
@@ -148,15 +164,13 @@
 </div>
 
 <!-- Scripts -->
+<!-- Dash Container with Configuration -->
+<div id="analytical-dashboard-container" 
+     data-api-url="{% url 'custom_admin:api_dashboard_stats' %}"
+     data-polling-interval="60000">
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{% static 'js/analytical_dashboard.js' %}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const dashboard = new AnalyticalDashboard({
-            apiUrl: "{% url 'custom_admin:api_dashboard_stats' %}",
-            pollingInterval: 60000
-        });
-    });
-</script>
 {% endblock %}

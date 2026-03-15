@@ -18,6 +18,7 @@ class Customer(models.Model):
     phone      = models.CharField(max_length=15, null=True, blank=True)
     address    = models.TextField(null=True, blank=True)
     town_city  = models.CharField(max_length=100, null=True, blank=True)
+    state      = models.CharField(max_length=100, null=True, blank=True)
     country    = models.CharField(max_length=100, null=True, blank=True)
     postcode_zip = models.CharField(max_length=20, null=True, blank=True)
     status     = models.CharField(max_length=20, default='Active', choices=[('Active', 'Active'), ('Inactive', 'Inactive'), ('Blocked', 'Blocked')])
@@ -36,19 +37,47 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class Brand(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 class Product(models.Model):
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
-    name        = models.CharField(max_length=100)
+    brand       = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+    model_name  = models.CharField(max_length=100, null=True, blank=True)
+    variant_specs = models.CharField(max_length=100, null=True, blank=True, help_text="e.g. 128GB Blue, Dual Sim")
+    
+    # Old name field — we keep this temporarily for data migration
+    name        = models.CharField(max_length=100, null=True, blank=True)
+    
     sku         = models.CharField(max_length=50, unique=True, null=True, blank=True)
     image       = models.ImageField(upload_to='img/')
     description = models.TextField()
     price       = models.IntegerField()
     stock_quantity = models.PositiveIntegerField(default=50)
-    views_count = models.PositiveIntegerField(default=0)
     reorder_threshold = models.PositiveIntegerField(default=10) # For KPI alerts
 
+    @property
+    def full_name(self):
+        """Constructs the full product name: Brand + Model + Variant"""
+        parts = []
+        if self.brand:
+            parts.append(self.brand.name)
+        if self.model_name:
+            parts.append(self.model_name)
+        if self.variant_specs:
+            parts.append(self.variant_specs)
+        
+        # Fallback to old name if restructuring isn't done yet
+        return " ".join(parts).strip() or self.name or "Unnamed Product"
+
     def __str__(self):
-        return self.name
+        return self.full_name
 
 class ProductView(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='views')

@@ -291,3 +291,7 @@
     .analytical-header { flex-direction: column; align-items: flex-start; }
     .kpi-section { grid-template-columns: 1fr 1fr; }
 }
+
+.panel-subtitle { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+.canvas-wrapper { height: 250px; }
+.icon-hot { color: var(--accent-red); }

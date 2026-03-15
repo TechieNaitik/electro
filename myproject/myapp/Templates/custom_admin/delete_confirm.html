@@ -19,14 +19,14 @@
                 You are about to delete the {{ type }} <strong>"{{ item.name }}"</strong>. This action cannot be undone.
             </p>
 
-            {% if type == 'category' and product_count > 0 %}
+            {% if product_count > 0 %}
             <div style="background: rgba(255, 107, 107, 0.1); border: 1px solid var(--danger); border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: left;">
                 <div style="display: flex; gap: 12px; color: var(--danger); font-weight: 600; margin-bottom: 8px;">
                     <i class="fas fa-radiation"></i>
                     <span>Cascade Warning!</span>
                 </div>
                 <p style="font-size: 0.9rem; color: var(--text-primary);">
-                    Deleting this category will also <strong>permanently delete all {{ product_count }} products</strong> associated with it. 
+                    Deleting this {{ type }} will also <strong>permanently delete all {{ product_count }} products</strong> associated with it. 
                     Please confirm that you want to proceed with this destructive action.
                 </p>
             </div>
@@ -34,9 +34,13 @@
 
             <form method="POST" style="display: flex; justify-content: center; gap: 16px;">
                 {% csrf_token %}
-                <a href="{% if type == 'category' %}{% url 'custom_admin:categories' %}{% else %}{% url 'custom_admin:products' %}{% endif %}" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Cancel
-                </a>
+                {% if type == 'category' %}
+                    <a href="{% url 'custom_admin:categories' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                {% elif type == 'brand' %}
+                    <a href="{% url 'custom_admin:brands' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                {% else %}
+                    <a href="{% url 'custom_admin:products' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                {% endif %}
                 <button type="submit" class="btn btn-primary" style="background: var(--danger);">
                     <i class="fas fa-trash-alt"></i> Yes, Delete {{ type|title }}
                 </button>

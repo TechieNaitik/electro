@@ -7,8 +7,8 @@ from django.urls import reverse
 from functools import wraps
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from .models import Customer, Category, Product, Cart, Order, OrderItem, SiteAdmin
-from .forms import CategoryForm, ProductForm
+from .models import Customer, Category, Product, Cart, Order, OrderItem, SiteAdmin, Brand
+from .forms import CategoryForm, ProductForm, BrandForm
 from .exports import export_to_csv, export_to_excel, export_to_word, export_to_pdf
 from datetime import datetime
 
@@ -43,6 +43,62 @@ def site_admin_required(view_func):
 # ─────────────────────────────────────────────────────────────────────────────
 # ALPHABETICAL ADMIN VIEWS
 # ─────────────────────────────────────────────────────────────────────────────
+@site_admin_required
+def admin_brands(request):
+    brand_list = Brand.objects.order_by('id')
+    paginator = Paginator(brand_list, 10)
+    page_number = request.GET.get('page')
+    brands = paginator.get_page(page_number)
+    
+    context = {'active_page': 'brands', 'brands': brands}
+    return render(request, 'custom_admin/brands.html', context)
+
+@site_admin_required
+def admin_brand_add(request):
+    if request.method == 'POST':
+        form = BrandForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Brand created successfully.")
+            return redirect('custom_admin:brands')
+    else:
+        form = BrandForm()
+    
+    context = {'active_page': 'brands', 'form': form, 'title': 'Add Brand'}
+    return render(request, 'custom_admin/brand_form.html', context)
+
+@site_admin_required
+def admin_brand_delete(request, brand_id):
+    brand = get_object_or_404(Brand, pk=brand_id)
+    product_count = brand.products.count()
+    
+    if request.method == 'POST':
+        brand.delete()
+        messages.success(request, f"Brand '{brand.name}' deleted.")
+        return redirect('custom_admin:brands')
+    
+    context = {
+        'active_page': 'brands', 
+        'item': brand, 
+        'type': 'brand',
+        'product_count': product_count
+    }
+    return render(request, 'custom_admin/delete_confirm.html', context)
+
+@site_admin_required
+def admin_brand_edit(request, brand_id):
+    brand = get_object_or_404(Brand, pk=brand_id)
+    if request.method == 'POST':
+        form = BrandForm(request.POST, instance=brand)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Brand updated successfully.")
+            return redirect('custom_admin:brands')
+    else:
+        form = BrandForm(instance=brand)
+    
+    context = {'active_page': 'brands', 'form': form, 'brand': brand, 'title': 'Edit Brand'}
+    return render(request, 'custom_admin/brand_form.html', context)
 
 @site_admin_required
 def admin_categories(request):
@@ -146,13 +202,13 @@ def admin_export(request):
             return [obj.order.id, obj.product.name, obj.product.sku or 'N/A', obj.quantity, f"${obj.price}", f"${obj.line_total()}"]
 
     elif module == 'products':
-        queryset = Product.objects.select_related('category_id').all().order_by('id')
+        queryset = Product.objects.select_related('category_id', 'brand').all().order_by('brand__name', 'model_name')
         filename = f"products_{datetime.now().strftime('%Y-%m-%d')}"
         title = "Product Listing"
-        headers = ['ID', 'Name', 'SKU', 'Category', 'Price', 'Stock', 'Status']
+        headers = ['ID', 'Brand', 'Model', 'Variant', 'SKU', 'Category', 'Price', 'Stock', 'Status']
         def data_func(obj):
             status = 'In Stock' if obj.stock_quantity > 0 else 'Out of Stock'
-            return [obj.id, obj.name, obj.sku or 'N/A', obj.category_id.name, f"${obj.price}", obj.stock_quantity, status]
+            return [obj.id, obj.brand.name if obj.brand else 'N/A', obj.model_name or 'N/A', obj.variant_specs or 'N/A', obj.sku or 'N/A', obj.category_id.name, f"₹{obj.price}", obj.stock_quantity, status]
             
     else:
         messages.error(request, "Invalid export module.")
@@ -184,7 +240,7 @@ def admin_export(request):
         elif module == 'orders':
             queryset = queryset.filter(Q(full_name__icontains=query) | Q(id__icontains=query))
         elif module == 'products':
-            queryset = queryset.filter(Q(name__icontains=query) | Q(sku__icontains=query))
+            queryset = queryset.filter(Q(brand__name__icontains=query) | Q(model_name__icontains=query) | Q(sku__icontains=query))
 
     # Export based on format
     if export_format == 'csv':
@@ -229,9 +285,11 @@ def admin_analytical_dashboard(request):
     Renders the new advanced analytical dashboard.
     """
     categories = Category.objects.all()
+    brands = Brand.objects.all()
     context = {
         'active_page': 'analytical_dashboard',
         'categories': categories,
+        'brands': brands,
     }
     return render(request, 'custom_admin/analytical_dashboard.html', context)
 
@@ -328,7 +386,7 @@ def admin_product_delete(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
     if request.method == 'POST':
         product.delete()
-        messages.success(request, f"Product '{product.name}' deleted.")
+        messages.success(request, f"Product '{product.full_name}' deleted.")
         return redirect('custom_admin:products')
     
     context = {'active_page': 'products', 'item': product, 'type': 'product'}
@@ -352,10 +410,10 @@ def admin_product_edit(request, product_id):
 @site_admin_required
 def admin_products(request):
     query = request.GET.get('q')
-    product_list = Product.objects.select_related('category_id').order_by('name')
+    product_list = Product.objects.select_related('category_id', 'brand').order_by('brand__name', 'model_name')
     
     if query:
-        product_list = product_list.filter(Q(name__icontains=query) | Q(sku__icontains=query))
+        product_list = product_list.filter(Q(brand__name__icontains=query) | Q(model_name__icontains=query) | Q(sku__icontains=query))
         
     paginator = Paginator(product_list, 10) # 10 products per page
     page_number = request.GET.get('page')

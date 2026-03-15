@@ -23,6 +23,12 @@ urlpatterns = [
     path('categories/edit/<int:category_id>/', views.admin_category_edit, name='category_edit'),
     path('categories/delete/<int:category_id>/', views.admin_category_delete, name='category_delete'),
     
+    # Brands
+    path('brands/', views.admin_brands, name='brands'),
+    path('brands/add/', views.admin_brand_add, name='brand_add'),
+    path('brands/edit/<int:brand_id>/', views.admin_brand_edit, name='brand_edit'),
+    path('brands/delete/<int:brand_id>/', views.admin_brand_delete, name='brand_delete'),
+    
     # Orders
     path('orders/', views.admin_orders, name='orders'),
     path('orders/<int:order_id>/', views.admin_order_detail, name='order_detail'),

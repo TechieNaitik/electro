@@ -1,0 +1,53 @@
+{% extends 'custom_admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Admin{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="animate-in" style="max-width: 600px; margin: 0 auto;">
+    <div class="section-card">
+        <div class="section-header">
+            <h2>{{ title }}</h2>
+            <a href="{% url 'custom_admin:brands' %}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+        <div class="section-body" style="padding: 32px;">
+            <form method="POST">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div style="background: var(--danger-bg); color: var(--danger); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 24px; font-size: 0.9rem;">
+                    <strong>Fix the following errors:</strong>
+                    <ul style="margin-top: 8px; margin-left: 20px;">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field|title }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="detail-item" style="margin-bottom: 24px;">
+                    <label style="display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;">
+                        Brand Name
+                    </label>
+                    {{ form.name }}
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 32px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Brand
+                    </button>
+                    <a href="{% url 'custom_admin:brands' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reusing category form CSS if available, otherwise it will use base styles -->
+<link href="{% static 'css/custom_admin_category_form.css' %}" rel="stylesheet">
+{% endblock %}

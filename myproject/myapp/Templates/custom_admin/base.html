@@ -50,6 +50,10 @@
                     class="nav-link {% if active_page == 'categories' %}active{% endif %}" id="nav-categories">
                     <i class="fas fa-tags"></i> Categories
                 </a>
+                <a href="{% url 'custom_admin:brands' %}"
+                    class="nav-link {% if active_page == 'brands' %}active{% endif %}" id="nav-brands">
+                    <i class="fas fa-certificate"></i> Brands
+                </a>
                 <a href="{% url 'custom_admin:products' %}"
                     class="nav-link {% if active_page == 'products' %}active{% endif %}" id="nav-products">
                     <i class="fas fa-box"></i> Products
@@ -67,7 +71,7 @@
                     <i class="fas fa-cog"></i> Django Admin
                 </a>
                 <div class="nav-section-label">Account</div>
-                <a href="{% url 'custom_admin:logout' %}" class="nav-button nav-link" style="color: var(--danger);" id="nav-logout">
+                <a href="{% url 'custom_admin:logout' %}" class="nav-button nav-link text-danger" id="nav-logout">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
             </nav>
@@ -89,10 +93,10 @@
                 </div>
                 <div class="topbar-right">
                     {% if request.site_admin %}
-                    <div style="display: flex; align-items: center; gap: 12px; margin-right: 16px;">
-                        <div style="text-align: right;">
-                            <div style="font-size: 0.85rem; font-weight: 600;">{{ request.site_admin.username }}</div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted);">Site Administrator</div>
+                    <div class="d-flex-center gap-12 mr-16">
+                        <div class="text-right">
+                            <div class="font-size-sm font-weight-600">{{ request.site_admin.username }}</div>
+                            <div class="font-size-xs text-muted">Site Administrator</div>
                         </div>
                         <div style="width: 36px; height: 36px; background: var(--bg-hover); border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border-color);">
                             <i class="fas fa-user-shield" style="font-size: 0.9rem; color: var(--accent-light);"></i>
@@ -160,93 +164,7 @@
         </div>
     </div>
 
-    <script>
-        function openExportModal(module) {
-            document.getElementById('exportModule').value = module;
-            
-            // Get current 'q' from URL and add to form if it exists
-            const urlParams = new URLSearchParams(window.location.search);
-            const q = urlParams.get('q');
-            
-            // Remove existing hidden q if any
-            const existingQ = document.getElementById('exportQ');
-            if (existingQ) existingQ.remove();
-            
-            if (q) {
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'q';
-                hiddenInput.id = 'exportQ';
-                hiddenInput.value = q;
-                document.getElementById('exportForm').appendChild(hiddenInput);
-            }
-
-            document.getElementById('exportModal').classList.add('open');
-            document.getElementById('exportLoading').style.display = 'none';
-            document.getElementById('exportSubmitBtn').disabled = false;
-        }
-
-        function closeExportModal() {
-            document.getElementById('exportModal').classList.remove('open');
-        }
-
-        document.getElementById('exportForm').addEventListener('submit', function(e) {
-            // Show loading state
-            document.getElementById('exportLoading').style.display = 'block';
-            document.getElementById('exportSubmitBtn').disabled = true;
-            
-            // The browser will handle the file download, so we want to close the modal after some time
-            // since we can't easily detect when the download starts/ends via standard form submission
-            setTimeout(() => {
-                closeExportModal();
-            }, 3000);
-        });
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('exportModal');
-            if (event.target == modal) {
-                closeExportModal();
-            }
-        }
-
-        // ───────── Instant Search ─────────
-        let searchTimeout = null;
-        document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('instant-search')) {
-                clearTimeout(searchTimeout);
-                const query = e.target.value;
-                const form = e.target.closest('form');
-                const containerId = 'data-container';
-                
-                searchTimeout = setTimeout(() => {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('q', query);
-                    url.searchParams.delete('page'); // Reset to page 1 on search
-                    
-                    // Add a subtle fading effect
-                    const container = document.getElementById(containerId);
-                    if (container) container.style.opacity = '0.5';
-
-                    fetch(url)
-                        .then(response => response.text())
-                        .then(html => {
-                            const parser = new DOMParser();
-                            const doc = parser.parseFromString(html, 'text/html');
-                            const newContent = doc.getElementById(containerId);
-                            if (newContent && container) {
-                                container.innerHTML = newContent.innerHTML;
-                                container.style.opacity = '1';
-                                
-                                // Update URL without reloading
-                                window.history.pushState({}, '', url);
-                            }
-                        })
-                        .catch(err => console.error('Search failed:', err));
-                }, 300); // 300ms debounce
-            }
-        });
-    </script>
+    <script src="{% static 'js/custom_admin_common.js' %}"></script>
 </body>
 
 </html>

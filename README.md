@@ -4,18 +4,21 @@ A Django-based E-commerce application.
 
 ## Features
 
+- **Refactored Product Model**: Advanced data structure splitting generic names into specific `Brand`, `Model Name`, and `Variant Specs` for improved searchability and SEO.
+- **Brand Management**: Dedicated ecosystem for managing brands independently, with full relationship mapping to products.
 - **User Authentication**: Custom customer registration, login system, and password reset via OTP.
-- **Product Browsing**: Shop page with sorting/filtering, single product view, bestsellers, and dynamic inventory status.
+- **Product Browsing**: Shop page with advanced brand-wise sorting/filtering, single product view, bestsellers, and dynamic inventory status.
 - **Wishlist**: Per-user product saving system with AJAX-powered live updates and a dedicated wishlist management page.
 - **Shopping Cart**: Interactive AJAX-powered cart with real-time updates and toast notifications.
-- **One-Click Checkout**: Refactored checkout flow that pulls shipping and billing details directly from stored user profiles for maximum efficiency.
-- **Centralized Profile Management**: Comprehensive user dashboard for managing all personal, contact, and address details in one place.
+- **One-Click Checkout**: Refactored checkout flow that pulls shipping and billing details (including State and Phone) directly from stored user profiles.
+- **Centralized Profile Management**: Comprehensive user dashboard for managing personal details, contact info, and multi-field shipping addresses (Address, City, State, Country, Zip).
 - **Inventory Management**: Real-time stock validation and automatic stock deduction upon order completion.
-- **Custom Site Administration**: A premium, isolated administration dashboard (separate from Django-admin) featuring:
-- **Advanced Analytical Dashboard**: Real-time business intelligence using Chart.js to visualize sales trends, category distribution, order activity heatmaps, and AI-powered 7-day sales forecasting via scikit-learn.
-- **Dynamic Data Export**: Advanced administrative tools to export Customers, Orders, and Products into multiple professional formats (.pdf, .xlsx, .docx, .csv).
-- **Security & Sessions**: Secure login wall with hashed passwords, brute-force protection, and independent admin session management.
-- **Resource Management**: Complete CRUD operations for Products and Categories with instant search capability.
+- **Custom Site Administration**: A premium, isolated administration dashboard featuring:
+  - **Brand Ecosystem**: Full CRUD operations for Brands.
+  - **Advanced Analytical Dashboard**: Real-time business intelligence using Chart.js to visualize sales trends by brand/category, order activity heatmaps, and AI-powered 7-day sales forecasting via scikit-learn.
+  - **Dynamic Data Export**: Advanced administrative tools to export Customers, Orders, and Products into multiple professional formats (.pdf, .xlsx, .docx, .csv).
+  - **Security & Sessions**: Secure login wall with hashed passwords, brute-force protection, and independent admin session management.
+  - **Resource Management**: Complete CRUD operations for Products and Categories with instant search capability.
 - **Inventory Insights**: Real-time stock alerts and business analytics/statistics.
 - **Invoice Generation**: Pixel-perfect, downloadable A4 PDFs rendered via headless Playwright, featuring a luxury editorial layout.
 - **Contact & Support**: Support pages and contact functionality.

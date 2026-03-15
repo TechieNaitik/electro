@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
-from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, SiteAdmin
+from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, SiteAdmin, Brand
 
 from django import forms
 
@@ -63,11 +63,23 @@ class CustomerAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
+class ProductInline(admin.TabularInline):
+    model = Product
+    extra = 0
+    fields = ('model_name', 'variant_specs', 'category_id', 'price', 'stock_quantity')
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+    inlines = [ProductInline]
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category_id', 'price', 'stock_quantity')
-    search_fields = ('name',)
-    list_filter = ('category_id',)
+    list_display = ('brand', 'model_name', 'variant_specs', 'category_id', 'price', 'stock_quantity')
+    search_fields = ('model_name', 'brand__name', 'variant_specs', 'sku')
+    list_filter = ('brand', 'category_id')
+    raw_id_fields = ('brand',)
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):

@@ -1,0 +1,84 @@
+{% extends 'custom_admin/base.html' %}
+
+{% block title %}Brands | Admin{% endblock %}
+{% block page_title %}Brands Management{% endblock %}
+
+{% block content %}
+<div class="animate-in">
+    <div class="section-card">
+        <div class="section-header">
+            <h2>All Brands</h2>
+            <a href="{% url 'custom_admin:brand_add' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add New Brand
+            </a>
+        </div>
+        <div class="section-body">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert-message {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Brand Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for brand in brands %}
+                    <tr>
+                        <td>#{{ brand.id }}</td>
+                        <td><span style="font-weight: 600;">{{ brand.name }}</span></td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="{% url 'custom_admin:brand_edit' brand.id %}" class="btn btn-secondary btn-icon" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'custom_admin:brand_delete' brand.id %}" class="btn btn-secondary btn-icon" title="Delete" style="color: var(--danger);">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">
+                            <div class="empty-state">
+                                <i class="fas fa-certificate"></i>
+                                <p>No brands found.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if brands.has_other_pages %}
+        <div style="padding: 20px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: center; gap: 8px;">
+            {% if brands.has_previous %}
+                <a href="?page={{ brands.previous_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            
+            {% for i in brands.paginator.page_range %}
+                {% if brands.number == i %}
+                    <span class="btn btn-primary btn-sm">{{ i }}</span>
+                {% else %}
+                    <a href="?page={{ i }}" class="btn btn-secondary btn-sm">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if brands.has_next %}
+                <a href="?page={{ brands.next_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

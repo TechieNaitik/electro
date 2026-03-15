@@ -36,10 +36,10 @@
               <div class="d-flex align-items-center">
                 <div class="rounded-3 border overflow-hidden me-4" style="width: 100px; height: 100px;">
                   <img src="{{ item.product.image.url }}" class="img-fluid w-100 h-100 object-fit-cover"
-                    alt="{{ item.product.name }}">
+                    alt="{{ item.product.full_name }}">
                 </div>
                 <div>
-                  <h6 class="mb-1 fw-bold">{{ item.product.name }}</h6>
+                  <h6 class="mb-1 fw-bold">{{ item.product.full_name }}</h6>
                   <p class="text-muted small mb-0">Model: {{ item.product.category_id.name }}</p>
                 </div>
               </div>

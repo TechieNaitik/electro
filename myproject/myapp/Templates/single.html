@@ -1,5 +1,5 @@
 {% extends 'index.html' %}
-{% block title %}{{ product.name }}{% endblock %}
+{% block title %}{{ product.full_name }}{% endblock %}
 {% load static %}
 
 {% block extra_css %}
@@ -9,11 +9,11 @@
 {% block content %}
 <!-- Single Page Header start -->
 <div class="container-fluid page-header py-5">
-    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">{{ product.name }}</h1>
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">{{ product.full_name }}</h1>
     <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
         <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'shop' %}">Shop</a></li>
-        <li class="breadcrumb-item active text-white">{{ product.name }}</li>
+        <li class="breadcrumb-item active text-white">{{ product.full_name }}</li>
     </ol>
 </div>
 <!-- Single Page Header End -->
@@ -60,14 +60,14 @@
                         <!-- Thumbnail -->
                         <div class="flex-shrink-0 bg-light border-end" style="width: 90px; height: 90px;">
                             <img src="{{ rp.image.url }}" class="img-fluid w-100 h-100" style="object-fit: cover;"
-                                alt="{{ rp.name }}">
+                                alt="{{ rp.full_name }}">
                         </div>
                         <!-- Info -->
                         <div class="px-3 py-2 flex-grow-1">
                             <small class="text-muted d-block mb-1">{{ rp.category_id.name }}</small>
                             <a href="{% url 'single' rp.id %}"
                                 class="d-block fw-semibold text-dark text-decoration-none lh-sm mb-1"
-                                style="font-size: 0.92rem;">{{ rp.name }}</a>
+                                style="font-size: 0.92rem;">{{ rp.full_name }}</a>
                             <span class="text-primary fw-bold" style="font-size: 0.95rem;">₹{{ rp.price }}</span>
                         </div>
                     </div>
@@ -83,10 +83,10 @@
                     <div class="col-xl-6">
                         <div class="single-carousel owl-carousel">
                             <div class="single-item"
-                                data-dot="<img class='img-fluid' src='{{ product.image.url }}' alt='{{ product.name }}'>">
+                                data-dot="<img class='img-fluid' src='{{ product.image.url }}' alt='{{ product.full_name }}'>">
                                 <div class="single-inner bg-light rounded">
                                     <img src="{{ product.image.url }}" class="img-fluid rounded"
-                                        alt="{{ product.name }}">
+                                        alt="{{ product.full_name }}">
                                 </div>
                             </div>
                         </div>
@@ -94,7 +94,7 @@
 
                     <!-- Product Info -->
                     <div class="col-xl-6">
-                        <h4 class="fw-bold mb-3">{{ product.name }}</h4>
+                        <h4 class="fw-bold mb-3">{{ product.full_name }}</h4>
                         <p class="mb-3">Category: <strong>{{ product.category_id.name }}</strong></p>
                         <h5 class="fw-bold mb-3 text-primary">₹{{ product.price }}</h5>
                         <div class="mb-3">

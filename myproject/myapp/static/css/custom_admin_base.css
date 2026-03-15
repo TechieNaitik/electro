@@ -702,3 +702,13 @@ img {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ───────── Utility Classes ───────── */
+.text-danger { color: var(--danger) !important; }
+.text-right { text-align: right !important; }
+.font-weight-600 { font-weight: 600 !important; }
+.font-size-sm { font-size: 0.85rem !important; }
+.font-size-xs { font-size: 0.7rem !important; }
+.d-flex-center { display: flex; align-items: center; }
+.gap-12 { gap: 12px; }
+.mr-16 { margin-right: 16px; }

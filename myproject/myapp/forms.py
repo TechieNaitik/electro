@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, Product
+from .models import Category, Product, Brand
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -9,13 +9,23 @@ class CategoryForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Category Name'}),
         }
 
+class BrandForm(forms.ModelForm):
+    class Meta:
+        model = Brand
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Brand Name'}),
+        }
+
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['category_id', 'name', 'image', 'description', 'price', 'stock_quantity']
+        fields = ['category_id', 'brand', 'model_name', 'variant_specs', 'image', 'description', 'price', 'stock_quantity']
         widgets = {
             'category_id': forms.Select(attrs={'class': 'form-select'}),
-            'name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Product Name'}),
+            'brand': forms.Select(attrs={'class': 'form-select'}),
+            'model_name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g. iPhone 15'}),
+            'variant_specs': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g. 128GB, Blue'}),
             'image': forms.FileInput(attrs={'class': 'form-input-file'}),
             'description': forms.Textarea(attrs={'class': 'form-input', 'placeholder': 'Product Description', 'rows': 4}),
             'price': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Price', 'min': 0}),

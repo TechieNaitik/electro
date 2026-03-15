@@ -8,7 +8,7 @@ from django.db.models.functions import Lower
 from datetime import timedelta
 from django.utils import timezone
 from django.core.paginator import Paginator
-from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist
+from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand
 
 # Invoice PDF Generation Imports
 from playwright.sync_api import sync_playwright
@@ -142,7 +142,7 @@ def checkout(request):
         elif pm_value == 'Delivery': payment_method = 'Cash On Delivery'
         
         # Ensure customer has an address before allowing order
-        if not all([customer.full_name, customer.address, customer.town_city, customer.country, customer.postcode_zip]):
+        if not all([customer.full_name, customer.address, customer.town_city, customer.state, customer.country, customer.postcode_zip]):
             messages.error(request, "Please update your shipping address in your profile before placing an order.")
             return redirect('my_account')
 
@@ -437,6 +437,7 @@ def my_account(request):
             phone = request.POST.get('phone')
             address = request.POST.get('address')
             town_city = request.POST.get('town_city')
+            state = request.POST.get('state')
             country = request.POST.get('country')
             postcode_zip = request.POST.get('postcode_zip')
 
@@ -448,6 +449,7 @@ def my_account(request):
                 customer.phone = phone
                 customer.address = address
                 customer.town_city = town_city
+                customer.state = state
                 customer.country = country
                 customer.postcode_zip = postcode_zip
                 customer.save()
@@ -600,36 +602,52 @@ def return_order(request, oid):
     return redirect('order_detail', oid=oid)
 
 def shop(request, cid=0):
+    from django.db.models import Q, Count
+    
+    # Get initial queryset
+    products = Product.objects.all().select_related('brand', 'category_id')
+
+    # 1. Build context with filters
     context = {
         'categories': Category.objects.all(),
+        'brands': Brand.objects.annotate(product_count=Count('products')).filter(product_count__gt=0),
     }
     
-    # Get category ID from GET if not in URL
+    # 2. Category filtering
     get_cid = request.GET.get('cid')
     if get_cid:
+        try: cid = int(get_cid)
+        except ValueError: pass
+
+    if cid != 0:
         try:
-            cid = int(get_cid)
+            category = Category.objects.get(id=cid)
+            products = products.filter(category_id=category)
+            context['selected_category'] = category
+        except Category.DoesNotExist:
+            pass
+
+    # 3. Brand filtering
+    brand_id = request.GET.get('brand')
+    if brand_id:
+        try:
+            products = products.filter(brand_id=brand_id)
+            context['selected_brand_id'] = int(brand_id)
         except ValueError:
             pass
 
-    # Get initial products based on category
-    if cid == 0:
-        products = Product.objects.all()
-    else:
-        try:
-            category = Category.objects.get(id=cid)
-            products = Product.objects.filter(category_id=category)
-            context['selected_category'] = category
-        except Category.DoesNotExist:
-            products = Product.objects.all()
-
-    # Apply search query if present
+    # 4. Search query
     query = request.GET.get('q')
     if query:
-        products = products.filter(name__icontains=query)
+        products = products.filter(
+            Q(model_name__icontains=query) | 
+            Q(brand__name__icontains=query) |
+            Q(variant_specs__icontains=query) |
+            Q(name__icontains=query) # Fallback for unmigrated
+        )
         context['search_query'] = query
 
-    # Apply price filter if present
+    # 5. Price filter
     max_price = request.GET.get('max_price')
     if max_price:
         try:
@@ -638,22 +656,20 @@ def shop(request, cid=0):
         except ValueError:
             pass
 
-    # Apply sorting (default: Name A-Z, case-insensitive, lowercase before uppercase)
+    # 6. Sorting
     sort = request.GET.get('sort', 'Name, A-Z')
-    # Annotate with lower_name for case-insensitive comparison
-    products = products.annotate(lower_name=Lower('name'))
-    # sort_map: tuples of ORM order fields
-    # Primary = lower_name (case-insensitive alpha), secondary = -name (lowercase before uppercase)
+    # Use annotated names for case-insensitive sort if available
+    # For now, let's keep it simple: Sort by brand name, then model name
     sort_map = {
-        'Name, A-Z':   ('lower_name', '-name'),
-        'Name, Z-A':   ('-lower_name', '-name'),
+        'Name, A-Z':   ('brand__name', 'model_name'),
+        'Name, Z-A':   ('-brand__name', '-model_name'),
         'Price, ASC':  ('price',),
         'Price, DESC': ('-price',),
     }
-    order_fields = sort_map.get(sort, ('lower_name', '-name'))
+    order_fields = sort_map.get(sort, ('brand__name', 'model_name'))
     products = products.order_by(*order_fields)
+    
     context['current_sort'] = sort
-
     context['products'] = products
     return render(request, 'shop.html', context)
 
@@ -661,9 +677,6 @@ def single(request, pid):
     product = get_object_or_404(Product, pk=pid)
     
     # Track view
-    from django.db.models import F
-    product.views_count = F('views_count') + 1
-    product.save(update_fields=['views_count'])
     from .models import ProductView
     ProductView.objects.create(product=product)
 

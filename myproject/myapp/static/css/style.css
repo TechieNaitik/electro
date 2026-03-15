@@ -461,7 +461,20 @@
 
 /*** ProductList Categories Start ***/
 .productList .productList-carousel {
-  height: 215px !important;
+  height: auto !important;
+  padding-bottom: 80px; /* Space for the poppy Add to Cart button */
+}
+
+/* Ensure Owl Carousel items and cards fill the full width of their columns */
+.productList-item,
+.productList-item .products-mini-item {
+    width: 100% !important;
+    display: block !important;
+}
+
+.productList-item .products-mini-item .row {
+    width: 100% !important;
+    margin: 0 !important;
 }
 
 .productList
@@ -646,6 +659,14 @@
   margin-bottom: -75px;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
+}
+
+/* Fix for horizontal cards image area in carousel */
+.products-mini-item .products-mini-img {
+    min-width: 120px;
+}
+.products-mini-item .products-mini-content {
+    flex: 1;
 }
 /*** bestseller Products End ***/
 

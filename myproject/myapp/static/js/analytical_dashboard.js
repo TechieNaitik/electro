@@ -36,6 +36,7 @@ class AnalyticalDashboard {
 
     initFilters() {
         document.getElementById('categoryFilter').addEventListener('change', () => this.fetchData());
+        document.getElementById('brandFilter').addEventListener('change', () => this.fetchData());
     }
 
     initCharts() {
@@ -81,7 +82,14 @@ class AnalyticalDashboard {
             options: { ...chartConfig, cutout: '75%', plugins: { ...chartConfig.plugins, legend: { position: 'right' } } }
         });
 
-        // 4. Activity Heatmap (Simulated)
+        // 4. Brand Share
+        this.charts.brand = new Chart(document.getElementById('brandChart'), {
+            type: 'doughnut',
+            data: { labels: [], datasets: [{ data: [], backgroundColor: ['#f43f5e', '#10b981', '#00d2ff', '#9333ea', '#f59e0b'], borderWidth: 0 }]},
+            options: { ...chartConfig, cutout: '75%', plugins: { ...chartConfig.plugins, legend: { position: 'right' } } }
+        });
+
+        // 5. Activity Heatmap (Simulated)
         this.charts.heatmap = new Chart(document.getElementById('heatmapChart'), {
             type: 'bar',
             data: { labels: Array.from({length: 24}, (_, i) => `${i}h`), datasets: [{ label: 'Activity', data: [], backgroundColor: 'rgba(0, 210, 255, 0.2)', borderRadius: 4 }]},
@@ -92,7 +100,8 @@ class AnalyticalDashboard {
     async fetchData() {
         const range = document.getElementById('dateRangeText').innerText;
         const categoryId = document.getElementById('categoryFilter').value;
-        const url = `${this.apiUrl}?range=${range}&category=${categoryId}`;
+        const brandId = document.getElementById('brandFilter').value;
+        const url = `${this.apiUrl}?range=${range}&category=${categoryId}&brand=${brandId}`;
 
         try {
             const response = await fetch(url);
@@ -166,6 +175,11 @@ class AnalyticalDashboard {
         this.charts.category.data.datasets[0].data = data.categories.map(c => c.revenue);
         this.charts.category.update();
 
+        // Brands
+        this.charts.brand.data.labels = data.brands.map(b => b.name);
+        this.charts.brand.data.datasets[0].data = data.brands.map(b => b.revenue);
+        this.charts.brand.update();
+
         // Activity
         const activity = Array(24).fill(0);
         data.activity_hours.forEach(item => activity[parseInt(item.hour)] = item.count);
@@ -185,3 +199,14 @@ class AnalyticalDashboard {
     }
 }
 
+// Auto-initialize if container exists
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('analytical-dashboard-container');
+    if (container) {
+        const config = {
+            apiUrl: container.getAttribute('data-api-url'),
+            pollingInterval: parseInt(container.getAttribute('data-polling-interval')) || 60000
+        };
+        new AnalyticalDashboard(config);
+    }
+});

@@ -55,13 +55,13 @@
                             <td>
                                 <div style="display: flex; align-items: center; gap: 12px;">
                                     {% if product.image %}
-                                        <img src="{{ product.image.url }}" class="product-thumb" alt="{{ product.name }}">
+                                        <img src="{{ product.image.url }}" class="product-thumb" alt="{{ product.full_name }}">
                                     {% else %}
                                         <div class="product-thumb" style="background: var(--bg-primary); display: grid; place-items: center;">
                                             <i class="fas fa-image" style="opacity: .3;"></i>
                                         </div>
                                     {% endif %}
-                                    <span style="font-weight: 600;">{{ product.name }}</span>
+                                    <span style="font-weight: 600;">{{ product.full_name }}</span>
                                 </div>
                             </td>
                             <td><span class="badge badge-purple">{{ product.category_id.name }}</span></td>

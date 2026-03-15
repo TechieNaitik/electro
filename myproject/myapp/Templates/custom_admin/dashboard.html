@@ -131,7 +131,7 @@
             <tbody>
                 {% for product in low_stock_products %}
                 <tr>
-                    <td><strong>{{ product.name }}</strong></td>
+                    <td><strong>{{ product.full_name }}</strong></td>
                     <td>{{ product.category_id.name }}</td>
                     <td>₹{{ product.price }}</td>
                     <td>
