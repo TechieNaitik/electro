@@ -191,6 +191,24 @@ h1 {
     background: rgba(255, 255, 255, 0.1);
 }
 
+.btn-copy {
+    background: rgba(62, 100, 255, 0.1);
+    color: #4da6ff;
+    border: 1px solid rgba(62, 100, 255, 0.2);
+    cursor: pointer;
+}
+
+.btn-copy:hover {
+    background: rgba(62, 100, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.btn-copy.copied {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.3);
+}
+
 .path-label { color: var(--accent-color); margin-right: 0.5rem; }
 
 /* Custom Scrollbar */

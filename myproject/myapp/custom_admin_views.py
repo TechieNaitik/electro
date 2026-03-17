@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from .models import Customer, Category, Product, Cart, Order, OrderItem, SiteAdmin, Brand
 from .forms import CategoryForm, ProductForm, BrandForm
+from .logger import log_action
 from .exports import export_to_csv, export_to_excel, export_to_word, export_to_pdf
 from datetime import datetime
 
@@ -58,7 +59,8 @@ def admin_brand_add(request):
     if request.method == 'POST':
         form = BrandForm(request.POST)
         if form.is_valid():
-            form.save()
+            brand = form.save()
+            log_action(f"Admin: {request.site_admin.username}", "Created Brand", f"Brand: {brand.name}")
             messages.success(request, "Brand created successfully.")
             return redirect('custom_admin:brands')
     else:
@@ -73,8 +75,10 @@ def admin_brand_delete(request, brand_id):
     product_count = brand.products.count()
     
     if request.method == 'POST':
+        name = brand.name
         brand.delete()
-        messages.success(request, f"Brand '{brand.name}' deleted.")
+        log_action(f"Admin: {request.site_admin.username}", "Deleted Brand", f"Brand: {name}")
+        messages.success(request, f"Brand '{name}' deleted.")
         return redirect('custom_admin:brands')
     
     context = {
@@ -92,6 +96,7 @@ def admin_brand_edit(request, brand_id):
         form = BrandForm(request.POST, instance=brand)
         if form.is_valid():
             form.save()
+            log_action(f"Admin: {request.site_admin.username}", "Updated Brand", f"Brand: {brand.name}")
             messages.success(request, "Brand updated successfully.")
             return redirect('custom_admin:brands')
     else:
@@ -115,7 +120,8 @@ def admin_category_add(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
         if form.is_valid():
-            form.save()
+            category = form.save()
+            log_action(f"Admin: {request.site_admin.username}", "Created Category", f"Category: {category.name}")
             messages.success(request, "Category created successfully.")
             return redirect('custom_admin:categories')
     else:
@@ -130,8 +136,10 @@ def admin_category_delete(request, category_id):
     product_count = category.product_set.count() # Related name default
     
     if request.method == 'POST':
+        name = category.name
         category.delete()
-        messages.success(request, f"Category '{category.name}' deleted.")
+        log_action(f"Admin: {request.site_admin.username}", "Deleted Category", f"Category: {name}")
+        messages.success(request, f"Category '{name}' deleted.")
         return redirect('custom_admin:categories')
     
     context = {
@@ -149,6 +157,7 @@ def admin_category_edit(request, category_id):
         form = CategoryForm(request.POST, instance=category)
         if form.is_valid():
             form.save()
+            log_action(f"Admin: {request.site_admin.username}", "Updated Category", f"Category: {category.name}")
             messages.success(request, "Category updated successfully.")
             return redirect('custom_admin:categories')
     else:
@@ -316,20 +325,32 @@ def admin_login(request):
                 # We do NOT use auth_login(request, user) to prevent sharing session with django-admin
                 request.session['_site_admin_user_id'] = user.id
                 request.session['login_attempts'] = 0
+                log_action(f"Admin: {user.username}", "Admin Login", "Successfully logged into Custom Admin.")
                 return redirect(next_url)
             else:
                 request.session['login_attempts'] = attempts + 1
+                log_action(f"Guest ({user.username})", "Failed Admin Login", "Access Denied: Not a site administrator.")
                 messages.error(request, "Access denied: Not a site administrator.")
         else:
             request.session['login_attempts'] = attempts + 1
+            log_action(f"Guest ({username})", "Failed Admin Login", "Incorrect username or password.")
             messages.error(request, "Invalid username or password.")
             
     return render(request, 'custom_admin/login.html')
 
 def admin_logout(request):
-    # Only clear our specific session key, don't use auth_logout to avoid global logout
-    if '_site_admin_user_id' in request.session:
+    admin_id = request.session.get('_site_admin_user_id')
+    user_info = "Admin"
+    
+    if admin_id:
+        try:
+            admin_user = User.objects.get(pk=admin_id)
+            user_info = f"Admin: {admin_user.username}"
+        except User.DoesNotExist:
+            pass
         del request.session['_site_admin_user_id']
+    
+    log_action(user_info, "Admin Logout", "Admin logged out from Custom Admin.")
     messages.success(request, "You have been logged out from the admin panel.")
     return redirect('custom_admin:login')
 
@@ -340,8 +361,10 @@ def admin_order_detail(request, order_id):
     if request.method == 'POST':
         new_status = request.POST.get('status')
         if new_status in dict(Order.ORDER_STATUS_CHOICES):
+            old_status = order.status
             order.status = new_status
             order.save()
+            log_action(f"Admin: {request.site_admin.username}", "Updated Order Status", f"Order #{order.id} | {old_status} -> {new_status}")
             messages.success(request, f"Order status successfully updated to {new_status}.")
             return redirect('custom_admin:order_detail', order_id=order.id)
         else:
@@ -372,7 +395,8 @@ def admin_product_add(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            product = form.save()
+            log_action(f"Admin: {request.site_admin.username}", "Created Product", f"Product: {product.full_name}")
             messages.success(request, "Product created successfully.")
             return redirect('custom_admin:products')
     else:
@@ -385,8 +409,10 @@ def admin_product_add(request):
 def admin_product_delete(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
     if request.method == 'POST':
+        name = product.full_name
         product.delete()
-        messages.success(request, f"Product '{product.full_name}' deleted.")
+        log_action(f"Admin: {request.site_admin.username}", "Deleted Product", f"Product: {name}")
+        messages.success(request, f"Product '{name}' deleted.")
         return redirect('custom_admin:products')
     
     context = {'active_page': 'products', 'item': product, 'type': 'product'}
@@ -399,6 +425,7 @@ def admin_product_edit(request, product_id):
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
+            log_action(f"Admin: {request.site_admin.username}", "Updated Product", f"Product: {product.full_name}")
             messages.success(request, "Product updated successfully.")
             return redirect('custom_admin:products')
     else:

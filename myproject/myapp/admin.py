@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
 from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, SiteAdmin, Brand
+from .logger import log_action
 
 from django import forms
 
@@ -62,6 +63,17 @@ class CustomerAdmin(admin.ModelAdmin):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            log_action(f"Admin: {request.user.username}", "Created Category (Admin Panel)", f"Category: {obj.name}")
+        else:
+            log_action(f"Admin: {request.user.username}", "Updated Category (Admin Panel)", f"Category: {obj.name}")
+        super().save_model(request, obj, form, change)
+
+    def delete_model(self, request, obj):
+        log_action(f"Admin: {request.user.username}", "Deleted Category (Admin Panel)", f"Category: {obj.name}")
+        super().delete_model(request, obj)
 
 class ProductInline(admin.TabularInline):
     model = Product
@@ -73,6 +85,17 @@ class BrandAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
     inlines = [ProductInline]
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            log_action(f"Admin: {request.user.username}", "Created Brand (Admin Panel)", f"Brand: {obj.name}")
+        else:
+            log_action(f"Admin: {request.user.username}", "Updated Brand (Admin Panel)", f"Brand: {obj.name}")
+        super().save_model(request, obj, form, change)
+
+    def delete_model(self, request, obj):
+        log_action(f"Admin: {request.user.username}", "Deleted Brand (Admin Panel)", f"Brand: {obj.name}")
+        super().delete_model(request, obj)
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -80,6 +103,17 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('model_name', 'brand__name', 'variant_specs', 'sku')
     list_filter = ('brand', 'category_id')
     raw_id_fields = ('brand',)
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            log_action(f"Admin: {request.user.username}", "Created Product (Admin Panel)", f"Product: {obj.full_name}")
+        else:
+            log_action(f"Admin: {request.user.username}", "Updated Product (Admin Panel)", f"Product: {obj.full_name}")
+        super().save_model(request, obj, form, change)
+
+    def delete_model(self, request, obj):
+        log_action(f"Admin: {request.user.username}", "Deleted Product (Admin Panel)", f"Product: {obj.full_name}")
+        super().delete_model(request, obj)
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):

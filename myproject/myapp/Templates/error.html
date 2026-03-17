@@ -49,9 +49,30 @@
         {% endif %}
 
         <div class="actions">
+            {% if debug %}
+            <button id="copy-debug" class="btn btn-copy">
+                Copy Debug Info
+            </button>
+            {% endif %}
             <a href="/" class="btn btn-primary">Return to Home</a>
             <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
         </div>
     </div>
+
+    {% if debug %}
+    <!-- Debug Data Bridge -->
+    <script>
+        window.DEBUG_ERROR_CONFIG = {
+            type: "{{ error_type|escapejs }}",
+            message: "{{ error_message|escapejs }}",
+            path: "{{ request_path|escapejs }}",
+            file: "{{ file_path|escapejs }}",
+            line: "{{ line_number|escapejs }}",
+            func: "{{ function_name|escapejs }}",
+            trace: `{{ stack_trace|escapejs }}`
+        };
+    </script>
+    <script src="{% static 'js/error.js' %}"></script>
+    {% endif %}
 </body>
 </html>

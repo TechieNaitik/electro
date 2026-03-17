@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 import json
 from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand, ProductReview
+from .logger import log_action
 
 # Invoice PDF Generation Imports
 from playwright.sync_api import sync_playwright
@@ -71,6 +72,7 @@ def cancel_order(request, oid):
             product.stock_quantity += item.quantity
             product.save()
         order.save()
+        log_action(f"Customer: {customer.full_name} <{customer.email}>", "Cancelled Order", f"Order #{oid}")
         messages.success(request, f"Order #{oid} has been cancelled.")
     else:
         messages.error(request, "This order cannot be cancelled.")
@@ -162,6 +164,8 @@ def checkout(request):
             shipping_charge=shipping
         )
         
+        log_action(f"Customer: {customer.full_name} <{customer.email}>", "Placed Order", f"Order #{order.id} | Total: {total}")
+        
         for item in cart_items:
             # Deduct stock
             product = item.product
@@ -195,6 +199,16 @@ def checkout(request):
     return render(request, 'checkout.html', context)
 
 def contact(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        
+        log_action(f"Guest/User: {name} <{email}>", "Contact Form Submission", f"Subject: {subject} | Message: {message[:50]}...")
+        messages.success(request, "Your message has been sent. We will get back to you soon.")
+        return redirect('contact')
+
     context = {
         'categories': Category.objects.all(),
     }
@@ -310,6 +324,7 @@ def forgot_password(request):
                 fail_silently=False,
             )
             messages.success(request, f"An OTP has been sent to {email}.")
+            log_action(f"Guest ({get_client_ip(request)})", "Requested Password Reset", f"Email: {email}")
             return redirect('reset_password')
         except Exception as e:
             messages.error(request, "Failed to send OTP. Please check email configuration.")
@@ -360,8 +375,10 @@ def login(request):
             request.session['name'] = customer.full_name
             request.session.set_expiry(0)
             messages.success(request, f"Welcome back, {customer.full_name}!")
+            log_action(f"Customer: {customer.full_name} <{customer.email}>", "Login", "Successfully logged in.")
             return redirect('home')
         else:
+            log_action(f"Guest ({get_client_ip(request)})", "Failed Login Attempt", f"Email: {email}")
             messages.error(request, "Invalid email or password.")
             return render(request, 'login.html', {'categories': Category.objects.all()})
 
@@ -371,7 +388,12 @@ def logout(request):
     if 'email' not in request.session:
         return redirect('login')
     
+    email = request.session.get('email')
+    name = request.session.get('name', 'User')
+    user_info = f"Customer: {name} <{email}>"
+    
     request.session.flush()
+    log_action(user_info, "Logout", "Logged out successfully.")
     messages.success(request, "You have been logged out.")
     return redirect('login')
 
@@ -459,6 +481,7 @@ def my_account(request):
                 request.session['email'] = email
                 request.session['name'] = full_name
                 messages.success(request, "Profile updated successfully.")
+                log_action(f"Customer: {customer.full_name} <{customer.email}>", "Changed Account Details", f"Updated Profile Fields")
                 return redirect('my_account')
     
     elif active_tab == 'dashboard':
@@ -528,7 +551,8 @@ def register(request):
             messages.error(request, "An account with this email already exists.")
             return render(request, 'register.html', {'categories': Category.objects.all(), 'form_data': {'name': name}})
 
-        Customer.objects.create(full_name=name, email=email, password=password)
+        customer = Customer.objects.create(full_name=name, email=email, password=password)
+        log_action(f"Guest ({get_client_ip(request)})", "Registered Account", f"Customer: {name} <{email}>")
         
         messages.success(request, "Registration successful! Please log in.")
         return redirect('login')
@@ -949,6 +973,9 @@ def submit_product_rating(request, pid):
             ip_address=ip,
             session_key=session_key
         )
+        
+    user_info = f"Customer: {customer.full_name} <{customer.email}>" if customer else f"Guest ({ip})"
+    log_action(user_info, "Left a Review", f"Product: {product.full_name} | Rating: {rating_value}")
 
     return JsonResponse({
         'status': 'success',
