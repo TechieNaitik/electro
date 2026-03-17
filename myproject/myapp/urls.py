@@ -60,4 +60,8 @@ urlpatterns = [
     path('add-to-cart/<int:pid>/', views.add_to_cart, name='add_to_cart'),
     path('toggle-wishlist/<int:pid>/', views.toggle_wishlist, name='toggle_wishlist'),
     path('update-cart/<int:cid>/<str:action>/', views.update_cart, name='update_cart'),
+
+    # Rating System API
+    path('api/ratings/<int:pid>/', views.get_product_rating, name='get_rating'),
+    path('api/ratings/submit/<int:pid>/', views.submit_product_rating, name='submit_rating'),
 ]

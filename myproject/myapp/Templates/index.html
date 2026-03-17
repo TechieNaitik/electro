@@ -9,6 +9,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
+    <meta name="csrf-token" content="{{ csrf_token }}">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,6 +46,7 @@
             {% endfor %}
         {% endif %}
     </div>
+
     <!-- Spinner Start -->
     <div id="spinner"
         class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -136,7 +138,7 @@
                             <option value="{{ category.id }}" {% if selected_category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
                             {% endfor %}
                         </select>
-                        <button id="headerSearchBtn" type="button" class="btn btn-primary rounded-pill py-3 px-5 search-btn-borderless"><i class="fas fa-search"></i></button>
+                        <button id="headerSearchBtn" type="button" class="btn btn-primary rounded-pill py-3 px-5 search-btn-borderless" data-url="{% url 'shop' %}"><i class="fas fa-search"></i></button>
                     </div>
                 </div>
             </div>
@@ -400,18 +402,19 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4 ajax-add-to-cart"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-
                                             <div class="d-flex">
-                                                <a href="#"
-                                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                                        class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-random"></i></span></a>
                                                 <a href="javascript:void(0);"
                                                     class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-0 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
                                                     data-product-id="{{ product.id }}">
-                                                    <span class="rounded-circle btn-sm-square border"><i
-                                                            class="fas fa-heart"></i></span>
+                                                    <span class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></span>
                                                 </a>
+                                            </div>
+                                            <div class="rating-readonly d-flex align-items-center ms-2" data-product-id="{{ product.id }}">
+                                                {% for _ in "12345" %}
+                                                <span class="star-display">
+                                                    <i class="fa-star {% if forloop.counter <= product.rating %}fas{% else %}far{% endif %}"></i>
+                                                </span>
+                                                {% endfor %}
                                             </div>
                                         </div>
                                     </div>
@@ -422,7 +425,6 @@
                                 <h4>No products available</h4>
                             </div>
                             {% endfor %}
-
                         </div>
                     </div>
                 </div>
@@ -467,16 +469,18 @@
                                 class="btn btn-primary border-secondary rounded-pill py-2 px-4 ajax-add-to-cart"><i
                                     class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                             <div class="d-flex">
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                        class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-random"></i></span></a>
                                 <a href="javascript:void(0);"
                                     class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-0 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
                                     data-product-id="{{ product.id }}">
-                                    <span class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-heart"></i></span>
+                                    <span class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></span>
                                 </a>
+                            </div>
+                            <div class="rating d-flex align-items-center ms-2">
+                                {% for _ in "12345" %}
+                                <a href="javascript:void(0);" class="star-link">
+                                    <i class="fa-star {% if forloop.counter <= product.rating %}fas{% else %}far{% endif %}"></i>
+                                </a>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>

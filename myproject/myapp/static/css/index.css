@@ -31,6 +31,74 @@
   transition: color 0.3s ease;
 }
 
+/* Professional Star Rating UI */
+.rating-interactive, .rating-readonly {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 2px;
+}
+
+.star-link {
+  text-decoration: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.star-link:hover {
+  transform: scale(1.2);
+}
+
+/* Base Star Style (Outline/Empty) */
+.rating-interactive .fa-star, 
+.rating-readonly .fa-star,
+.rating-interactive i,
+.rating-readonly i {
+  font-size: 14px;
+  color: #ccc !important; /* Neutral gray for empty stars */
+  transition: all 0.3s ease;
+}
+
+/* Filled Star Style (Yellow/Gold) */
+.rating-interactive .fas.fa-star, 
+.rating-readonly .fas.fa-star,
+.rating-interactive .fa-solid.fa-star,
+.rating-readonly .fa-solid.fa-star,
+.rating-interactive .fas,
+.rating-readonly .fas,
+.rating-interactive .fa-solid,
+.rating-readonly .fa-solid {
+  color: #ffc107 !important; /* Premium Yellow/Gold */
+  filter: drop-shadow(0 0 1px rgba(255, 193, 7, 0.3));
+}
+
+/* Hover States */
+.rating-interactive .star-link:hover .fa-star,
+.rating-interactive .fa-star.star-hover {
+  color: #ffb300 !important;
+  transform: scale(1.1);
+}
+
+.rating-interactive .fa-star,
+.rating-readonly .fa-star {
+  transition: all 0.2s ease-in-out;
+}
+
+.rating-interactive.voted-locked,
+.rating-readonly {
+  cursor: default;
+}
+
+.rating-readonly {
+  opacity: 0.9;
+}
+
+.rating-interactive.voted-locked .star-link {
+  cursor: default;
+  pointer-events: none;
+}
+
 /* Layout Utilities */
 .header-cat-select { width: 200px; }
 .search-btn-borderless { border: 0 !important; }

@@ -63,6 +63,18 @@ class Product(models.Model):
     reorder_threshold = models.PositiveIntegerField(default=10) # For KPI alerts
 
     @property
+    def rating(self):
+        """Returns the average rating calculated from all user reviews."""
+        from django.db.models import Avg
+        avg = self.product_reviews.aggregate(Avg('rating'))['rating__avg']
+        return round(avg, 1) if avg else 0
+
+    @property
+    def total_votes(self):
+        """Returns the total number of reviews/votes."""
+        return self.product_reviews.count()
+
+    @property
     def full_name(self):
         """Constructs the full product name: Brand + Model + Variant"""
         parts = []
@@ -144,6 +156,28 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.customer.full_name} — {self.product.name}"
+
+class ProductReview(models.Model):
+    """Stores detailed product reviews and ratings from individual users."""
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_reviews')
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    rating = models.IntegerField()
+    review_text = models.TextField()
+    ip_address = models.GenericIPAddressField()
+    session_key = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['product', 'ip_address']),
+            models.Index(fields=['product', 'customer']),
+        ]
+
+    def __str__(self):
+        return f"{self.name} - {self.product.full_name} ({self.rating} stars)"
 
 @receiver(post_delete, sender=Product)
 def delete_product_image_on_delete(sender, instance, **kwargs):

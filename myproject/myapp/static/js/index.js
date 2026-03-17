@@ -3,7 +3,8 @@ document
   .addEventListener("click", function () {
     var categoryId = document.getElementById("headerCategorySelect").value;
     var query = document.getElementById("headerSearchInput").value;
-    var url = "{% url 'shop' %}?";
+    var shopUrl = this.getAttribute("data-url") || "/shop/";
+    var url = shopUrl + "?";
 
     if (categoryId != "0") {
       url += "cid=" + categoryId + "&";
@@ -22,6 +23,7 @@ document
       document.getElementById("headerSearchBtn").click();
     }
   });
+
 // Global AJAX Cart Helper
 function showNotification(message, type = "success") {
   const container = document.getElementById("notification-container");
@@ -86,11 +88,14 @@ $(document).on("click", ".wishlist-btn", function (e) {
   e.preventDefault();
   const button = $(this);
   const productId = button.data("product-id");
+  const csrftoken = document
+    .querySelector('meta[name="csrf-token"]')
+    ?.getAttribute("content");
 
   fetch(`/toggle-wishlist/${productId}/`, {
     method: "POST",
     headers: {
-      "X-CSRFToken": "{{ csrf_token }}",
+      "X-CSRFToken": csrftoken,
       "X-Requested-With": "XMLHttpRequest",
     },
   })
@@ -128,8 +133,149 @@ $(document).on("click", ".wishlist-btn", function (e) {
     .catch((error) => console.error("Error:", error));
 });
 
-// Auto-show Django Messages
+// Universal Rating System Logic
+function updateRatingDisplay(productId, average, totalVotes, alreadyVoted) {
+  // Update ALL rating containers for this product (display logic only)
+  $(`.rating-readonly[data-product-id="${productId}"], .rating-interactive[data-product-id="${productId}"]`).each(function () {
+    const container = $(this);
+    const roundedAvg = Math.round(average);
+
+    // If it's the interactive one, we only update icons if user hasn't voted yet
+    // Actually, it's better to show current average as default
+    container.find("i.fa-star").each(function (index) {
+      const val = index + 1;
+      if (val <= roundedAvg) {
+        $(this).removeClass("far").addClass("fas");
+      } else {
+        $(this).removeClass("fas").addClass("far");
+      }
+    });
+
+    if (alreadyVoted) {
+      container.addClass("voted-locked");
+      container.attr("title", `You already rated this. Avg: ${average} (${totalVotes} votes)`);
+    } else {
+      container.attr("title", `Average Rating: ${average} (${totalVotes} votes)`);
+    }
+  });
+}
+
+// Initial Fetch of Ratings
+function loadRatings() {
+  const pids = new Set();
+  $("[data-product-id]").filter(".rating-readonly, .rating-interactive").each(function () {
+    pids.add($(this).data("product-id"));
+  });
+
+  pids.forEach((pid) => {
+    fetch(`/api/ratings/${pid}/`)
+      .then((res) => res.json())
+      .then((data) => {
+        updateRatingDisplay(pid, data.average, data.total_votes, data.already_voted);
+      })
+      .catch((err) => console.error("Error loading ratings:", err));
+  });
+}
+
+// 1. Interactive Star Clicking (Only for Interactive Containers)
+$(document).on("click", ".rating-interactive .star-link", function (e) {
+  e.preventDefault();
+  const star = $(this);
+  const ratingContainer = star.closest(".rating-interactive");
+  
+  if (ratingContainer.hasClass("voted-locked")) {
+    showNotification("You have already reviewed this product!", "info");
+    return;
+  }
+
+  const val = star.data("value");
+  $("#selected-rating").val(val);
+
+  // Visual feedback for selection
+  ratingContainer.find("i.fa-star").each(function (index) {
+    if (index + 1 <= val) {
+      $(this).removeClass("far").addClass("fas");
+    } else {
+      $(this).removeClass("fas").addClass("far");
+    }
+  });
+});
+
+// 2. Comprehensive Review Submission (Single Page)
+$(document).on("submit", "#review-form", function (e) {
+  e.preventDefault();
+  const form = $(this);
+  const ratingContainer = form.find(".rating-interactive");
+  const productId = ratingContainer.data("product-id");
+  const ratingValue = $("#selected-rating").val();
+  const reviewText = $("#review-text").val();
+  const name = form.find('input[placeholder*="Name"]').val();
+  const email = form.find('input[placeholder*="Email"]').val();
+
+  if (!ratingValue) {
+    showNotification("Please select a star rating!", "error");
+    return;
+  }
+
+  if (!reviewText.trim()) {
+      showNotification("Please write a review comment!", "error");
+      return;
+  }
+
+  const csrftoken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+
+  fetch(`/api/ratings/submit/${productId}/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrftoken,
+    },
+    body: JSON.stringify({
+        rating: ratingValue,
+        review_text: reviewText,
+        name: name,
+        email: email
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.status === "success") {
+        updateRatingDisplay(productId, data.average, data.total_votes, true);
+        showNotification(data.message);
+        form.fadeOut(300, function() {
+            $(this).replaceWith('<div class="alert alert-success">Thank you for your review!</div>');
+        });
+      } else {
+        showNotification(data.message, "error");
+      }
+    })
+    .catch((err) => {
+      console.error("Error submitting review:", err);
+      showNotification("Failed to submit review. Please try again.", "error");
+    });
+});
+
+// Hover Effect for Interactive Stars
+$(document)
+  .on("mouseenter", ".rating-interactive .star-link", function () {
+    const star = $(this);
+    const ratingContainer = star.closest(".rating-interactive");
+    if (ratingContainer.hasClass("voted-locked")) return;
+
+    const ratingValue = star.data("value");
+    ratingContainer.find("i.fa-star").each(function (index) {
+      if (index + 1 <= ratingValue) {
+        $(this).addClass("star-hover");
+      }
+    });
+  })
+  .on("mouseleave", ".rating-interactive .star-link", function () {
+    $(this).closest(".rating-interactive").find("i").removeClass("star-hover");
+  });
+
+// Auto-show Django Messages and Load Ratings
 window.addEventListener("load", function () {
+  loadRatings();
   document
     .querySelectorAll("#django-messages .django-message")
     .forEach((el) => {

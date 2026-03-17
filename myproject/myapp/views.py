@@ -8,7 +8,9 @@ from django.db.models.functions import Lower
 from datetime import timedelta
 from django.utils import timezone
 from django.core.paginator import Paginator
-from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand
+from django.db import transaction
+import json
+from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand, ProductReview
 
 # Invoice PDF Generation Imports
 from playwright.sync_api import sync_playwright
@@ -683,10 +685,29 @@ def single(request, pid):
     related_products = Product.objects.filter(
         category_id=product.category_id
     ).exclude(pk=pid)[:3]
+    customer = None
+    user_has_reviewed = False
+    
+    if 'email' in request.session:
+        customer = Customer.objects.filter(email=request.session['email']).first()
+        if customer:
+            # For logged-in users, ONLY check their customer record
+            user_has_reviewed = ProductReview.objects.filter(product=product, customer=customer).exists()
+
+    if not customer:
+        # ONLY for guest users, check IP and Session for spam prevention
+        ip = get_client_ip(request)
+        user_has_reviewed = ProductReview.objects.filter(product=product, ip_address=ip).exists()
+        
+        if not user_has_reviewed and request.session.session_key:
+            user_has_reviewed = ProductReview.objects.filter(product=product, session_key=request.session.session_key).exists()
+
     context = {
         'categories': Category.objects.all(),
         'product': product,
         'related_products': related_products,
+        'customer': customer,
+        'user_has_reviewed': user_has_reviewed,
     }
     return render(request, 'single.html', context)
 
@@ -751,12 +772,12 @@ def add_to_cart(request, pid):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({
             'status': 'success',
-            'message': f"{product.name} added to cart.",
+            'message': f"{product.full_name} added to cart.",
             'cart_count': cart_count,
             'cart_total': cart_total
         })
 
-    messages.success(request, f"{product.name} added to cart.")
+    messages.success(request, f"{product.full_name} added to cart.")
     return redirect(request.META.get('HTTP_REFERER', 'cart'))
 
 def toggle_wishlist(request, pid):
@@ -770,10 +791,10 @@ def toggle_wishlist(request, pid):
 
     if wishlist_item:
         wishlist_item.delete()
-        return JsonResponse({'status': 'success', 'action': 'removed', 'message': f'{product.name} removed from wishlist.'})
+        return JsonResponse({'status': 'success', 'action': 'removed', 'message': f'{product.full_name} removed from wishlist.'})
     else:
         Wishlist.objects.create(customer=customer, product=product)
-        return JsonResponse({'status': 'success', 'action': 'added', 'message': f'{product.name} added to wishlist.'})
+        return JsonResponse({'status': 'success', 'action': 'added', 'message': f'{product.full_name} added to wishlist.'})
 
 def update_cart(request, cid, action):
     if 'email' not in request.session:
@@ -823,3 +844,116 @@ def update_cart(request, cid, action):
         })
 
     return redirect('cart')
+
+# =========================================================================
+#  RATING SYSTEM API
+# =========================================================================
+
+def get_client_ip(request):
+    """Helper to extract client IP from request headers."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+def get_product_rating(request, pid):
+    """Fetch average rating and total votes for a specific product."""
+    product = get_object_or_404(Product, pk=pid)
+    ip = get_client_ip(request)
+    session_key = request.session.session_key or ""
+    
+    already_voted = False
+    customer = None
+    
+    if 'email' in request.session:
+        customer = Customer.objects.filter(email=request.session['email']).first()
+        if customer:
+            # Authenticated users are identified by their account
+            already_voted = ProductReview.objects.filter(product=product, customer=customer).exists()
+    
+    if not customer:
+        # Guests are identified by IP or Session
+        if ProductReview.objects.filter(product=product, ip_address=ip).exists():
+            already_voted = True
+        elif session_key and ProductReview.objects.filter(product=product, session_key=session_key).exists():
+            already_voted = True
+    
+    return JsonResponse({
+        'product_id': product.id,
+        'average': product.rating,
+        'total_votes': product.total_votes,
+        'already_voted': already_voted
+    })
+
+def submit_product_rating(request, pid):
+    """
+    Accepts a comprehensive product review.
+    """
+    if request.method != "POST":
+        return JsonResponse({'status': 'error', 'message': 'POST required'}, status=405)
+    
+    product = get_object_or_404(Product, pk=pid)
+    ip = get_client_ip(request)
+    session_key = request.session.session_key
+    if not session_key:
+        request.session.create()
+        session_key = request.session.session_key
+
+    # Identification
+    customer = None
+    if 'email' in request.session:
+        customer = Customer.objects.filter(email=request.session['email']).first()
+
+    # Improved Duplicate Detection Logic
+    if customer:
+        if ProductReview.objects.filter(product=product, customer=customer).exists():
+            return JsonResponse({'status': 'error', 'message': 'You have already reviewed this product.'}, status=403)
+    else:
+        # Only guest checks if not logged in
+        if ProductReview.objects.filter(product=product, ip_address=ip).exists():
+            return JsonResponse({'status': 'error', 'message': 'A guest review from your IP address has already been submitted.'}, status=403)
+        if ProductReview.objects.filter(product=product, session_key=session_key).exists():
+            return JsonResponse({'status': 'error', 'message': 'You have already reviewed this product in this session.'}, status=403)
+
+    try:
+        data = json.loads(request.body)
+        rating_value = int(data.get('rating', 0))
+        review_text = data.get('review_text', '').strip()
+        name = data.get('name', 'Anonymous').strip()
+        email = data.get('email', '').strip()
+    except (ValueError, json.JSONDecodeError):
+        return JsonResponse({'status': 'error', 'message': 'Invalid data format.'}, status=400)
+    
+    # Validation
+    if not rating_value or rating_value < 1 or rating_value > 5:
+        return JsonResponse({'status': 'error', 'message': 'Please provide a star rating (1-5).'}, status=400)
+    
+    if not review_text:
+        return JsonResponse({'status': 'error', 'message': 'Review comment is mandatory.'}, status=400)
+
+    # Use session data if missing and logged in
+    if customer:
+        name = customer.full_name
+        email = customer.email
+
+    with transaction.atomic():
+        ProductReview.objects.create(
+            product=product,
+            customer=customer,
+            name=name,
+            email=email,
+            rating=rating_value,
+            review_text=review_text,
+            ip_address=ip,
+            session_key=session_key
+        )
+
+    return JsonResponse({
+        'status': 'success',
+        'average': product.rating,
+        'total_votes': product.total_votes,
+        'message': f'Thank you! Your review for "{product.full_name}" has been submitted.'
+    })
+

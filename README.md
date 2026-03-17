@@ -21,6 +21,14 @@ A Django-based E-commerce application.
   - **Resource Management**: Complete CRUD operations for Products and Categories with instant search capability.
 - **Inventory Insights**: Real-time stock alerts and business analytics/statistics.
 - **Invoice Generation**: Pixel-perfect, downloadable A4 PDFs rendered via headless Playwright, featuring a luxury editorial layout.
+- **Universal Star Rating & Review System**: Comprehensive peer-review ecosystem featuring:
+  - **Individual Reviews**: Per-user rating and review submission for every product.
+  - **Review Interactivity**: Selective star rating on product pages and interactive feedback forms.
+  - **Mandatory Feedback**: Enforced rating (1-5) and written review text for all submissions.
+  - **Dynamic Aggregation**: Global average ratings calculated in real-time from all user reviews across the platform.
+  - **Advanced User Tracking**: Multi-layered duplicate prevention for individual reviews (Account-based, Session-based, and IP-based).
+  - **Rich UI**: Interactive star displays, hover effects, and premium gold-yellow star aesthetics.
+  - **Context-Aware Forms**: Intelligent pre-filling of name and email for logged-in customers.
 - **Contact & Support**: Support pages and contact functionality.
 - **Comprehensive Error Handling**: Built-in diagnostic system that captures and displays detailed error context (code snippets, stack traces, line numbers) for developers, while maintaining a sleek, secure experience for end-users.
 - **Responsive Design**: Modern, glassmorphism-inspired dark mode aesthetic.
