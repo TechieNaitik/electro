@@ -9,6 +9,10 @@ A Django-based E-commerce application.
 - **User Authentication**: Custom customer registration, login system, and password reset via OTP.
 - **Product Browsing**: Shop page with advanced brand-wise sorting/filtering, single product view, bestsellers, and dynamic inventory status.
 - **Wishlist**: Per-user product saving system with AJAX-powered live updates and a dedicated wishlist management page.
+- **Product Comparison**: Full-featured side-by-side comparison suite, accessible exclusively from individual product pages:
+  - **Highlight Differences Toggle**: Real-time row-level visual diff that yellow-flags diverging values and green-tints matching ones across all compared products.
+  - **Quantity Selector**: Inline `+`/`−` stepper per product column that dynamically updates the Add-to-Cart link with the chosen quantity.
+  - **Wishlist Integration**: AJAX-powered wishlist toggle within the compare table, reflecting saved state on load and updating in real-time without page refresh.
 - **Shopping Cart**: Interactive AJAX-powered cart with real-time updates and toast notifications.
 - **One-Click Checkout**: Refactored checkout flow that pulls shipping and billing details (including State and Phone) directly from stored user profiles.
 - **Centralized Profile Management**: Comprehensive user dashboard for managing personal details, contact info, and multi-field shipping addresses (Address, City, State, Country, Zip).

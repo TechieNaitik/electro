@@ -1,0 +1,358 @@
+/* ============================================================
+    Product Comparison Styling
+   ============================================================ */
+
+/* ── Compare Tray Floating Bar ── */
+.compare-tray {
+    position: fixed;
+    bottom: -100px;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: bottom 0.4s ease;
+    padding: 15px 0;
+    border-top: 2px solid var(--bs-primary);
+}
+
+.compare-tray.show {
+    bottom: 0;
+}
+
+.compare-tray-items {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+.compare-item-thumb {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    border: 1px solid #eee;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.compare-item-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.remove-from-tray {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4d4d;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 10px;
+    border: none;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.compare-tray .compare-btn {
+    white-space: nowrap;
+}
+
+/* ── Toolbar ── */
+.compare-toolbar {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #f0f0f0;
+}
+
+.compare-toolbar .form-check-input:checked {
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+/* ── Compare Table Container ── */
+.compare-table-container {
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+
+.compare-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+}
+
+.compare-table th,
+.compare-table td {
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    border-right: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.compare-table th:last-child,
+.compare-table td:last-child {
+    border-right: none;
+}
+
+/* ── Row Labels ── */
+.compare-table .row-label {
+    width: 200px;
+    font-weight: 600;
+    background-color: #f9f9f9;
+    vertical-align: middle;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+/* ── Sticky Header ── */
+.compare-table thead tr:first-child th {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-bottom: 2px solid var(--bs-primary);
+    vertical-align: top;
+}
+
+.compare-table thead tr:first-child th.row-label {
+    z-index: 11;
+}
+
+/* ── Diagonal Split Cell ── */
+.diagonal-cell {
+    padding: 0 !important;
+    vertical-align: top !important;
+}
+
+.diagonal-split {
+    position: relative;
+    width: 100%;
+    height: 120px;
+    background: linear-gradient(to top right, transparent calc(50% - 0.5px), #dee2e6, transparent calc(50% + 0.5px));
+}
+
+.diagonal-top {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.diagonal-bottom {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.compare-header-product {
+    text-align: left;
+}
+
+.compare-header-product img {
+    max-width: 150px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+.compare-remove-btn {
+    display: inline-block;
+    margin: 10px 0 0;
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.compare-remove-btn:hover {
+    color: #dc3545;
+}
+
+/* ── Price Highlights ── */
+.lowest-price-cell {
+    background-color: #e6ffed;
+    color: #28a745;
+    font-weight: 700;
+}
+
+/* ── Stock Status ── */
+.stock-status.in-stock  { color: #28a745; }
+.stock-status.out-of-stock { color: #dc3545; }
+
+/* ── Row Hover ── */
+.compare-table tr:hover td:not(.row-label) {
+    background-color: rgba(0, 123, 255, 0.02);
+}
+
+/* ── Description Expansion ── */
+.description-cell {
+    position: relative;
+    max-height: 100px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.description-cell.expanded {
+    max-height: 2000px;
+}
+
+.toggle-desc {
+    display: inline-block;
+    color: var(--bs-primary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    text-decoration: underline;
+}
+
+/* ── Compare Toggle Button (product cards) ── */
+.compare-toggle-btn {
+    transition: all 0.2s ease;
+}
+
+.compare-toggle-btn.active {
+    background-color: var(--bs-primary) !important;
+    color: #fff !important;
+    border-color: var(--bs-primary) !important;
+}
+
+/* ============================================================
+   HIGHLIGHT DIFFERENCES
+   ============================================================ */
+.diff-highlight {
+    background-color: #fff8e1 !important;
+    border-left: 3px solid #ffc107 !important;
+    position: relative;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.diff-highlight::after {
+    content: "Different";
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #856404;
+    background: #ffe188;
+    padding: 1px 6px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.diff-same {
+    background-color: #f0f9f0 !important;
+    border-left: 3px solid #28a745 !important;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+/* ============================================================
+   QUANTITY SELECTOR
+   ============================================================ */
+.compare-actions-cell {
+    min-width: 190px;
+}
+
+.compare-qty-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.compare-qty-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+}
+
+.compare-qty-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #dee2e6;
+    border-radius: 50px;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.compare-qty-btn {
+    background: transparent;
+    border: none;
+    width: 30px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: #555;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.compare-qty-btn:hover {
+    background: #e9ecef;
+    color: var(--bs-primary);
+}
+
+.compare-qty-input {
+    width: 44px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    -moz-appearance: textfield;
+    appearance: textfield;
+    padding: 0;
+    height: 32px;
+    line-height: 32px;
+}
+
+.compare-qty-input::-webkit-inner-spin-button,
+.compare-qty-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.compare-qty-input:focus {
+    outline: none;
+}
+
+/* ── Wishlist Button on Compare (wishlisted state) ── */
+.compare-wishlist-btn {
+    transition: all 0.2s ease;
+    font-size: 0.82rem;
+}
+
+.compare-wishlist-btn.wishlisted {
+    background-color: #ffe4e4 !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+.compare-wishlist-btn.wishlisted i {
+    color: #dc3545;
+}
+
+.compare-wishlist-btn:not(.wishlisted) i {
+    color: #6c757d;
+}

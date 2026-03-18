@@ -1,0 +1,218 @@
+{% extends 'index.html' %}
+{% block title %}Compare Products{% endblock %}
+{% load static %}
+
+{% block content %}
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5 bg-dark">
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Product Comparison</h1>
+    <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}" class="text-white">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'shop' %}" class="text-white">Shop</a></li>
+        <li class="breadcrumb-item active text-primary">Compare</li>
+    </ol>
+</div>
+<!-- Single Page Header End -->
+
+<div class="container-fluid py-5 bg-light">
+    <div class="container py-3">
+        {% if products %}
+
+        <!-- ── Toolbar ── -->
+        <div class="compare-toolbar d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 wow fadeInUp" data-wow-delay="0.05s">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-balance-scale text-primary fs-4"></i>
+                <span class="fw-semibold text-dark">Comparing <span class="badge bg-primary">{{ products|length }}</span> product{{ products|length|pluralize }}</span>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <!-- Highlight Differences Toggle -->
+                <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                        id="highlightDiffToggle" style="width:2.5em; height:1.4em; cursor:pointer;">
+                    <label class="form-check-label fw-semibold text-dark" for="highlightDiffToggle">
+                        <i class="fas fa-highlighter me-1 text-warning"></i> Highlight Differences
+                    </label>
+                </div>
+                <!-- Clear All -->
+                <button class="btn btn-outline-danger btn-sm rounded-pill px-4"
+                        data-href="{% url 'shop' %}"
+                        onclick="localStorage.removeItem('electro_compare_list'); location.href = this.dataset.href;">
+                    <i class="fas fa-trash-alt me-1"></i> Clear All
+                </button>
+            </div>
+        </div>
+
+        <div class="compare-table-container wow fadeInUp" data-wow-delay="0.1s">
+            <table class="compare-table table-bordered" id="compareTable">
+                <thead>
+                    <tr>
+                        <th class="row-label diagonal-cell">
+                            <div class="diagonal-split">
+                                <span class="diagonal-top">Product</span>
+                                <span class="diagonal-bottom">Specs</span>
+                            </div>
+                        </th>
+                        {% for product in products %}
+                        <th id="comp-header-{{ product.id }}">
+                            <div class="compare-header-product">
+                                <a href="{% url 'single' product.id %}">
+                                    <img src="{{ product.image.url }}" alt="{{ product.full_name }}" class="img-fluid rounded">
+                                </a>
+                                <h6 class="mt-2">{{ product.full_name }}</h6>
+                                <button class="btn btn-sm btn-link compare-remove-btn" data-product-id="{{ product.id }}">
+                                    <i class="fas fa-trash-alt me-1"></i> Remove
+                                </button>
+                            </div>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-compare-row>
+                        <td class="row-label">Brand</td>
+                        {% for product in products %}
+                        <td data-value="{{ product.brand.name|default:'N/A' }}">{{ product.brand.name|default:"N/A" }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr data-compare-row>
+                        <td class="row-label">Model Name</td>
+                        {% for product in products %}
+                        <td data-value="{{ product.model_name|default:'N/A' }}">{{ product.model_name|default:"N/A" }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr data-compare-row>
+                        <td class="row-label">Variant/Specs</td>
+                        {% for product in products %}
+                        <td class="text-muted small" data-value="{{ product.variant_specs|default:'Standard' }}">{{ product.variant_specs|default:"Standard" }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr data-compare-row>
+                        <td class="row-label">Category</td>
+                        {% for product in products %}
+                        <td data-value="{{ product.category_id.name }}">{{ product.category_id.name }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr data-compare-row>
+                        <td class="row-label">Price</td>
+                        {% for product in products %}
+                        <td class="{% if product.price == lowest_price %}lowest-price-cell{% endif %}"
+                            data-value="{{ product.price }}">
+                            <span class="product-price-value fs-5 fw-bold text-primary" data-price="{{ product.price }}">
+                                ₹{{ product.price }}
+                            </span>
+                            {% if product.price == lowest_price %}
+                            <br><small class="badge bg-success">Best Deal</small>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr data-compare-row>
+                        <td class="row-label">Rating</td>
+                        {% for product in products %}
+                        <td data-value="{{ product.rounded_rating }}">
+                            <div class="d-flex flex-column align-items-start">
+                                <span class="rating-display text-warning">
+                                    {% for _ in "12345" %}
+                                        <i class="{% if forloop.counter <= product.rounded_rating %}fas fa-star{% elif forloop.counter|add:"-0.5" <= product.rounded_rating %}fas fa-star-half-alt{% else %}far fa-star{% endif %}"></i>
+                                    {% endfor %}
+                                </span>
+                                <small class="text-muted">({{ product.total_votes }} votes)</small>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr data-compare-row>
+                        <td class="row-label">Stock Availability</td>
+                        {% for product in products %}
+                        <td data-value="{% if product.stock_quantity > 0 %}in-stock{% else %}out-of-stock{% endif %}">
+                            {% if product.stock_quantity > 0 %}
+                            <span class="stock-status in-stock fw-bold"><i class="fas fa-check-circle me-1"></i> In Stock ({{ product.stock_quantity }})</span>
+                            {% else %}
+                            <span class="stock-status out-of-stock fw-bold"><i class="fas fa-times-circle me-1"></i> Out of Stock</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr data-compare-row>
+                        <td class="row-label">SKU</td>
+                        {% for product in products %}
+                        <td data-value="{{ product.sku|default:'N/A' }}"><code>{{ product.sku|default:"N/A" }}</code></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="row-label">Description</td>
+                        {% for product in products %}
+                        <td>
+                            <div class="description-cell">
+                                {{ product.description|truncatewords:20 }}
+                                <div class="full-description mt-2" style="display: none;">
+                                    {{ product.description }}
+                                </div>
+                            </div>
+                            <a href="javascript:void(0);" class="toggle-desc text-primary small">Show More</a>
+                        </td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- ── Actions Row ── -->
+                    <tr>
+                        <td class="row-label">Actions</td>
+                        {% for product in products %}
+                        <td class="compare-actions-cell">
+                            <!-- Quantity Selector -->
+                            <div class="compare-qty-wrap mb-3">
+                                <label class="compare-qty-label">Qty</label>
+                                <div class="compare-qty-group">
+                                    <button type="button" class="compare-qty-btn compare-qty-minus" aria-label="Decrease">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                    <input type="number"
+                                           class="compare-qty-input"
+                                           value="1" min="1"
+                                           max="{{ product.stock_quantity|default:99 }}"
+                                           data-product-id="{{ product.id }}"
+                                           id="compare-qty-{{ product.id }}"
+                                           {% if product.stock_quantity == 0 %}disabled{% endif %}>
+                                    <button type="button" class="compare-qty-btn compare-qty-plus" aria-label="Increase">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Add to Cart -->
+                            <a href="{% url 'add_to_cart' product.id %}"
+                               class="btn btn-primary btn-sm rounded-pill ajax-add-to-cart px-4 mb-2 d-block text-center compare-cart-btn"
+                               data-product-id="{{ product.id }}"
+                               {% if product.stock_quantity == 0 %}style="pointer-events:none;opacity:.55;"{% endif %}>
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                {% if product.stock_quantity > 0 %}Add To Cart{% else %}Out of Stock{% endif %}
+                            </a>
+
+                            <!-- Wishlist Button -->
+                            <a href="javascript:void(0);"
+                               class="btn btn-outline-secondary btn-sm rounded-pill px-4 d-block text-center wishlist-btn compare-wishlist-btn {% if product.id in wishlist_ids %}wishlisted{% endif %}"
+                               data-product-id="{{ product.id }}">
+                                <i class="fas fa-heart me-1"></i>
+                                <span class="wishlist-label">{% if product.id in wishlist_ids %}In Wishlist{% else %}Add to Wishlist{% endif %}</span>
+                            </a>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="row min-vh-50 align-items-center">
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-balance-scale fa-4x text-muted mb-4"></i>
+                <h2 class="display-6">No products to compare</h2>
+                <p class="text-muted mb-4">Visit a product page and click "Compare" to add it here.</p>
+                <a href="{% url 'shop' %}" class="btn btn-primary rounded-pill py-3 px-5 shadow">Browse Products</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

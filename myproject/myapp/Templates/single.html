@@ -111,6 +111,17 @@
                             <small>Available: <strong class="text-primary">{% if product.stock_quantity > 0 %}{{ product.stock_quantity }}
                                     In Stock{% else %}Out of Stock{% endif %}</strong></small>
                         </div>
+                        <div class="rating-readonly d-flex align-items-center mb-3" data-product-id="{{ product.id }}">
+                            {% for _ in "12345" %}
+                            <span class="star-display">
+                                <i class="{% if forloop.counter <= product.rounded_rating %}fas fa-star
+                                    {% elif forloop.counter|add:"-0.5" <= product.rounded_rating %}fas fa-star-half-alt
+                                    {% else %}far fa-star
+                                    {% endif %}">
+                                </i>
+                            </span>
+                            {% endfor %}
+                        </div>
                         <form id="ajax-add-to-cart-form" method="POST" action="{% url 'add_to_cart' product.id %}">
                             {% csrf_token %}
                             <div class="input-group quantity mb-5" style="width: 100px;">
@@ -136,6 +147,14 @@
                                 data-product-id="{{ product.id }}">
                                 <i class="fas fa-heart me-1"></i>
                                 <span>{% if product.id in wishlist_ids %}In Wishlist{% else %}Add to Wishlist{% endif %}</span>
+                            </a>
+                            <a href="javascript:void(0);"
+                                class="btn border border-secondary rounded-pill px-4 py-2 mb-4 ms-2 compare-toggle-btn"
+                                data-product-id="{{ product.id }}"
+                                data-product-name="{{ product.full_name }}"
+                                data-product-image="{{ product.image.url }}">
+                                <i class="fas fa-balance-scale me-1"></i>
+                                <span>Compare</span>
                             </a>
                         </form>
                     </div>
@@ -171,7 +190,7 @@
                                         </div>
                                         <div class="rating-readonly mb-2">
                                             {% for i in "12345" %}
-                                            <i class="fa-star {% if forloop.counter <= review.rating %}fas{% else %}far{% endif %}" style="font-size: 13px;"></i>
+                                            <i class="{% if forloop.counter <= review.rating %}fas fa-star{% else %}far fa-star{% endif %}" style="font-size: 13px;"></i>
                                             {% endfor %}
                                         </div>
                                         <p class="mb-0 text-dark">{{ review.review_text }}</p>

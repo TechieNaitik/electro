@@ -1,0 +1,19 @@
+<!-- Floating Compare Tray Snippet -->
+<div id="compare-tray" class="compare-tray">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 me-4 d-none d-md-block">Comparing <span class="compare-count badge bg-primary">0/4</span></h5>
+            <div id="compare-tray-items" class="compare-tray-items">
+                <!-- JS Populates this with product thumbnails -->
+            </div>
+        </div>
+        <div>
+            <a id="compare-now-btn" href="#" class="btn btn-primary rounded-pill px-4 compare-now-btn">
+                <i class="fas fa-balance-scale me-2"></i> Compare Now
+            </a>
+            <button class="btn btn-outline-secondary btn-sm rounded-pill ms-2" onclick="localStorage.removeItem('electro_compare_list'); location.reload();">
+                Clear All
+            </button>
+        </div>
+    </div>
+</div>

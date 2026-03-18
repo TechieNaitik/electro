@@ -54,7 +54,6 @@ class Product(models.Model):
     
     # Old name field — we keep this temporarily for data migration
     name        = models.CharField(max_length=100, null=True, blank=True)
-    
     sku         = models.CharField(max_length=50, unique=True, null=True, blank=True)
     image       = models.ImageField(upload_to='img/')
     description = models.TextField()
@@ -67,7 +66,12 @@ class Product(models.Model):
         """Returns the average rating calculated from all user reviews."""
         from django.db.models import Avg
         avg = self.product_reviews.aggregate(Avg('rating'))['rating__avg']
-        return round(avg, 1) if avg else 0
+        return float(avg) if avg else 0.0
+
+    @property
+    def rounded_rating(self):
+        """Returns the rating rounded to the nearest 0.5."""
+        return round(self.rating * 2) / 2
 
     @property
     def total_votes(self):

@@ -138,16 +138,18 @@ function updateRatingDisplay(productId, average, totalVotes, alreadyVoted) {
   // Update ALL rating containers for this product (display logic only)
   $(`.rating-readonly[data-product-id="${productId}"], .rating-interactive[data-product-id="${productId}"]`).each(function () {
     const container = $(this);
-    const roundedAvg = Math.round(average);
+    const snappedAvg = Math.round(average * 2) / 2;
 
-    // If it's the interactive one, we only update icons if user hasn't voted yet
-    // Actually, it's better to show current average as default
-    container.find("i.fa-star").each(function (index) {
-      const val = index + 1;
-      if (val <= roundedAvg) {
-        $(this).removeClass("far").addClass("fas");
+    container.find("i").each(function (index) {
+      const starPos = index + 1;
+      $(this).removeClass("fas far fa-star fa-star-half-alt");
+      
+      if (starPos <= snappedAvg) {
+        $(this).addClass("fas fa-star");
+      } else if (starPos - 0.5 === snappedAvg) {
+        $(this).addClass("fas fa-star-half-alt");
       } else {
-        $(this).removeClass("fas").addClass("far");
+        $(this).addClass("far fa-star");
       }
     });
 

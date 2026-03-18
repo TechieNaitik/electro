@@ -198,6 +198,29 @@ def checkout(request):
     }
     return render(request, 'checkout.html', context)
 
+def compare_view(request):
+    ids_str = request.GET.get('ids', '')
+    product_ids = [id.strip() for id in ids_str.split(',') if id.strip().isdigit()]
+    
+    # Limit to 4 products as per requirements
+    product_ids = product_ids[:4]
+    
+    products = Product.objects.filter(id__in=product_ids).select_related('brand', 'category_id')
+    
+    # Ensure order matches the input
+    product_dict = {p.id: p for p in products}
+    ordered_products = [product_dict[int(pid)] for pid in product_ids if int(pid) in product_dict]
+    
+    # Calculate lowest price among selected products
+    lowest_price = min([p.price for p in ordered_products]) if ordered_products else None
+
+    context = {
+        'categories': Category.objects.all(),
+        'products': ordered_products,
+        'lowest_price': lowest_price,
+    }
+    return render(request, 'compare.html', context)
+
 def contact(request):
     if request.method == "POST":
         name = request.POST.get('name')
