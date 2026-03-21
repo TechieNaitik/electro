@@ -1,0 +1,47 @@
+{% extends "myapp/emails/base_email.html" %}
+
+{% block content %}
+    <p>Hi {{ customer.full_name }},</p>
+    <p>Thank you for shopping with <span class="highlight">Electro</span>! We've received your order and we're getting it ready for you.</p>
+    
+    <div style="text-align: center; margin: 40px 0;">
+        <span class="status-badge" style="background-color: #ebf8ff; color: #2b6cb0;">ORDER PLACED SUCCESSFULLY</span>
+        <h2 style="margin-top: 20px;">Order #{{ order.id }}</h2>
+        <p style="font-size: 14px; color: #718096;">Placed on {{ order.created_at|date:"F j, Y, g:i a" }}</p>
+    </div>
+
+    <div class="order-summary">
+        <h3 style="margin-top: 0; font-size: 14px; color: #a0aec0; text-transform: uppercase;">Order Summary</h3>
+        {% for item in order.items.all %}
+        <div style="border-bottom: 1px solid #edf2f7; padding: 12px 0; display: table; width: 100%;">
+            <div style="display: table-cell; vertical-align: middle;">
+                <span style="font-weight: 600;">{{ item.product.full_name }}</span><br>
+                <span style="font-size: 13px; color: #718096;">Qty: {{ item.quantity }}</span>
+            </div>
+            <div style="display: table-cell; vertical-align: middle; text-align: right; font-weight: 600;">
+                ₹{{ item.line_total }}
+            </div>
+        </div>
+        {% endfor %}
+        <div style="margin-top: 20px; display: table; width: 100%;">
+            <div style="display: table-cell; font-size: 14px; color: #718096;">Subtotal</div>
+            <div style="display: table-cell; text-align: right; font-size: 14px; color: #718096;">₹{{ order.subtotal }}</div>
+        </div>
+        <div style="margin-top: 8px; display: table; width: 100%;">
+            <div style="display: table-cell; font-size: 14px; color: #718096;">Shipping</div>
+            <div style="display: table-cell; text-align: right; font-size: 14px; color: #718096;">₹{{ order.shipping_charge }}</div>
+        </div>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #edf2f7; display: table; width: 100%;">
+            <div style="display: table-cell; font-size: 18px; font-weight: 700;">Total Amount</div>
+            <div style="display: table-cell; text-align: right; font-size: 18px; font-weight: 700; color: #5d4286;">₹{{ order.total_amount }}</div>
+        </div>
+    </div>
+
+    <p style="margin-top: 30px;">For your records, we've attached a <span class="highlight">PDF invoice</span> to this email. You can also track your order status in your account at any time.</p>
+    
+    <center>
+        <a href="{{ base_url }}/order-detail/{{ order.id }}/" class="button">View Order Details</a>
+    </center>
+
+    <p style="font-size: 14px; color: #718096;">Payment Method: {{ order.payment_method }}</p>
+{% endblock %}

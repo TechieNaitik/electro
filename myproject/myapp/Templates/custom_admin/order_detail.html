@@ -85,15 +85,34 @@
                     <span>{{ order.created_at|date:"M d, Y · h:i A" }}</span>
                 </div>
                 <div class="detail-item" style="grid-column: 1/-1;">
-                    <label><i class="fas fa-info-circle" style="width:20px;"></i> Status</label>
-                    <form method="POST" action="{% url 'custom_admin:order_detail' order.id %}" style="display: flex; gap: 12px; align-items: center; margin: 0;">
+                    <label><i class="fas fa-shipping-fast" style="width:20px;"></i> Order Status & Tracking</label>
+                    <form method="POST" action="{% url 'custom_admin:order_detail' order.id %}" style="margin: 0; background: rgba(0,0,0,0.02); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
                         {% csrf_token %}
-                        <select name="status" class="form-control" style="width:auto; min-width: 180px; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem;">
-                            {% for status_val, status_name in status_choices %}
-                            <option value="{{ status_val }}" {% if order.status == status_val %}selected{% endif %}>{{ status_name }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-primary btn-sm" style="background: var(--accent); border: none; padding: 6px 16px; font-weight: 600;">Update Status</button>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Update Status</label>
+                                <select name="status" class="form-control" style="width:100%; border-radius: 6px;">
+                                    {% for status_val, status_name in status_choices %}
+                                    <option value="{{ status_val }}" {% if order.status == status_val %}selected{% endif %}>{{ status_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Tracking Number</label>
+                                <input type="text" name="tracking_number" value="{{ order.tracking_number|default:'' }}" class="form-control" placeholder="e.g. 12345678" style="width:100%; border-radius: 6px;">
+                            </div>
+                            <div class="form-group">
+                                <label style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Shipping Carrier</label>
+                                <input type="text" name="shipping_carrier" value="{{ order.shipping_carrier|default:'' }}" class="form-control" placeholder="e.g. Fedex, BlueDart" style="width:100%; border-radius: 6px;">
+                            </div>
+                            <div class="form-group">
+                                <label style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Carrier Tracking URL</label>
+                                <input type="url" name="carrier_url" value="{{ order.carrier_url|default:'' }}" class="form-control" placeholder="https://..." style="width:100%; border-radius: 6px;">
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 16px; text-align: right;">
+                            <button type="submit" class="btn btn-primary" style="background: var(--accent); border: none; padding: 10px 24px; font-weight: 600; border-radius: 8px;">Update Order Info & Status</button>
+                        </div>
                     </form>
                 </div>
                 {% if order.return_reason %}

@@ -1,0 +1,33 @@
+{% extends "myapp/emails/base_email.html" %}
+
+{% block content %}
+    <p>Hi {{ customer.full_name }},</p>
+    <p>Your <span class="highlight">Order #{{ order.id }}</span> has been successfully delivered! We hope you love your new products.</p>
+
+    <div style="text-align: center; margin: 40px 0;">
+        <span class="status-badge" style="background-color: #f0fff4; color: #2f855a;">DELIVERED</span>
+        <h1 style="margin-top: 20px; font-size: 32px; color: #2d3748;">Delivery Confirmed</h1>
+        <p style="font-size: 14px; color: #718096;">Delivered on {% now "F j, Y, g:i a" %}</p>
+    </div>
+
+    <div class="order-summary" style="padding: 30px; text-align: center;">
+        <p style="margin: 0; font-size: 14px; text-transform: uppercase; color: #a0aec0;">Review Your Purchase</p>
+        <p style="margin: 5px 0 20px 0; font-size: 18px; font-weight: 700; color: #5d4286;">How was your experience?</p>
+
+        <p style="margin: 20px 0 0 0; font-size: 16px; color: #4a5568;">Your feedback helps us and other shoppers!</p>
+        <center style="margin: 20px 0;">
+            <a href="{{ base_url }}/order-detail/{{ order.id }}/" class="button" style="background-color: #3182ce;">Submit a Review</a>
+            <a href="{{ base_url }}/download-invoice/{{ order.id }}/" style="display: inline-block; padding: 12px 20px; color: #5d4286; border: 2px solid #5d4286; text-decoration: none; border-radius: 6px; font-weight: 600; margin-left: 10px;">Download Invoice</a>
+        </center>
+    </div>
+
+    <p style="margin-top: 40px;">For your records, you can always download your <span class="highlight">digital invoice</span> at the following link:</p>
+    
+    <center>
+        <a href="{{ base_url }}/order-detail/{{ order.id }}/" style="color: #5d4286; font-weight: 700; text-decoration: none;">View Detailed Order Status &rarr;</a>
+    </center>
+
+    <div style="margin-top: 40px; border-top: 1px solid #edf2f7; padding-top: 20px; font-size: 13px; color: #718096; text-align: center;">
+        <p>If you have any issues with your order, call our support line at +1 234 567 8901 within 7 days of delivery.</p>
+    </div>
+{% endblock %}

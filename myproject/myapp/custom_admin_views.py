@@ -361,11 +361,16 @@ def admin_order_detail(request, order_id):
     if request.method == 'POST':
         new_status = request.POST.get('status')
         if new_status in dict(Order.ORDER_STATUS_CHOICES):
+            # Update tracking information if provided
+            order.tracking_number = request.POST.get('tracking_number', order.tracking_number)
+            order.shipping_carrier = request.POST.get('shipping_carrier', order.shipping_carrier)
+            order.carrier_url = request.POST.get('carrier_url', order.carrier_url)
+            
             old_status = order.status
             order.status = new_status
             order.save()
-            log_action(f"Admin: {request.site_admin.username}", "Updated Order Status", f"Order #{order.id} | {old_status} -> {new_status}")
-            messages.success(request, f"Order status successfully updated to {new_status}.")
+            log_action(f"Admin: {request.site_admin.username}", "Updated Order Status & Tracking", f"Order #{order.id} | {old_status} -> {new_status}")
+            messages.success(request, f"Order status and tracking information successfully updated.")
             return redirect('custom_admin:order_detail', order_id=order.id)
         else:
             messages.error(request, "Invalid order status.")

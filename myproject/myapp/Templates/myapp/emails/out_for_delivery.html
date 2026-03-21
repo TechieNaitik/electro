@@ -1,0 +1,32 @@
+{% extends "myapp/emails/base_email.html" %}
+
+{% block content %}
+    <p>Hi {{ customer.full_name }},</p>
+    <p>Exciting news! Your <span class="highlight">Order #{{ order.id }}</span> is out for delivery today.</p>
+
+    <div style="text-align: center; margin: 40px 0;">
+        <span class="status-badge" style="background-color: #fffaf0; color: #b7791f;">OUT FOR DELIVERY</span>
+        <h1 style="margin-top: 20px; font-size: 32px; color: #2d3748;">Arriving Today!</h1>
+    </div>
+
+    <div class="order-summary" style="padding: 30px; text-align: center;">
+        <p style="margin: 0; font-size: 14px; text-transform: uppercase; color: #a0aec0;">Courier Status</p>
+        <p style="margin: 5px 0 20px 0; font-size: 18px; font-weight: 700; color: #5d4286;">Our delivery executive is on the way.</p>
+
+        <p style="margin: 20px 0 0 0; font-size: 16px; color: #4a5568;">Please make sure someone is available at the address below to receive the package.</p>
+        <div style="margin-top: 20px; padding: 15px; border: 1px dashed #cbd5e0; border-radius: 8px; font-size: 14px; color: #718096; display: inline-block; text-align: left;">
+            {{ order.customer.full_name }}<br>
+            {{ order.customer.address }}<br>
+            {{ order.customer.town_city }}, {{ order.customer.state }} {{ order.customer.postcode_zip }}
+        </div>
+    </div>
+
+    <p style="margin-top: 40px;">Track the delivery progress and access your <span class="highlight">digital invoice</span> at the link below:</p>
+    
+    <center style="margin: 20px 0;">
+        <a href="{{ base_url }}/order-detail/{{ order.id }}/" class="button">Track Package</a>
+        <a href="{{ base_url }}/download-invoice/{{ order.id }}/" style="display: inline-block; padding: 12px 20px; color: #5d4286; border: 2px solid #5d4286; text-decoration: none; border-radius: 6px; font-weight: 600; margin-left: 10px;">Download Invoice</a>
+    </center>
+
+    <p style="font-size: 14px; color: #718096; text-align: center;">For any assistance, call our support line at +1 234 567 8901.</p>
+{% endblock %}

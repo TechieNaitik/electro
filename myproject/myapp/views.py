@@ -189,6 +189,11 @@ def checkout(request):
                 price=product.price,
                 quantity=item.quantity
             )
+
+        # Trigger Order Confirmation Email (now that items are created)
+        import threading
+        from .email_utils import send_order_email
+        threading.Thread(target=send_order_email, args=(order, 'confirmation')).start()
             
         cart_items.delete()
         # Clear the checkout authorization flag

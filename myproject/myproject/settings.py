@@ -131,6 +131,9 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
+# Base URL for email absolute links
+BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:8000')
+
 # Session security for admin dashboard
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 1800  # 30 minutes of inactivity

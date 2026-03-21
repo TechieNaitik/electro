@@ -1,0 +1,39 @@
+{% extends "myapp/emails/base_email.html" %}
+
+{% block content %}
+    <p>Hi {{ customer.full_name }},</p>
+    <p>This is to inform you that your <span class="highlight">Order #{{ order.id }}</span> status has been updated.</p>
+
+    <div style="text-align: center; margin: 40px 0;">
+        <span class="status-badge" style="background-color: #fff5f5; color: #c53030;">{{ order.status|upper }}</span>
+        <h1 style="margin-top: 20px; font-size: 32px; color: #2d3748;">Status Update</h1>
+    </div>
+
+    <div class="order-summary" style="padding: 30px; text-align: center;">
+        <p style="margin: 0; font-size: 14px; text-transform: uppercase; color: #a0aec0;">New Order Status</p>
+        <p style="margin: 5px 0 20px 0; font-size: 18px; font-weight: 700; color: #5d4286;">{{ order.status }}</p>
+
+        <p style="margin: 20px 0 0 0; font-size: 16px; color: #4a5568;">
+            {% if order.status == 'Cancelled' %}
+            Your order has been cancelled and any payments made will be refunded within 5-7 business days.
+            {% elif order.status == 'Returned' %}
+            Your return request has been processed. We'll notify you soon about next steps.
+            {% elif order.status == 'Exchanged' %}
+            Your exchange request has been successful.
+            {% else %}
+            The status of your order has been updated in our system.
+            {% endif %}
+        </p>
+        <a href="{{ base_url }}/order-detail/{{ order.id }}/" class="button" style="margin-top: 20px;">Review Order Status</a>
+    </div>
+
+    <p style="margin-top: 40px;">For any questions or more details about this status update, please access your <span class="highlight">digital invoice</span> or contact us at the following link:</p>
+    
+    <center>
+        <a href="{{ base_url }}/order-detail/{{ order.id }}/" style="color: #5d4286; font-weight: 700; text-decoration: none;">View Detailed Order Status &rarr;</a>
+    </center>
+
+    <div style="margin-top: 40px; border-top: 1px solid #edf2f7; padding-top: 20px; font-size: 13px; color: #718096; text-align: center;">
+        <p>If you have any questions, call our support line at +1 234 567 8901.</p>
+    </div>
+{% endblock %}

@@ -297,8 +297,7 @@
                     {% for item in items %}
                     <tr>
                         <td>
-                            <div style="font-weight: 600; color: #111; margin-bottom: 3px;">{{ item.product.name }}</div>
-                            <div style="font-size: 11px; color: #555;">{{ item.product.category_id.name }}</div>
+                            <div style="font-weight: 600; color: #111;">{{ item.product.full_name }}</div>
                         </td>
                         <td class="center">{{ item.quantity }}</td>
                         <td class="right">₹{{ item.price }}</td>

@@ -25,7 +25,13 @@ A Django-based E-commerce application.
   - **Security & Sessions**: Secure login wall with hashed passwords, brute-force protection, and independent admin session management.
   - **Resource Management**: Complete CRUD operations for Products and Categories with instant search capability.
 - **Inventory Insights**: Real-time stock alerts and business analytics/statistics.
-- **Invoice Generation**: Pixel-perfect, downloadable A4 PDFs rendered via headless Playwright, featuring a luxury editorial layout.
+- **Invoice Generation**: Pixel-perfect, downloadable A4 PDFs rendered via headless Playwright, featuring a luxury editorial layout (now displaying full product names).
+- **Automated Order Lifecycle Notifications**: Event-driven notification system sending branded HTML updates for:
+-   - **Order Confirmation**: With embedded order summary and PDF invoice attachment.
+-   - **Logistics Updates**: "Shipped" and "Out for Delivery" alerts with courier name and tracking links.
+-   - **Delivery Confirmation**: Success confirmation with review prompts.
+-   - **Returns & Cancellations**: Specialized variants for reversed orders.
+-   - **Async Execution**: Leverages Python threading to ensure zero impact on frontend performance.
 - **Universal Star Rating & Review System**: Comprehensive peer-review ecosystem featuring:
   - **Individual Reviews**: Per-user rating and review submission for every product.
   - **Review Interactivity**: Selective star rating on product pages and interactive feedback forms.

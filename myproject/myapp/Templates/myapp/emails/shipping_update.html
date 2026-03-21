@@ -1,0 +1,37 @@
+{% extends "myapp/emails/base_email.html" %}
+
+{% block content %}
+    <p>Hi {{ customer.full_name }},</p>
+    <p>Great news! Your <span class="highlight">Order #{{ order.id }}</span> has been shipped and is on its way to you.</p>
+
+    <div style="text-align: center; margin: 40px 0;">
+        <span class="status-badge" style="background-color: #f0fff4; color: #2f855a;">SHIPPED</span>
+        <h2 style="margin-top: 20px;">Tracking Information</h2>
+    </div>
+
+    <div class="order-summary" style="padding: 30px; text-align: center;">
+        <p style="margin: 0; font-size: 14px; text-transform: uppercase; color: #a0aec0;">Courier Name</p>
+        <p style="margin: 5px 0 20px 0; font-size: 18px; font-weight: 700;">{{ order.shipping_carrier|default:"Standard Logistics" }}</p>
+
+        <p style="margin: 0; font-size: 14px; text-transform: uppercase; color: #a0aec0;">Tracking Number</p>
+        <p style="margin: 5px 0 20px 0; font-size: 18px; font-weight: 700; color: #5d4286;">{{ order.tracking_number|default:"N/A" }}</p>
+
+        {% if order.carrier_url %}
+        <a href="{{ order.carrier_url }}" class="button" style="margin-top: 10px;">Track on Courier's Site</a>
+        {% endif %}
+    </div>
+
+    <center style="margin: 20px 0;">
+        <a href="{{ base_url }}/order-detail/{{ order.id }}/" class="button">Track Package</a>
+        <a href="{{ base_url }}/download-invoice/{{ order.id }}/" style="display: inline-block; padding: 12px 20px; color: #5d4286; border: 2px solid #5d4286; text-decoration: none; border-radius: 6px; font-weight: 600; margin-left: 10px;">Download Invoice</a>
+    </center>
+
+    <div style="margin-top: 40px; border-top: 1px solid #edf2f7; padding-top: 20px;">
+        <h4 style="margin: 0; font-size: 14px; color: #4a5568;">Shipping To:</h4>
+        <p style="font-size: 14px; color: #718096; margin-top: 8px;">
+            {{ order.customer.full_name }}<br>
+            {{ order.customer.address }}<br>
+            {{ order.customer.town_city }}, {{ order.customer.state }} {{ order.customer.postcode_zip }}
+        </p>
+    </div>
+{% endblock %}
