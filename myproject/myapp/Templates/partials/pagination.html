@@ -1,0 +1,33 @@
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
+    <div class="pagination-container d-flex flex-column align-items-center mt-5">
+        <div class="pagination-info mb-3">
+            <span class="text-muted small">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        </div>
+        <div class="pagination d-flex justify-content-center">
+            <!-- Previous Button -->
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="rounded">&laquo;</a>
+            {% else %}
+                <span class="rounded disabled">&laquo;</span>
+            {% endif %}
+
+            <!-- Page Number Links -->
+            {% for i in page_obj.paginator.page_range %}
+                {% if page_obj.number == i %}
+                    <a href="#" class="active rounded">{{ i }}</a>
+                {% else %}
+                    <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="rounded">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+
+            <!-- Next Button -->
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="rounded">&raquo;</a>
+            {% else %}
+                <span class="rounded disabled">&raquo;</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}

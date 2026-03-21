@@ -22,14 +22,6 @@
                 <div class="product-categories mb-4">
                     <h4>Product Categories</h4>
                     <ul class="list-unstyled">
-                        <li>
-                            <div class="categories-item">
-                                <a href="{% url 'shop' %}" class="text-dark">
-                                    <i class="fas fa-bars text-secondary me-2"></i>
-                                    All Categories
-                                </a>
-                            </div>
-                        </li>
                         {% for category in categories %}
                         <li>
                             <div class="categories-item">
@@ -43,16 +35,10 @@
                         {% endfor %}
                     </ul>
                 </div>
+
                 <div class="product-brands mb-4">
                     <h4>Brands</h4>
                     <ul class="list-unstyled">
-                        <li>
-                            <div class="categories-item">
-                                <a href="?{% if selected_category %}cid={{ selected_category.id }}{% endif %}" class="text-dark">
-                                    <i class="fas fa-tags text-secondary me-2"></i> All Brands
-                                </a>
-                            </div>
-                        </li>
                         {% for brand in brands %}
                         <li>
                             <div class="categories-item">
@@ -146,7 +132,7 @@
                     <div id="tab-5" class="tab-pane fade show p-0 active">
                         <div class="row g-4 product">
                             {% for product in products %}
-                            <div class="col-lg-4">
+                            <div class="col-lg-3">
                                 <div class="product-item rounded wow fadeInUp" data-wow-delay="0.1s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
@@ -202,16 +188,7 @@
                             </div>
                             {% endfor %}
                             <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
-                                <div class="pagination d-flex justify-content-center mt-5">
-                                    <a href="#" class="rounded">&laquo;</a>
-                                    <a href="#" class="active rounded">1</a>
-                                    <a href="#" class="rounded">2</a>
-                                    <a href="#" class="rounded">3</a>
-                                    <a href="#" class="rounded">4</a>
-                                    <a href="#" class="rounded">5</a>
-                                    <a href="#" class="rounded">6</a>
-                                    <a href="#" class="rounded">&raquo;</a>
-                                </div>
+                            {% include "partials/pagination.html" with page_obj=products %}
                             </div>
                         </div>
                     </div>
@@ -269,16 +246,7 @@
                             </div>
                             {% endfor %}
                             <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
-                                <div class="pagination d-flex justify-content-center mt-5">
-                                    <a href="#" class="rounded">&laquo;</a>
-                                    <a href="#" class="active rounded">1</a>
-                                    <a href="#" class="rounded">2</a>
-                                    <a href="#" class="rounded">3</a>
-                                    <a href="#" class="rounded">4</a>
-                                    <a href="#" class="rounded">5</a>
-                                    <a href="#" class="rounded">6</a>
-                                    <a href="#" class="rounded">&raquo;</a>
-                                </div>
+                            {% include "partials/pagination.html" with page_obj=products %}
                             </div>
                         </div>
                     </div>

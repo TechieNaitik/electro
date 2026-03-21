@@ -51,9 +51,7 @@ class Product(models.Model):
     brand       = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     model_name  = models.CharField(max_length=100, null=True, blank=True)
     variant_specs = models.CharField(max_length=100, null=True, blank=True, help_text="e.g. 128GB Blue, Dual Sim")
-    
-    # Old name field — we keep this temporarily for data migration
-    name        = models.CharField(max_length=100, null=True, blank=True)
+
     sku         = models.CharField(max_length=50, unique=True, null=True, blank=True)
     image       = models.ImageField(upload_to='img/')
     description = models.TextField()

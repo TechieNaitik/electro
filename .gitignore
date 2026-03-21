@@ -147,8 +147,11 @@ cython_debug/
 # PROJECTS SPECIFIC EXCLUSIONS
 # ══════════════════════════════════════════════════════════════════════════════
 
-# Development Scripts (Kept out of repo to avoid DB resets)
+# Project Specific Exclusions
 reset_db.py
+
+# Ignore local product/ui images (re-generated during setup)
+myproject/myapp/static/img/
 
 # Generated Output files
 *.pdf

@@ -11,6 +11,13 @@
     <meta content="" name="description">
     <meta name="csrf-token" content="{{ csrf_token }}">
 
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'img/favicon/site.webmanifest' %}">
+    <link rel="shortcut icon" href="{% static 'img/favicon/favicon.ico' %}">
+
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -376,7 +383,7 @@
                     <div id="tab-1" class="tab-pane fade show p-0 active">
                         <div class="row g-4">
                             {% for product in products %}
-                            <div class="col-md-6 col-lg-4 col-xl-3">
+                            <div class="col-md-6 col-lg-3">
                                 <div class="product-item rounded wow fadeInUp" data-wow-delay="0.1s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
@@ -429,6 +436,7 @@
                                 <h4>No products available</h4>
                             </div>
                             {% endfor %}
+                            {% include "partials/pagination.html" with page_obj=products %}
                         </div>
                     </div>
                 </div>
@@ -447,7 +455,7 @@
                     selected_category.name }}{% else %}All Product Items{% endif %}</h1>
             </div>
             <div class="productList-carousel owl-carousel pt-4 wow fadeInUp" data-wow-delay="0.3s">
-                {% for product in products %}
+                {% for product in all_products %}
                 <div class="productList-item">
                     <div class="productImg-item products-mini-item border">
                         <div class="row g-0">

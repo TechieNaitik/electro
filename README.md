@@ -8,6 +8,7 @@ A Django-based E-commerce application.
 - **Brand Management**: Dedicated ecosystem for managing brands independently, with full relationship mapping to products.
 - **User Authentication**: Custom customer registration, login system, and password reset via OTP.
 - **Product Browsing**: Shop page with advanced brand-wise sorting/filtering, single product view, bestsellers, and dynamic inventory status.
+- **Product Pagination**: Robust, centralized pagination across Shop, Bestsellers, Home, and Category Filter pages, featuring a 3x4 grid layout (12 products per page) and persistent filter/sorting parameters across pages.
 - **Wishlist**: Per-user product saving system with AJAX-powered live updates and a dedicated wishlist management page.
 - **Product Comparison**: Full-featured side-by-side comparison suite, accessible exclusively from individual product pages:
   - **Highlight Differences Toggle**: Real-time row-level visual diff that yellow-flags diverging values and green-tints matching ones across all compared products.

@@ -8,7 +8,8 @@ from django.db.models.functions import Lower
 from datetime import timedelta
 from django.utils import timezone
 from django.core.paginator import Paginator
-from django.db import transaction
+from .utils import get_paginated_data
+from decimal import Decimal, InvalidOperation
 import json
 from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand, ProductReview
 from .logger import log_action
@@ -28,9 +29,13 @@ def about(request):
     return render(request, 'about.html', context)
 
 def bestseller(request):
+    all_products = Product.objects.all().select_related('brand', 'category_id')
+    page_obj = get_paginated_data(request, all_products)
+    
     context = {
         'categories': Category.objects.all(),
-        'products': Product.objects.all(),
+        'products': page_obj,
+        'all_products': all_products,
     }
     return render(request, 'bestseller.html', context)
 
@@ -106,11 +111,17 @@ def category_products(request, cid):
         'categories': Category.objects.all(),
     }
     if cid == 0:
-        context['products'] = Product.objects.all()
+        products = Product.objects.all().select_related('brand', 'category_id')
     else:
         category = Category.objects.get(id=cid)
-        context['products'] = Product.objects.filter(category_id=category)
+        products = Product.objects.filter(category_id=category).select_related('brand', 'category_id')
         context['selected_category'] = category
+    
+    # Pagination (12 per page)
+    page_obj = get_paginated_data(request, products, per_page=12)
+    
+    context['products'] = page_obj
+    context['all_products'] = Product.objects.all() # For carousel if needed
     
     return render(request, 'index.html', context)
 
@@ -362,16 +373,24 @@ def help(request):
     return render(request, 'help.html', context)
 
 def home(request):
+    all_products = Product.objects.all().select_related('brand', 'category_id')
+    page_obj = get_paginated_data(request, all_products)
+    
     context = {
         'categories': Category.objects.all(),
-        'products': Product.objects.all(),
+        'products': page_obj,
+        'all_products': all_products,
     }
     return render(request, 'index.html', context)
 
 def index(request):
+    all_products = Product.objects.all().select_related('brand', 'category_id')
+    page_obj = get_paginated_data(request, all_products)
+    
     context = {
         'categories': Category.objects.all(),
-        'products': Product.objects.all(),
+        'products': page_obj,
+        'all_products': all_products,
     }
     return render(request, 'index.html', context)
 
@@ -462,9 +481,7 @@ def my_account(request):
                 orders = orders.filter(items__product__name__icontains=query).distinct()
                 
         # 4. Pagination (10 per page)
-        paginator = Paginator(orders, 10)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        page_obj = get_paginated_data(request, orders, per_page=10)
         
         context.update({
             'orders': page_obj,
@@ -719,7 +736,11 @@ def shop(request, cid=0):
     products = products.order_by(*order_fields)
     
     context['current_sort'] = sort
-    context['products'] = products
+    
+    # 7. Pagination (12 per page)
+    page_obj = get_paginated_data(request, products, per_page=12)
+    
+    context['products'] = page_obj
     return render(request, 'shop.html', context)
 
 def single(request, pid):

@@ -27,8 +27,8 @@
             </p>
         </div>
         <div class="row g-4">
-            {% for product in products|slice:":6" %}
-            <div class="col-md-6 col-lg-6 col-xl-4 wow fadeInUp" data-wow-delay="0.1s">
+            {% for product in products %}
+            <div class="col-md-6 col-lg-4 col-xl-3 wow fadeInUp" data-wow-delay="0.1s">
                 <div class="products-mini-item border w-100 h-100">
                     <div class="row g-0">
                         <div class="col-5">
@@ -79,6 +79,8 @@
                 <h4>No products found.</h4>
             </div>
             {% endfor %}
+            
+            {% include "partials/pagination.html" with page_obj=products %}
         </div>
     </div>
 </div>
@@ -93,7 +95,7 @@
             <h1 class="mb-0 display-3 wow fadeInUp" data-wow-delay="0.3s">All Product Items</h1>
         </div>
         <div class="productList-carousel owl-carousel pt-4 wow fadeInUp" data-wow-delay="0.3s">
-            {% for product in products %}
+            {% for product in all_products %}
             <div class="productList-item w-100">
                 <div class="productImg-item products-mini-item border w-100 h-100">
                     <div class="row g-0">

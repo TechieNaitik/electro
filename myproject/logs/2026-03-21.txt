@@ -1,0 +1,4 @@
+[2026-03-21 00:58:33] User: Admin: admin1 | Action: Admin Login | Details: Successfully logged into Custom Admin.
+[2026-03-21 13:52:09] User: Customer: Naitik Shah <naitikshah2308@gmail.com> | Action: Login | Details: Successfully logged in.
+[2026-03-21 13:52:20] User: Admin: admin1 | Action: Admin Login | Details: Successfully logged into Custom Admin.
+[2026-03-21 13:55:51] User: Admin: admin1 | Action: Admin Logout | Details: Admin logged out from Custom Admin.
