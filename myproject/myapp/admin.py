@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
-from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, SiteAdmin, Brand
+from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, SiteAdmin, Brand, ProductImage
 from .logger import log_action
 
 from django import forms
@@ -97,12 +97,17 @@ class BrandAdmin(admin.ModelAdmin):
         log_action(f"Admin: {request.user.username}", "Deleted Brand (Admin Panel)", f"Brand: {obj.name}")
         super().delete_model(request, obj)
 
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('brand', 'model_name', 'variant_specs', 'category_id', 'price', 'stock_quantity')
     search_fields = ('model_name', 'brand__name', 'variant_specs', 'sku')
     list_filter = ('brand', 'category_id')
     raw_id_fields = ('brand',)
+    inlines = [ProductImageInline]
     
     def save_model(self, request, obj, form, change):
         if not change:

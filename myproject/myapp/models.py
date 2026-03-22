@@ -90,6 +90,22 @@ class Product(models.Model):
         # Fallback to old name if restructuring isn't done yet
         return " ".join(parts).strip() or self.name or "Unnamed Product"
 
+    @property
+    def all_images(self):
+        """Returns a list of all associated image objects."""
+        # Start with the main image
+        imgs = []
+        if self.image:
+            # We wrap it in a simple object to match the structure of ProductImage
+            # or just return the image field itself if we handle it in template
+            imgs.append({'url': self.image.url, 'main': True})
+        
+        # Add additional images
+        for extra in self.images.all():
+            imgs.append({'url': extra.image.url, 'main': False})
+        
+        return imgs
+
     def __str__(self):
         return self.full_name
 
@@ -186,6 +202,23 @@ class ProductReview(models.Model):
 def delete_product_image_on_delete(sender, instance, **kwargs):
     """
     Deletes the associated image from the file system when a Product object is deleted.
+    """
+    if instance.image:
+        if os.path.isfile(instance.image.path):
+            os.remove(instance.image.path)
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='img/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for {self.product.full_name}"
+
+@receiver(post_delete, sender=ProductImage)
+def delete_product_extra_image_on_delete(sender, instance, **kwargs):
+    """
+    Deletes the associated image from the file system when a ProductImage object is deleted.
     """
     if instance.image:
         if os.path.isfile(instance.image.path):

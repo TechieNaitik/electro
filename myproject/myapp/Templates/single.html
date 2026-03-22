@@ -80,16 +80,27 @@
             <!-- Main Product Detail -->
             <div class="col-lg-9 wow fadeInUp" data-wow-delay="0.1s">
                 <div class="row g-4 single-product">
-                    <!-- Product Image -->
+                    <!-- Product Image Gallery -->
                     <div class="col-xl-6">
-                        <div class="single-carousel owl-carousel">
-                            <div class="single-item"
-                                data-dot="<img class='img-fluid' src='{{ product.image.url }}' alt='{{ product.full_name }}'>">
-                                <div class="single-inner bg-light rounded">
-                                    <img src="{{ product.image.url }}" class="img-fluid rounded"
-                                        alt="{{ product.full_name }}">
-                                </div>
+                        <div class="product-gallery">
+                            <div class="primary-image-container mb-3 bg-light rounded overflow-hidden">
+                                <img id="main-product-image" src="{{ product.image.url }}" class="img-fluid w-100" 
+                                     alt="{{ product.full_name }}" style="transition: opacity 0.3s ease; height: 100%; object-fit: contain;">
                             </div>
+                            
+                            {% if product.all_images|length > 1 %}
+                            <div class="thumbnail-strip d-flex overflow-auto gap-2 pb-2" id="thumbnail-strip">
+                                {% for img in product.all_images %}
+                                <div class="thumbnail-item border rounded bg-light cursor-pointer {% if forloop.first %}active{% endif %}" 
+                                     style="min-width: 80px; width: 80px; height: 80px; overflow: hidden;"
+                                     data-index="{{ forloop.counter0 }}"
+                                     onclick="updateGalleryImage(this, '{{ img.url }}', {{ forloop.counter0 }})">
+                                    <img src="{{ img.url }}" class="img-fluid w-100 h-100" style="object-fit: cover;" 
+                                         alt="{{ product.full_name }} thumbnail" loading="lazy">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 

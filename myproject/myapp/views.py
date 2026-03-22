@@ -749,7 +749,7 @@ def shop(request, cid=0):
     return render(request, 'shop.html', context)
 
 def single(request, pid):
-    product = get_object_or_404(Product, pk=pid)
+    product = get_object_or_404(Product.objects.prefetch_related('images'), pk=pid)
     
     # Track view
     from .models import ProductView

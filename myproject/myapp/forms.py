@@ -1,5 +1,6 @@
 from django import forms
-from .models import Category, Product, Brand
+from .models import Category, Product, Brand, ProductImage
+from django.forms import inlineformset_factory
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -43,3 +44,20 @@ class ProductForm(forms.ModelForm):
         if stock is not None and stock < 0:
             raise forms.ValidationError("Stock quantity cannot be negative.")
         return stock
+
+# Product Image Form & FormSet
+class ProductImageForm(forms.ModelForm):
+    class Meta:
+        model = ProductImage
+        fields = ['image']
+        widgets = {
+            'image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+        }
+
+ProductImageFormSet = inlineformset_factory(
+    Product, 
+    ProductImage, 
+    form=ProductImageForm, 
+    extra=5, 
+    can_delete=True
+)

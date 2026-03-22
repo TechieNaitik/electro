@@ -1,0 +1,14 @@
+[2026-03-23 00:29:55] User: Customer: Naitik Shah <naitikshah2308@gmail.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 00:30:25] User: Admin: admin1 | Action: Admin Login | Details: Successfully logged into Custom Admin.
+[2026-03-23 01:03:28] User: Admin: admin1 | Action: Updated Product | Details: Product: JBL Tour Pro 2 True Wireless Earbuds
+[2026-03-23 01:06:53] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPhone 16 (Teal)
+[2026-03-23 01:14:52] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPhone 16 (Teal)
+[2026-03-23 01:15:53] User: Admin: admin1 | Action: Deleted Gallery Image (AJAX) | Details: From Product: Apple iPhone 16 (Teal)
+[2026-03-23 01:24:04] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPhone 16 (Teal)
+[2026-03-23 01:24:31] User: Admin: admin1 | Action: Deleted Gallery Image (AJAX) | Details: From Product: Apple iPhone 16 (Teal)
+[2026-03-23 01:35:44] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPad (11th generation)
+[2026-03-23 01:41:22] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple AirPods Pro 3rd Generation
+[2026-03-23 01:44:22] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple AirPods Pro 3rd Generation
+[2026-03-23 01:45:08] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPhone 17 (Sage 256GB)
+[2026-03-23 01:45:34] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPhone 16 (Teal, 128GB)
+[2026-03-23 01:51:54] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPhone Silicone Case (Magsafe)

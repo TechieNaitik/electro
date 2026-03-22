@@ -31,13 +31,6 @@
                 </form>
             </div>
             <div id="data-container" style="transition: opacity 0.2s ease;">
-                {% if messages %}
-                    {% for message in messages %}
-                    <div class="alert-message {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                {% endif %}
 
                 <table class="data-table">
                     <thead>

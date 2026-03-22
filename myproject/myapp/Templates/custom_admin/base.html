@@ -118,10 +118,22 @@
             <main class="page-content">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert-message alert-{{ message.tags }} animate-in">
-                            {{ message }}
+                        <div class="alert-message alert-{{ message.tags }} animate-in" 
+                             style="padding: 14px 20px; border-radius: var(--radius-sm); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; border: 1px solid transparent;
+                                    {% if 'success' in message.tags %}background: var(--success-bg); color: var(--success); border-color: rgba(0, 206, 201, 0.2);{% else %}background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-color);{% endif %}">
+                            <i class="fas {% if 'success' in message.tags %}fa-check-circle{% else %}fa-info-circle{% endif %}" style="font-size: 1.1rem;"></i>
+                            <span style="font-weight: 500;">{{ message }}</span>
                         </div>
                     {% endfor %}
+                    <script>
+                        setTimeout(() => {
+                            document.querySelectorAll('.alert-message').forEach(alert => {
+                                alert.style.opacity = '0';
+                                alert.style.transition = 'opacity 0.5s ease';
+                                setTimeout(() => alert.remove(), 500);
+                            });
+                        }, 5000);
+                    </script>
                 {% endif %}
                 {% block content %}{% endblock %}
             </main>

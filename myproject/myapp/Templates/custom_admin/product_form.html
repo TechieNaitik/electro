@@ -17,7 +17,7 @@
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 
-                {% if form.errors %}
+                {% if form.errors or formset.errors %}
                 <div style="background: var(--danger-bg); color: var(--danger); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 24px; font-size: 0.9rem;">
                     <strong>Fix the following errors:</strong>
                     <ul style="margin-top: 8px; margin-left: 20px;">
@@ -25,6 +25,18 @@
                             {% for error in errors %}
                                 <li>{{ field|title }}: {{ error }}</li>
                             {% endfor %}
+                        {% endfor %}
+                        
+                        {% for gform in formset %}
+                            {% for field, errors in gform.errors.items %}
+                                {% for error in errors %}
+                                    <li>Gallery Image #{{ forloop.parentloop.parentloop.counter }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                        
+                        {% for error in formset.non_form_errors %}
+                            <li>Gallery: {{ error }}</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -68,17 +80,87 @@
                     </div>
                 </div>
 
+                <!-- Main Product Image -->
                 <div class="detail-item" style="margin-bottom: 32px;">
-                    <label>Product Image</label>
+                    <label>Main Product Image</label>
                     <div style="display: flex; flex-direction: column; gap: 16px;">
                         {{ form.image }}
                         {% if product.image %}
                         <div style="padding: 12px; background: var(--bg-primary); border-radius: var(--radius); border: 1px dashed var(--border-color); width: fit-content;">
-                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Current Image:</p>
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 150px; border-radius: var(--radius-sm);">
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Current Main Image:</p>
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 120px; border-radius: var(--radius-sm);">
                         </div>
                         {% endif %}
                     </div>
+                </div>
+
+                <!-- Image Gallery (Multiple) -->
+                <div class="section-divider" style="height: 1px; background: var(--border-color); margin: 32px 0;"></div>
+                <div class="gallery-section" style="margin-bottom: 32px;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h4 class="mb-0" style="font-weight: 500;"><i class="fas fa-images me-2 text-primary"></i> Product Gallery</h4>
+                        <span class="badge bg-light text-dark border" style="font-weight: 400;">Max 10 images total</span>
+                    </div>
+                    
+                    {{ formset.management_form }}
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;">
+                        {% for gform in formset %}
+                        <div class="gallery-card {% if gform.instance.pk %}has-instance{% endif %}" id="gallery-card-{{ forloop.counter0 }}">
+                            {% for hidden in gform.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                            
+                            <div class="gallery-card-inner border rounded-lg position-relative overflow-hidden shadow-sm" style="transition: all 0.3s ease;">
+                                {% if gform.instance.pk %}
+                                    <!-- Existing Image Display -->
+                                    <div class="gallery-img-preview position-relative" style="height: 140px; background: #000;">
+                                        <img src="{{ gform.instance.image.url }}" class="w-100 h-100" style="object-fit: contain; transition: filter 0.3s ease;">
+                                        <div class="delete-overlay d-flex align-items-center justify-content-center position-absolute top-0 start-0 w-100 h-100" style="opacity: 0; background: rgba(220, 53, 69, 0.4); transition: opacity 0.3s ease; pointer-events: none;">
+                                            <i class="fas fa-trash-alt text-white fs-3"></i>
+                                        </div>
+                                    </div>
+                                    <div class="gallery-controls" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-top: 1px solid var(--border-color); background: var(--bg-card);">
+                                        <span class="text-muted" style="font-size: 0.75rem; font-weight: 500;">Image #{{ forloop.counter }}</span>
+                                        <div class="delete-action">
+                                            <label class="delete-label cursor-pointer mb-0 p-1" for="{{ gform.DELETE.id_for_label }}" title="Mark for Deletion" style="display: flex; align-items: center;">
+                                                <i class="far fa-trash-alt text-muted hover-danger" style="transition: all 0.2s ease; font-size: 0.9rem;"></i>
+                                            </label>
+                                            <div class="d-none">
+                                                {{ gform.DELETE }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <!-- New Image Upload Slot with Success Text (No Preview) -->
+                                    <div class="d-none">
+                                        {{ gform.image }}
+                                    </div>
+                                    <label class="gallery-upload-slot d-flex flex-column align-items-center justify-content-center p-3 text-center mb-0 w-100 overflow-hidden" 
+                                            style="min-height: 175px; border: 2px dashed var(--border-color); cursor: pointer; background: var(--bg-secondary); transition: all 0.3s ease;" 
+                                            for="{{ gform.image.id_for_label }}">
+                                        
+                                        <!-- Success Message (Hidden by default) -->
+                                        <div class="selection-success d-none text-success" id="success-{{ gform.image.id_for_label }}">
+                                            <i class="fas fa-check-circle mb-2" style="font-size: 2.5rem;"></i>
+                                            <p class="small mb-0" style="font-weight: 600;">Image Selected Successfully</p>
+                                        </div>
+
+                                        <!-- Default Add Icon/Text -->
+                                        <div class="upload-placeholder d-flex flex-column align-items-center" id="placeholder-{{ gform.image.id_for_label }}">
+                                            <i class="fas fa-plus-circle text-muted mb-2 fs-2"></i>
+                                            <p class="small text-muted mb-0">Add Gallery Image</p>
+                                        </div>
+                                        
+                                        <span id="label-{{ gform.image.id_for_label }}" class="file-name-label small text-primary mt-2 px-2" style="word-break: break-all; font-size: 0.75rem; font-weight: 500;"></span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 16px;">
+                        <i class="fas fa-info-circle me-1"></i> Images marked for deletion will be removed upon saving.
+                    </p>
                 </div>
 
                 <div style="display: flex; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 32px;">
@@ -93,4 +175,64 @@
 </div>
 
 <link href="{% static 'css/custom_admin_product_form.css' %}" rel="stylesheet">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Handle Deletion Toggles (Mark for deletion)
+    const deleteCheckboxes = document.querySelectorAll('input[type="checkbox"][name$="-DELETE"]');
+    deleteCheckboxes.forEach(checkbox => {
+        // Initial state logic
+        if (checkbox.checked) {
+            checkbox.closest('.gallery-card').classList.add('marked-for-deletion');
+        }
+
+        checkbox.addEventListener('change', function() {
+            const card = this.closest('.gallery-card');
+            if (this.checked) {
+                card.classList.add('marked-for-deletion');
+            } else {
+                card.classList.remove('marked-for-deletion');
+            }
+        });
+    });
+
+    // 2. Handle File Selection Success Message (No Preview version)
+    const fileInputs = document.querySelectorAll('.gallery-upload-slot input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const inputId = this.id;
+            const successMsg = document.getElementById('success-' + inputId);
+            const placeholder = document.getElementById('placeholder-' + inputId);
+            const label = document.getElementById('label-' + inputId);
+            const cardInner = this.closest('.gallery-card-inner');
+
+            if (this.files && this.files[0]) {
+                // 1. Switch Visibility
+                if (successMsg) successMsg.classList.remove('d-none');
+                if (placeholder) placeholder.classList.add('d-none');
+                
+                // 2. Highlight Card
+                if (cardInner) {
+                    cardInner.style.borderColor = 'var(--success)';
+                    cardInner.style.borderStyle = 'solid';
+                    cardInner.style.background = 'rgba(0, 206, 201, 0.05)';
+                }
+                
+                // 3. Set Filename
+                if (label) label.textContent = "✓ " + this.files[0].name;
+            } else {
+                // Reset State
+                if (successMsg) successMsg.classList.add('d-none');
+                if (placeholder) placeholder.classList.remove('d-none');
+                if (label) label.textContent = "";
+                if (cardInner) {
+                    cardInner.style.borderColor = 'var(--border-color)';
+                    cardInner.style.borderStyle = 'dashed';
+                    cardInner.style.background = 'var(--bg-secondary)';
+                }
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

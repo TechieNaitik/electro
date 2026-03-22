@@ -8,7 +8,7 @@ from functools import wraps
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from .models import Customer, Category, Product, Cart, Order, OrderItem, SiteAdmin, Brand
-from .forms import CategoryForm, ProductForm, BrandForm
+from .forms import CategoryForm, ProductForm, BrandForm, ProductImageFormSet
 from .logger import log_action
 from .exports import export_to_csv, export_to_excel, export_to_word, export_to_pdf
 from datetime import datetime
@@ -399,15 +399,19 @@ def admin_orders(request):
 def admin_product_add(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
+        formset = ProductImageFormSet(request.POST, request.FILES)
+        if form.is_valid() and formset.is_valid():
             product = form.save()
+            formset.instance = product
+            formset.save()
             log_action(f"Admin: {request.site_admin.username}", "Created Product", f"Product: {product.full_name}")
             messages.success(request, "Product created successfully.")
             return redirect('custom_admin:products')
     else:
         form = ProductForm()
+        formset = ProductImageFormSet()
     
-    context = {'active_page': 'products', 'form': form, 'title': 'Add Product'}
+    context = {'active_page': 'products', 'form': form, 'formset': formset, 'title': 'Add Product'}
     return render(request, 'custom_admin/product_form.html', context)
 
 @site_admin_required
@@ -428,15 +432,30 @@ def admin_product_edit(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
+        formset = ProductImageFormSet(request.POST, request.FILES, instance=product)
+        if form.is_valid() and formset.is_valid():
             form.save()
+            images = formset.save()
+            
+            # Count changes for more detailed feedback
+            added_count = len(formset.new_objects)
+            deleted_count = len(formset.deleted_objects)
+            
+            msg = "Product updated successfully."
+            if added_count > 0 or deleted_count > 0:
+                parts = []
+                if added_count > 0: parts.append(f"Added {added_count} image{'s' if added_count > 1 else ''}")
+                if deleted_count > 0: parts.append(f"Removed {deleted_count} image{'s' if deleted_count > 1 else ''}")
+                msg += f" ({', '.join(parts)})"
+                
             log_action(f"Admin: {request.site_admin.username}", "Updated Product", f"Product: {product.full_name}")
-            messages.success(request, "Product updated successfully.")
+            messages.success(request, msg)
             return redirect('custom_admin:products')
     else:
         form = ProductForm(instance=product)
+        formset = ProductImageFormSet(instance=product)
     
-    context = {'active_page': 'products', 'form': form, 'product': product, 'title': 'Edit Product'}
+    context = {'active_page': 'products', 'form': form, 'formset': formset, 'product': product, 'title': 'Edit Product'}
     return render(request, 'custom_admin/product_form.html', context)
 
 @site_admin_required

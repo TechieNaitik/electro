@@ -18,10 +18,12 @@ A Django-based E-commerce application.
 - **One-Click Checkout**: Refactored checkout flow that pulls shipping and billing details (including State and Phone) directly from stored user profiles.
 - **Centralized Profile Management**: Comprehensive user dashboard for managing personal details, contact info, and multi-field shipping addresses (Address, City, State, Country, Zip).
 - **Inventory Management**: Real-time stock validation and automatic stock deduction upon order completion.
+- **Product Image Gallery**: Interactive multi-image gallery on product detail pages featuring thumbnail navigation and native touch-swipe support for mobile devices.
 - **Custom Site Administration**: A premium, isolated administration dashboard featuring:
   - **Brand Ecosystem**: Full CRUD operations for Brands.
   - **Advanced Analytical Dashboard**: Real-time business intelligence using Chart.js to visualize sales trends by brand/category, order activity heatmaps, and AI-powered 7-day sales forecasting via scikit-learn.
   - **Dynamic Data Export**: Advanced administrative tools to export Customers, Orders, and Products into multiple professional formats (.pdf, .xlsx, .docx, .csv).
+  - **Gallery Management**: Re-engineered administrative backend for handling secondary product images, featuring a robust "Mark for Deletion" flow to prevent accidental data loss and real-time selection success indicators with count-based update notifications.
   - **Security & Sessions**: Secure login wall with hashed passwords, brute-force protection, and independent admin session management.
   - **Resource Management**: Complete CRUD operations for Products and Categories with instant search capability.
 - **Inventory Insights**: Real-time stock alerts and business analytics/statistics.

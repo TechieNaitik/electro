@@ -13,13 +13,6 @@
             </a>
         </div>
         <div class="section-body">
-            {% if messages %}
-                {% for message in messages %}
-                <div class="alert-message {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
 
             <table class="data-table">
                 <thead>
