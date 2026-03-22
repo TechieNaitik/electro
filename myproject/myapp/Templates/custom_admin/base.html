@@ -47,6 +47,11 @@
                     class="nav-link {% if active_page == 'analytical_dashboard' %}active{% endif %}" id="nav-analytical_dashboard">
                     <i class="fas fa-chart-pie"></i> Analytical Dashboard
                 </a>
+                <a href="{% url 'custom_admin:pytest_reports' %}"
+                    class="nav-link {% if active_page == 'pytest_reports' %}active{% endif %}" id="nav-pytest_reports">
+                    <i class="fas fa-file-invoice"></i> Pytest Reports
+                </a>
+
 
                 <div class="nav-section-label">Management</div>
                 <a href="{% url 'custom_admin:customers' %}"
@@ -118,12 +123,11 @@
             <main class="page-content">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert-message alert-{{ message.tags }} animate-in" 
-                             style="padding: 14px 20px; border-radius: var(--radius-sm); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; border: 1px solid transparent;
-                                    {% if 'success' in message.tags %}background: var(--success-bg); color: var(--success); border-color: rgba(0, 206, 201, 0.2);{% else %}background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-color);{% endif %}">
+                        <div class="alert-message alert-{{ message.tags }} animate-in {% if 'success' in message.tags %}is-success{% else %}is-generic{% endif %}">
                             <i class="fas {% if 'success' in message.tags %}fa-check-circle{% else %}fa-info-circle{% endif %}" style="font-size: 1.1rem;"></i>
                             <span style="font-weight: 500;">{{ message }}</span>
                         </div>
+
                     {% endfor %}
                     <script>
                         setTimeout(() => {

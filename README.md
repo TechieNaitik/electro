@@ -34,6 +34,9 @@ A Django-based E-commerce application.
 -   - **Delivery Confirmation**: Success confirmation with review prompts.
 -   - **Returns & Cancellations**: Specialized variants for reversed orders.
 -   - **Async Execution**: Leverages Python threading to ensure zero impact on frontend performance.
+- **Automated Testing & Coverage Dashboard**: Full-featured `pytest` suite integrated directly into the custom site-admin panel:
+  - **Live Terminal Stream**: Real-time terminal output streaming directly to the browser via AJAX for instant test feedback and auto-scrolling terminal logs.
+  - **Visual Coverage Dashboard**: Automated `pytest-cov` reporting with a dedicated, auto-refreshing interface to track code quality and logic gaps.
 - **Universal Star Rating & Review System**: Comprehensive peer-review ecosystem featuring:
   - **Individual Reviews**: Per-user rating and review submission for every product.
   - **Review Interactivity**: Selective star rating on product pages and interactive feedback forms.
@@ -42,6 +45,7 @@ A Django-based E-commerce application.
   - **Advanced User Tracking**: Multi-layered duplicate prevention for individual reviews (Account-based, Session-based, and IP-based).
   - **Rich UI**: Interactive star displays, hover effects, and premium gold-yellow star aesthetics.
   - **Context-Aware Forms**: Intelligent pre-filling of name and email for logged-in customers.
+
 - **Contact & Support**: Support pages and contact functionality.
 - **Comprehensive Error Handling**: Built-in diagnostic system that captures and displays detailed error context (code snippets, stack traces, line numbers) for developers, while maintaining a sleek, secure experience for end-users.
 - **Responsive Design**: Modern, glassmorphism-inspired dark mode aesthetic.
@@ -50,6 +54,7 @@ A Django-based E-commerce application.
 
 - **Backend**: Django 6.0+
 - **Database**: SQLite (default)
+- **Testing**: Pytest, Pytest-Django, Pytest-Cov
 - **Frontend**: HTML, CSS, JavaScript (AJAX)
 
 ## Getting Started
@@ -100,6 +105,22 @@ A Django-based E-commerce application.
    ```
 
    Open your browser and navigate to `http://127.0.0.1:8000/`.
+
+## Testing
+
+This project uses **pytest** for automated testing and coverage reporting.
+
+1. **Run tests via Command Line**:
+   ```bash
+   # From the project root
+   pytest
+   ```
+
+2. **Run tests via Admin Panel**:
+   - Log in to the **Site Admin** dashboard (`/admin/login/`).
+   - Navigate to **"Pytest Reports"** in the sidebar.
+   - Click **"Run Tests"** to initiate the live streaming test engine and view the visual coverage report.
+
 
 ## Project Structure
 

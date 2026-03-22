@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse, StreamingHttpResponse
 from django.contrib import messages
 from django.db.models import Sum, Count, Q
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -287,6 +288,98 @@ def admin_dashboard(request):
         'low_stock_products': low_stock_products,
     }
     return render(request, 'custom_admin/dashboard.html', context)
+    
+@site_admin_required
+def admin_pytest_reports(request):
+    import os
+    # Coverage report path relative to root
+    report_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'htmlcov', 'index.html')
+    exists = os.path.exists(report_path)
+    
+    context = {
+        'active_page': 'pytest_reports',
+        'report_exists': exists,
+    }
+    return render(request, 'custom_admin/pytest_reports.html', context)
+
+@site_admin_required
+def run_pytest_api(request):
+    import subprocess
+    import os
+    
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Only POST requests allowed.'}, status=405)
+        
+    try:
+        # Get project root (parent of myproject/)
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
+        # Run pytest. 
+        # We use --cov-report=html to ensure the report is updated.
+        # Note: In a production environment, this should be a background task (e.g. Celery).
+        # For this project, we'll run it synchronously for simplicity.
+        result = subprocess.run(
+            ['pytest'], 
+            cwd=root_dir, 
+            capture_output=True, 
+            text=True,
+            timeout=300 # 5 min timeout
+        )
+        
+        if result.returncode == 0 or result.returncode == 1: # 1 means some tests failed, but it still ran
+            return JsonResponse({
+                'status': 'success', 
+                'output': result.stdout,
+                'exit_code': result.returncode
+            })
+        else:
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Pytest encountered a system error.',
+                'output': result.stderr
+            }, status=500)
+            
+    except subprocess.TimeoutExpired:
+        return JsonResponse({'status': 'error', 'message': 'Test suite timed out.'}, status=408)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@site_admin_required
+def stream_pytest_api(request):
+    import subprocess
+    import os
+    import sys
+
+    # Get project root (parent of myproject/)
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    def stream_output():
+        # Set PYTHONUNBUFFERED to see output in real time
+        env = os.environ.copy()
+        env['PYTHONUNBUFFERED'] = '1'
+        
+        process = subprocess.Popen(
+            ['pytest', '-v', '--color=no'],
+            cwd=root_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            env=env
+        )
+
+        for line in process.stdout:
+            yield line
+
+        process.wait()
+        yield "\n--- FINISHED ---"
+
+    response = StreamingHttpResponse(stream_output(), content_type='text/plain')
+    response['X-Accel-Buffering'] = 'no'
+    return response
+
+
+
 
 @site_admin_required
 def admin_analytical_dashboard(request):

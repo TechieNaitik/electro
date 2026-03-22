@@ -9,6 +9,9 @@ urlpatterns = [
     path('logout/', views.admin_logout, name='logout'),
     path('', views.admin_dashboard, name='dashboard'),
     path('analytical/', views.admin_analytical_dashboard, name='analytical_dashboard'),
+    path('pytest-reports/', views.admin_pytest_reports, name='pytest_reports'),
+    path('api/run-pytest/', views.run_pytest_api, name='api_run_pytest'),
+    path('api/run-pytest-stream/', views.stream_pytest_api, name='api_run_pytest_stream'),
     path('customers/', views.admin_customers, name='customers'),
     
     # Products

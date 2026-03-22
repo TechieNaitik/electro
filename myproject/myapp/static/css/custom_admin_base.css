@@ -712,3 +712,24 @@ img {
 .d-flex-center { display: flex; align-items: center; }
 .gap-12 { gap: 12px; }
 .mr-16 { margin-right: 16px; }
+.alert-message {
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid transparent;
+  transition: opacity 0.5s ease;
+}
+.alert-message.is-success {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: rgba(0, 206, 201, 0.2);
+}
+.alert-message.is-generic {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+

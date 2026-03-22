@@ -12,3 +12,10 @@ django-bootstrap5
 pypdf2
 scikit-learn
 numpy
+pytest
+pytest-django
+factory-boy
+pytest-cov
+faker
+pytest-mock
+

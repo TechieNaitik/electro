@@ -1,0 +1,86 @@
+{% extends "custom_admin/base.html" %}
+{% load static %}
+{% block title %}Pytest Reports{% endblock %}
+{% block page_title %}Pytest Reports{% endblock %}
+
+{% block content %}
+<div class="section-card animate-in">
+    <div class="section-header">
+        <h2><i class="fas fa-file-invoice" style="margin-right:8px; color:var(--accent-light);"></i>Automated Testing & Coverage</h2>
+        <div class="actions" style="display:flex; gap:10px; align-items:center;">
+            <button id="runTestsBtn" class="btn btn-secondary btn-sm" onclick="runPytest()">
+                <i class="fas fa-play" style="margin-right:5px;"></i> Run Tests
+            </button>
+            <div id="testProgress" class="progress-indicator" style="display:none; color:var(--accent-light); font-size:0.8rem; font-weight:600;">
+                <div class="spinner-sm"></div> Running Suite...
+            </div>
+            {% if report_exists %}
+            <a href="{% static 'pytest_reports/index.html' %}" target="_blank" class="btn btn-primary btn-sm">
+                <i class="fas fa-external-link-alt"></i> Open Full Report
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="section-body">
+        <div id="liveTerminalContainer" style="display:none; padding: 20px;">
+            <div class="terminal-header" style="display:flex; justify-content:space-between; align-items:center; background:#1e1e1e; padding:10px 20px; border-radius:8px 8px 0 0; border-bottom:1px solid #333;">
+                <span style="color:#fff; font-size:0.8rem; font-family:monospace;"><i class="fas fa-terminal" style="margin-right:8px;"></i>pytest-stream</span>
+                <span id="terminalStatus" style="color:var(--accent-light); font-size:0.75rem; font-weight:600;">ACTIVE</span>
+            </div>
+            <div class="terminal-body" style="background:#000; color:#0f0; padding:20px; border-radius:0 0 8px 8px; font-family:monospace; font-size:0.85rem; height:500px; overflow-y:auto; line-height:1.5; border:1px solid #333;">
+                <pre id="liveTerminalText" style="margin:0; white-space:pre-wrap; word-wrap:break-word;"></pre>
+            </div>
+        </div>
+
+        <div id="reportPlaceholder" class="empty-state report-placeholder visible">
+            <div class="empty-icon report-flask-icon">
+                <i class="fas fa-flask"></i>
+            </div>
+            <h3 id="placeholderTitle">System Overview</h3>
+            <p id="placeholderText" class="placeholder-text">
+                The test suite is ready. Click "Run Tests" to begin real-time verification and generate a fresh coverage report. 
+                {% if report_exists %}<i>(A previous report from a recent run is available in the archives)</i>{% endif %}
+            </p>
+        </div>
+
+        <div id="reportContainer" class="report-container-box">
+            <iframe id="reportIframe" src="" class="report-iframe"></iframe>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .report-placeholder { display: none; padding: 60px 20px; }
+    .report-placeholder.visible { display: block; }
+    .report-flask-icon { font-size: 4rem; color: var(--text-muted); margin-bottom: 20px; }
+    .placeholder-text { color: var(--text-secondary); max-width: 500px; margin: 0 auto 24px; }
+    .report-container-box { display: none; height: 80vh; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #fff; }
+    .report-container-box.visible { display: block; }
+    .report-iframe { width: 100%; height: 100%; border: none; }
+    .report-container iframe { filter: invert(0); }
+    .spinner-sm {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(162, 155, 254, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--accent-light);
+        animation: spin 1s linear infinite;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+    const PYTEST_CONFIG = {
+        streamUrl: "{% url 'custom_admin:api_run_pytest_stream' %}",
+        reportBaseUrl: "{% static 'pytest_reports/index.html' %}",
+        csrfToken: "{{ csrf_token }}"
+    };
+</script>
+<script src="{% static 'js/custom_admin_pytest_reports.js' %}"></script>
+{% endblock %}
+

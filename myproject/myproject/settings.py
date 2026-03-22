@@ -120,6 +120,11 @@ STORAGES = {
     },
 }
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'myapp', 'static'),
+    ('pytest_reports', os.path.join(BASE_DIR.parent, 'htmlcov')),
+]
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'myapp', 'static')
 

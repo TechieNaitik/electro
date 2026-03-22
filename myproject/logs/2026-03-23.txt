@@ -12,3 +12,18 @@
 [2026-03-23 01:45:08] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPhone 17 (Sage 256GB)
 [2026-03-23 01:45:34] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPhone 16 (Teal, 128GB)
 [2026-03-23 01:51:54] User: Admin: admin1 | Action: Updated Product | Details: Product: Apple iPhone Silicone Case (Magsafe)
+[2026-03-23 02:25:16] User: Customer: Cynthia Cook <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 02:25:34] User: Customer: Karen Ortiz <customer0@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 02:26:09] User: Customer: Alexander Vargas <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 02:27:27] User: Customer: Annette Turner <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 02:29:22] User: Customer: Steven Clarke <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 02:39:32] User: Admin: admin1 | Action: Admin Login | Details: Successfully logged into Custom Admin.
+[2026-03-23 03:00:56] User: Customer: Kerri Hoffman <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 03:03:48] User: Customer: Tamara Miller <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 03:09:03] User: Customer: Deanna Deleon <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 03:11:11] User: Customer: Victor Parks Jr. <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 03:14:39] User: Customer: Brian Jordan <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 03:15:47] User: Customer: David Pena <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 03:16:27] User: Customer: Amy Clark <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 03:17:45] User: Customer: Amanda Love <customer9@example.com> | Action: Login | Details: Successfully logged in.
+[2026-03-23 03:18:35] User: Customer: John Pearson <customer9@example.com> | Action: Login | Details: Successfully logged in.
