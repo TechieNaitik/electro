@@ -141,6 +141,12 @@ class Order(models.Model):
         ('Exchanged', 'Exchanged'),
     ]
 
+    PAYMENT_STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Succeeded', 'Succeeded'),
+        ('Failed', 'Failed'),
+    ]
+
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     order_notes = models.TextField(blank=True, null=True)
     total_amount = models.IntegerField()
@@ -151,6 +157,10 @@ class Order(models.Model):
     shipping_carrier = models.CharField(max_length=100, null=True, blank=True)
     carrier_url = models.URLField(null=True, blank=True)
     return_reason = models.TextField(null=True, blank=True)
+    razorpay_order_id = models.CharField(max_length=255, null=True, blank=True)
+    razorpay_payment_id = models.CharField(max_length=255, null=True, blank=True)
+    razorpay_signature = models.CharField(max_length=255, null=True, blank=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def subtotal(self):

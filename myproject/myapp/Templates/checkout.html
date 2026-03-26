@@ -1,6 +1,34 @@
 {% extends 'index.html' %}
 {% block title %}Checkout{% endblock %}
 {% load static %}
+{% block extra_head %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+    #submit-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 10px;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .payment-error {
+        color: #df1b41;
+        font-size: 14px;
+        margin-top: 12px;
+        display: none;
+    }
+</style>
+{% endblock %}
 {% block content %}
 <!-- Single Page Header start -->
 <div class="container-fluid page-header py-5">
@@ -163,10 +191,21 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row g-4 text-center align-items-center justify-content-center border-bottom py-2">
+                        <div class="col-12">
+                            <div class="form-check text-start my-2">
+                                <input type="radio" class="form-check-input bg-primary border-0" id="Razorpay-1"
+                                    name="payment_method" value="Razorpay">
+                                <label class="form-check-label" for="Razorpay-1">Online Payment (Razorpay)</label>
+                            </div>
+                            <div id="payment-message" class="payment-error"></div>
+                        </div>
+                    </div>
                     <div class="row g-4 text-center align-items-center justify-content-center pt-4">
-                        <button type="submit"
-                            class="btn btn-primary border-secondary py-3 px-4 text-uppercase w-100 text-primary">Place
-                            Order
+                        <button type="submit" id="submit-button"
+                            class="btn btn-primary border-secondary py-3 px-4 text-uppercase w-100 text-primary">
+                            <span class="spinner" id="spinner"></span>
+                            <span id="button-text">Place Order</span>
                         </button>
                     </div>
                 </div>
@@ -175,4 +214,142 @@
     </div>
 </div>
 <!-- Checkout Page End -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkoutForm = document.querySelector('form');
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const spinner = document.getElementById('spinner');
+        const paymentMethodRadios = document.getElementsByName('payment_method');
+        
+        // Handle payment method change UI
+        function handlePaymentMethodChange() {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            if (selectedMethod === 'Razorpay') {
+                buttonText.innerText = "Pay and Place Order";
+            } else {
+                buttonText.innerText = "Place Order";
+            }
+        }
+
+        paymentMethodRadios.forEach(radio => {
+            radio.addEventListener('change', handlePaymentMethodChange);
+        });
+
+        // Form submission
+        checkoutForm.addEventListener('submit', async function(e) {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            
+            if (selectedMethod !== 'Razorpay') {
+                // Standard form submission for COD or other methods
+                return;
+            }
+
+            e.preventDefault();
+            setLoading(true);
+
+            try {
+                // 1. Create Razorpay Order on server
+                const response = await fetch("{% url 'create_razorpay_order' %}", {
+                    method: "POST",
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                });
+                const orderData = await response.json();
+
+                if (orderData.status === 'error') {
+                    throw new Error(orderData.message);
+                }
+
+                // 2. Open Razorpay Checkout Modal
+                const options = {
+                    "key": orderData.key_id,
+                    "amount": orderData.amount,
+                    "currency": orderData.currency,
+                    "name": "Electro Store",
+                    "description": "Payment for your order",
+                    "order_id": orderData.order_id,
+                    "handler": function (response) {
+                        // 3. Handle successful payment
+                        verifyPayment(response, orderData.order_id);
+                    },
+                    "prefill": {
+                        "name": orderData.customer_name,
+                        "email": orderData.customer_email,
+                        "contact": orderData.customer_phone
+                    },
+                    "theme": {
+                        "color": "#81c408" // Match Electro theme color
+                    },
+                    "modal": {
+                        "ondismiss": function() {
+                            setLoading(false);
+                        }
+                    }
+                };
+                const rzp = new Razorpay(options);
+                rzp.open();
+                
+            } catch (err) {
+                console.error(err);
+                showMessage(err.message || "Failed to initialize payment.");
+                setLoading(false);
+            }
+        });
+
+        async function verifyPayment(paymentResponse, razorpayOrderId) {
+            const orderNotes = document.getElementsByName('order_notes')[0].value;
+            
+            try {
+                const response = await fetch("{% url 'verify_razorpay_payment' %}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                    body: JSON.stringify({
+                        razorpay_order_id: razorpayOrderId,
+                        razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                        razorpay_signature: paymentResponse.razorpay_signature,
+                        order_notes: orderNotes
+                    })
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    window.location.href = "{% url 'payment_success' %}?order_id=" + result.order_id;
+                } else {
+                    showMessage(result.message || "Payment verification failed.");
+                    setLoading(false);
+                }
+            } catch (e) {
+                console.error(e);
+                showMessage("Error verifying payment.");
+                setLoading(false);
+            }
+        }
+
+        // UI Helpers
+        function showMessage(messageText) {
+            const messageContainer = document.querySelector("#payment-message");
+            messageContainer.style.display = "block";
+            messageContainer.textContent = messageText;
+
+            setTimeout(function () {
+                messageContainer.style.display = "none";
+                messageContainer.textContent = "";
+            }, 6000);
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                spinner.style.display = "inline-block";
+                buttonText.innerText = "Processing...";
+            } else {
+                submitButton.disabled = false;
+                spinner.style.display = "none";
+                const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+                buttonText.innerText = selectedMethod === 'Razorpay' ? "Pay and Place Order" : "Place Order";
+            }
+        }
+    });
+</script>
 {% endblock %}

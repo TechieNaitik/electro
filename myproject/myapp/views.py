@@ -17,6 +17,11 @@ from .logger import log_action
 # Invoice PDF Generation Imports
 from playwright.sync_api import sync_playwright
 from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
+import razorpay
+
+client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 # =========================================================================
 #  PAGE VIEWS  —  These render full HTML pages
@@ -211,6 +216,7 @@ def checkout(request):
         'total': total,
         'customer': customer,
         'cart_count': cart_count,
+        'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID,
     }
     return render(request, 'checkout.html', context)
 
@@ -1032,4 +1038,150 @@ def submit_product_rating(request, pid):
         'total_votes': product.total_votes,
         'message': f'Thank you! Your review for "{product.full_name}" has been submitted.'
     })
+
+# =========================================================================
+#  RAZORPAY INTEGRATION
+# =========================================================================
+
+@csrf_exempt
+def create_razorpay_order(request):
+    """
+    Creates a Razorpay Order ID and returns it to the frontend.
+    """
+    if 'email' not in request.session:
+        return JsonResponse({'status': 'error', 'message': 'Please login first.'}, status=403)
+    
+    customer = Customer.objects.get(email=request.session['email'])
+    cart_items = Cart.objects.filter(customer=customer)
+    
+    if not cart_items.exists():
+        return JsonResponse({'status': 'error', 'message': 'Your cart is empty.'}, status=400)
+    
+    subtotal = sum(item.total_price() for item in cart_items)
+    cart_count = sum(item.quantity for item in cart_items)
+    shipping = 100 * cart_count
+    total = subtotal + shipping
+    
+    try:
+        # Create Razorpay Order
+        # amount is in paise (1 INR = 100 paise)
+        data = {
+            "amount": int(total * 100),
+            "currency": "INR",
+            "receipt": f"receipt_{secrets.token_hex(4)}",
+            "notes": {
+                "customer_email": customer.email,
+                "cart_item_count": cart_count
+            }
+        }
+        razorpay_order = client.order.create(data=data)
+        
+        return JsonResponse({
+            'order_id': razorpay_order['id'],
+            'amount': razorpay_order['amount'],
+            'currency': razorpay_order['currency'],
+            'key_id': settings.RAZORPAY_KEY_ID,
+            'customer_name': customer.full_name,
+            'customer_email': customer.email,
+            'customer_phone': customer.phone or ""
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+@csrf_exempt
+def verify_razorpay_payment(request):
+    """
+    Verifies the Razorpay payment signature and finalizes the order.
+    """
+    if request.method != "POST":
+        return JsonResponse({'status': 'error', 'message': 'POST required'}, status=405)
+        
+    try:
+        data = json.loads(request.body)
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_signature = data.get('razorpay_signature')
+        order_notes = data.get('order_notes', '')
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        
+    # Verify signature
+    params_dict = {
+        'razorpay_order_id': razorpay_order_id,
+        'razorpay_payment_id': razorpay_payment_id,
+        'razorpay_signature': razorpay_signature
+    }
+    
+    try:
+        client.utility.verify_payment_signature(params_dict)
+    except razorpay.errors.SignatureVerificationError:
+        return JsonResponse({'status': 'error', 'message': 'Signature verification failed'}, status=400)
+
+    # Signature valid, create the order
+    if 'email' not in request.session:
+        return JsonResponse({'status': 'error', 'message': 'Session expired'}, status=403)
+        
+    customer = Customer.objects.get(email=request.session['email'])
+    cart_items = Cart.objects.filter(customer=customer)
+    
+    if not cart_items.exists():
+        return JsonResponse({'status': 'error', 'message': 'Cart empty'}, status=400)
+        
+    try:
+        with transaction.atomic():
+            subtotal = sum(item.total_price() for item in cart_items)
+            cart_count = sum(item.quantity for item in cart_items)
+            shipping = 100 * cart_count
+            total = subtotal + shipping
+            
+            order = Order.objects.create(
+                customer=customer,
+                order_notes=order_notes,
+                total_amount=total,
+                payment_method='Razorpay Online',
+                shipping_charge=shipping,
+                razorpay_order_id=razorpay_order_id,
+                razorpay_payment_id=razorpay_payment_id,
+                razorpay_signature=razorpay_signature,
+                payment_status='Succeeded',
+                status='Processing'
+            )
+            
+            for item in cart_items:
+                product = item.product
+                product.stock_quantity -= item.quantity
+                product.save()
+                
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    price=product.price,
+                    quantity=item.quantity
+                )
+                
+            log_action(f"Customer: {customer.full_name}", "Placed Order (Razorpay)", f"Order #{order.id} | PayID: {razorpay_payment_id}")
+            
+            # Send confirmation email
+            from .email_utils import send_order_email
+            import threading
+            threading.Thread(target=send_order_email, args=(order, 'confirmation')).start()
+            
+            # Clear cart
+            cart_items.delete()
+            
+            # Clear session checkout flag
+            if 'checkout_allowed' in request.session:
+                del request.session['checkout_allowed']
+                
+            return JsonResponse({'status': 'success', 'order_id': order.id})
+            
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+def payment_success(request):
+    """
+    Success page after checkout.
+    """
+    order_id = request.GET.get('order_id')
+    return render(request, 'payment_success.html', {'order_id': order_id})
 

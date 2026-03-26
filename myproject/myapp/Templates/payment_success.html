@@ -1,0 +1,33 @@
+{% extends 'index.html' %}
+{% block title %}Payment Successful{% endblock %}
+{% block content %}
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Success</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item active text-white">Payment Success</li>
+    </ol>
+</div>
+
+<div class="container-fluid py-5">
+    <div class="container py-5 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <i class="bi bi-check-circle display-1 text-primary"></i>
+                <h1 class="display-1">Success!</h1>
+                <h1 class="mb-4">Thank you for your order</h1>
+                <p class="mb-4">Your payment has been processed successfully. We've sent a verification email to your registered email address.</p>
+                {% if order_id %}
+                    <div class="alert alert-success">
+                        <strong>Order ID:</strong> #{{ order_id }}
+                    </div>
+                {% endif %}
+                <div class="d-flex justify-content-center gap-3">
+                    <a class="btn btn-primary border-secondary py-3 px-4 text-uppercase text-primary" href="{% url 'order_history' %}">View Order History</a>
+                    <a class="btn btn-outline-secondary py-3 px-4 text-uppercase" href="{% url 'shop' %}">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

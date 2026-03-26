@@ -1,0 +1,4 @@
+[2026-03-26 14:15:23] User: Customer: Naitik Shah <naitikshah2308@gmail.com> | Action: Login | Details: Successfully logged in.
+[2026-03-26 15:18:23] User: Customer: Naitik Shah <naitikshah2308@gmail.com> | Action: Login | Details: Successfully logged in.
+[2026-03-26 15:22:15] User: Customer: Naitik Shah | Action: Placed Order (Razorpay) | Details: Order #1 | PayID: pay_SVoMOwawlKBfga
+[2026-03-26 15:22:52] User: Admin: admin1 | Action: Admin Login | Details: Successfully logged into Custom Admin.

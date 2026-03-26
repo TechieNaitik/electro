@@ -143,3 +143,7 @@ BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:8000')
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 1800  # 30 minutes of inactivity
 SESSION_SAVE_EVERY_REQUEST = True
+
+# Razorpay Configuration
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')

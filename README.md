@@ -45,7 +45,7 @@ A Django-based E-commerce application.
   - **Advanced User Tracking**: Multi-layered duplicate prevention for individual reviews (Account-based, Session-based, and IP-based).
   - **Rich UI**: Interactive star displays, hover effects, and premium gold-yellow star aesthetics.
   - **Context-Aware Forms**: Intelligent pre-filling of name and email for logged-in customers.
-
+- **Mock Payment Gateway Integration**: Fully functional end-to-end **Razorpay (Test Mode)** integration using the **Razorpay Checkout modal**. Features include secure server-side order creation, HMAC-SHA256 signature verification for payment security, and real-time transaction finalization.
 - **Contact & Support**: Support pages and contact functionality.
 - **Comprehensive Error Handling**: Built-in diagnostic system that captures and displays detailed error context (code snippets, stack traces, line numbers) for developers, while maintaining a sleek, secure experience for end-users.
 - **Responsive Design**: Modern, glassmorphism-inspired dark mode aesthetic.
@@ -135,3 +135,14 @@ This project uses **pytest** for automated testing and coverage reporting.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Razorpay Payment Testing
+
+To test the payment gateway, ensure you have set your test keys in `myproject/.env`: 
+- `RAZORPAY_KEY_ID` 
+- `RAZORPAY_KEY_SECRET` 
+
+### Test Scenarios
+1. **Success**: Select "Online Payment (Razorpay)" at checkout, enter any test mobile number, and select **"Success"** in the Razorpay test modal.
+2. **Failure**: Select **"Failure"** in the Razorpay test modal to see error handling in action.
+3. **Signature Verification**: The backend uses the official `razorpay` Python SDK to verify `razorpay_signature` before creating any order, ensuring high security.

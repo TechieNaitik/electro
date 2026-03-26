@@ -65,4 +65,9 @@ urlpatterns = [
     # Rating System API
     path('api/ratings/<int:pid>/', views.get_product_rating, name='get_rating'),
     path('api/ratings/submit/<int:pid>/', views.submit_product_rating, name='submit_rating'),
+
+    # Razorpay Integration URLs
+    path('api/create-razorpay-order', views.create_razorpay_order, name='create_razorpay_order'),
+    path('api/verify-razorpay-payment', views.verify_razorpay_payment, name='verify_razorpay_payment'),
+    path('payment-success', views.payment_success, name='payment_success'),
 ]
