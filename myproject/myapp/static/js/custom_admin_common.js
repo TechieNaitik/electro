@@ -106,4 +106,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 300);
         }
     });
+
+    // ───────── Alert Auto-dismiss ─────────
+    setTimeout(() => {
+        document.querySelectorAll('.alert-message').forEach(alert => {
+            alert.style.opacity = '0';
+            alert.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                if (alert.parentNode) alert.remove();
+            }, 500);
+        });
+    }, 5000);
 });

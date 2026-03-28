@@ -44,7 +44,7 @@
                             <div class="products-mini-content p-3">
                                 <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
                                 <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.full_name }}</a>
-                                <span class="text-primary fs-5">₹{{ product.price }}</span>
+                                <span class="text-primary fs-5 price-display" data-base-price="{{ product.price }}">₹{{ product.price }}</span>
                             </div>
                         </div>
                     </div>
@@ -112,7 +112,7 @@
                             <div class="products-mini-content p-3">
                                 <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
                                 <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.full_name }}</a>
-                                <span class="text-primary fs-5">₹{{ product.price }}</span>
+                                <span class="text-primary fs-5 price-display" data-base-price="{{ product.price }}">₹{{ product.price }}</span>
                             </div>
                         </div>
                     </div>

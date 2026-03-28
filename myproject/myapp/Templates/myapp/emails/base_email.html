@@ -4,21 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ subject }}</title>
-    <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f7f9fc; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-        .wrapper { width: 100%; table-layout: fixed; background-color: #f7f9fc; padding-bottom: 40px; }
-        .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 600px; border-spacing: 0; color: #4a4a4a; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .header { background-color: #5d4286; padding: 40px; text-align: center; color: #ffffff; }
-        .header h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
-        .content { padding: 40px; line-height: 1.6; font-size: 16px; }
-        .footer { padding: 30px; text-align: center; font-size: 12px; color: #9b9b9b; }
-        .button { display: inline-block; padding: 14px 30px; background-color: #5d4286; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
-        .order-summary { background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-top: 30px; }
-        .order-item { border-bottom: 1px solid #edf2f7; padding: 12px 0; display: flex; justify-content: space-between; }
-        .order-item:last-child { border-bottom: none; }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; background-color: #edf2f7; color: #4a5568; }
-        .highlight { color: #5d4286; font-weight: 700; }
-    </style>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/email.css' %}">
 </head>
 <body>
     <div class="wrapper">

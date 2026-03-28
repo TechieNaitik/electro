@@ -60,18 +60,15 @@
     </div>
 
     {% if debug %}
-    <!-- Debug Data Bridge -->
-    <script>
-        window.DEBUG_ERROR_CONFIG = {
-            type: "{{ error_type|escapejs }}",
-            message: "{{ error_message|escapejs }}",
-            path: "{{ request_path|escapejs }}",
-            file: "{{ file_path|escapejs }}",
-            line: "{{ line_number|escapejs }}",
-            func: "{{ function_name|escapejs }}",
-            trace: `{{ stack_trace|escapejs }}`
-        };
-    </script>
+    <div id="debug-data-bridge" style="display: none;"
+        data-type="{{ error_type|escapejs }}"
+        data-message="{{ error_message|escapejs }}"
+        data-path="{{ request_path|escapejs }}"
+        data-file="{{ file_path|escapejs }}"
+        data-line="{{ line_number|escapejs }}"
+        data-func="{{ function_name|escapejs }}"
+        data-trace="{{ stack_trace|escapejs }}">
+    </div>
     <script src="{% static 'js/error.js' %}"></script>
     {% endif %}
 </body>

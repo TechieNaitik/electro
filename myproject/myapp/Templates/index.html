@@ -85,14 +85,22 @@
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center topbar-height">
                     <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2"
-                            data-bs-toggle="dropdown"><small>INR</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> INR</a>
-                            <a href="#" class="dropdown-item"> Euro</a>
-                            <a href="#" class="dropdown-item"> Dollar</a>
+                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown">
+                            <small class="current-currency-code">INR</small>
+                        </a>
+                        <div class="dropdown-menu rounded shadow-sm border-0">
+                            <a href="#" class="dropdown-item currency-select-item" data-currency="INR">₹ INR</a>
+                            <a href="#" class="dropdown-item currency-select-item" data-currency="USD">$ USD</a>
+                            <a href="#" class="dropdown-item currency-select-item" data-currency="EUR">€ EUR</a>
+                            <a href="#" class="dropdown-item currency-select-item" data-currency="GBP">£ GBP</a>
+                            <a href="#" class="dropdown-item currency-select-item" data-currency="JPY">¥ JPY</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item text-center py-2" id="refresh-rates-btn" title="Refresh Rates">
+                                <i class="fas fa-sync-alt"></i> Refresh Rates
+                            </a>
                         </div>
                     </div>
+                    <div class="currency-status mx-2" style="display: none;"></div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle text-muted mx-2"
                             data-bs-toggle="dropdown"><small>English</small></a>
@@ -400,7 +408,7 @@
                                             <a href="{% url 'shop_category' product.category_id.id %}"
                                                 class="d-block mb-2">{{ product.category_id.name }}</a>
                                             <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.full_name }}</a>
-                                            <span class="text-primary fs-5">₹{{ product.price }}</span>
+                                            <span class="text-primary fs-5 price-display" data-base-price="{{ product.price }}">₹{{ product.price }}</span>
                                         </div>
                                     </div>
                                     <div
@@ -473,7 +481,7 @@
                                 <div class="products-mini-content p-3">
                                     <a href="{% url 'shop_category' product.category_id.id %}" class="d-block mb-2">{{ product.category_id.name }}</a>
                                     <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.full_name }}</a>
-                                    <span class="text-primary fs-5">₹{{ product.price }}</span>
+                                    <span class="text-primary fs-5 price-display" data-base-price="{{ product.price }}">₹{{ product.price }}</span>
                                 </div>
                             </div>
                         </div>
@@ -654,6 +662,7 @@
 
     <script src="{% static 'js/index.js' %}"></script>
     <script src="{% static 'js/compare.js' %}"></script>
+    <script src="{% static 'js/currency.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 

@@ -20,19 +20,28 @@ document.addEventListener("click", function (e) {
             }
           } else if (data.item) {
             document.getElementById(`qty-${cid}`).value = data.item.quantity;
-            document.getElementById(`item-total-${cid}`).innerText =
-              "₹" + data.item.total_price;
+            const itemTotal = document.getElementById(`item-total-${cid}`);
+            itemTotal.dataset.basePrice = data.item.total_price;
           }
 
-          document.getElementById("cart-subtotal").innerText =
-            "₹" + data.subtotal;
-          document.getElementById("cart-shipping").innerText =
-            "₹" + data.shipping;
-          document.getElementById("cart-total").innerText = "₹" + data.total;
+          const subtotalEl = document.getElementById("cart-subtotal");
+          const shippingEl = document.getElementById("cart-shipping");
+          const totalEl = document.getElementById("cart-total");
+
+          if (subtotalEl) subtotalEl.dataset.basePrice = data.subtotal;
+          if (shippingEl) shippingEl.dataset.basePrice = data.shipping;
+          if (totalEl) totalEl.dataset.basePrice = data.total;
+
           if (document.getElementById("shipping-calculation")) {
             document.getElementById("shipping-calculation").innerText =
               `₹100 x ${data.cart_count} items`;
           }
+          
+          // Trigger reactive update
+          if (window.currencyManager) {
+            window.currencyManager.applyRatesToDOM();
+          }
+
           updateCartHeader(data.cart_count);
         } else {
           showNotification(data.message, "error");

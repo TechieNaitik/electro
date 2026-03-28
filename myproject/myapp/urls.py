@@ -69,5 +69,8 @@ urlpatterns = [
     # Razorpay Integration URLs
     path('api/create-razorpay-order', views.create_razorpay_order, name='create_razorpay_order'),
     path('api/verify-razorpay-payment', views.verify_razorpay_payment, name='verify_razorpay_payment'),
+
+    path('api/exchange-rates/', views.exchange_rates, name='exchange_rates'),
     path('payment-success', views.payment_success, name='payment_success'),
+
 ]

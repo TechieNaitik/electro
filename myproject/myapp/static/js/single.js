@@ -88,6 +88,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Swipe Gestures for Mobile
         setupSwipeGestures();
+
+        // Handle Thumbnail Clicks (Delegated)
+        document.getElementById('thumbnail-strip').addEventListener('click', (e) => {
+            const item = e.target.closest('.thumbnail-item');
+            if (item) {
+                const url = item.dataset.thumbUrl;
+                const index = parseInt(item.dataset.thumbIndex);
+                updateGalleryImage(item, url, index);
+            }
+        });
     }
 });
 

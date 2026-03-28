@@ -3,31 +3,7 @@
 {% load static %}
 {% block extra_head %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<style>
-    #submit-button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-    .spinner {
-        display: none;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255,255,255,0.3);
-        border-radius: 50%;
-        border-top-color: #fff;
-        animation: spin 1s ease-in-out infinite;
-        margin-right: 10px;
-    }
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    .payment-error {
-        color: #df1b41;
-        font-size: 14px;
-        margin-top: 12px;
-        display: none;
-    }
-</style>
+<link href="{% static 'css/checkout.css' %}" rel="stylesheet">
 {% endblock %}
 {% block content %}
 <!-- Single Page Header start -->
@@ -47,7 +23,10 @@
 <div class="container-fluid bg-light overflow-hidden py-5">
     <div class="container py-5">
         <h1 class="mb-4 wow fadeInUp" data-wow-delay="0.1s">Billing details</h1>
-        <form method="POST" action="{% url 'checkout' %}">
+        <form method="POST" action="{% url 'checkout' %}" 
+              data-create-order-url="{% url 'create_razorpay_order' %}" 
+              data-verify-payment-url="{% url 'verify_razorpay_payment' %}" 
+              data-payment-success-url="{% url 'payment_success' %}">
             {% csrf_token %}
             <div class="row g-5">
                 <div class="col-md-12 col-lg-6 col-xl-6 wow fadeInUp" data-wow-delay="0.1s">
@@ -99,9 +78,9 @@
                                         {{ item.product.full_name }}
                                     </th>
                                     <td class="py-4">{{ item.product.category_id.name }}</td>
-                                    <td class="py-4">₹{{ item.product.price }}</td>
+                                    <td class="py-4 price-display" data-base-price="{{ item.product.price }}">₹{{ item.product.price }}</td>
                                     <td class="py-4 text-center">{{ item.quantity }}</td>
-                                    <td class="py-4">₹{{ item.total_price }}</td>
+                                    <td class="py-4 price-display" data-base-price="{{ item.total_price }}">₹{{ item.total_price }}</td>
                                 </tr>
                                 {% endfor %}
                                 <tr>
@@ -114,7 +93,7 @@
                                     </td>
                                     <td class="py-4 text-center">
                                         <div class="py-2 border-bottom border-top">
-                                            <p class="mb-0 text-dark">₹{{ subtotal }}</p>
+                                            <p class="mb-0 text-dark price-display" data-base-price="{{ subtotal }}">₹{{ subtotal }}</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -131,7 +110,7 @@
                                     </td>
                                     <td class="py-4 text-center">
                                         <div class="py-4 border-bottom border-top">
-                                            <p class="mb-0 text-dark">₹{{ shipping }}</p>
+                                            <p class="mb-0 text-dark price-display" data-base-price="{{ shipping }}">₹{{ shipping }}</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -145,7 +124,7 @@
                                     </td>
                                     <td class="py-4 text-center">
                                         <div class="py-2 border-bottom border-top">
-                                            <p class="mb-0 text-dark">₹{{ total }}</p>
+                                            <p class="mb-0 text-dark price-display" data-base-price="{{ total }}">₹{{ total }}</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -215,141 +194,7 @@
 </div>
 <!-- Checkout Page End -->
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const checkoutForm = document.querySelector('form');
-        const submitButton = document.getElementById('submit-button');
-        const buttonText = document.getElementById('button-text');
-        const spinner = document.getElementById('spinner');
-        const paymentMethodRadios = document.getElementsByName('payment_method');
-        
-        // Handle payment method change UI
-        function handlePaymentMethodChange() {
-            const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
-            if (selectedMethod === 'Razorpay') {
-                buttonText.innerText = "Pay and Place Order";
-            } else {
-                buttonText.innerText = "Place Order";
-            }
-        }
-
-        paymentMethodRadios.forEach(radio => {
-            radio.addEventListener('change', handlePaymentMethodChange);
-        });
-
-        // Form submission
-        checkoutForm.addEventListener('submit', async function(e) {
-            const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
-            
-            if (selectedMethod !== 'Razorpay') {
-                // Standard form submission for COD or other methods
-                return;
-            }
-
-            e.preventDefault();
-            setLoading(true);
-
-            try {
-                // 1. Create Razorpay Order on server
-                const response = await fetch("{% url 'create_razorpay_order' %}", {
-                    method: "POST",
-                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
-                });
-                const orderData = await response.json();
-
-                if (orderData.status === 'error') {
-                    throw new Error(orderData.message);
-                }
-
-                // 2. Open Razorpay Checkout Modal
-                const options = {
-                    "key": orderData.key_id,
-                    "amount": orderData.amount,
-                    "currency": orderData.currency,
-                    "name": "Electro Store",
-                    "description": "Payment for your order",
-                    "order_id": orderData.order_id,
-                    "handler": function (response) {
-                        // 3. Handle successful payment
-                        verifyPayment(response, orderData.order_id);
-                    },
-                    "prefill": {
-                        "name": orderData.customer_name,
-                        "email": orderData.customer_email,
-                        "contact": orderData.customer_phone
-                    },
-                    "theme": {
-                        "color": "#81c408" // Match Electro theme color
-                    },
-                    "modal": {
-                        "ondismiss": function() {
-                            setLoading(false);
-                        }
-                    }
-                };
-                const rzp = new Razorpay(options);
-                rzp.open();
-                
-            } catch (err) {
-                console.error(err);
-                showMessage(err.message || "Failed to initialize payment.");
-                setLoading(false);
-            }
-        });
-
-        async function verifyPayment(paymentResponse, razorpayOrderId) {
-            const orderNotes = document.getElementsByName('order_notes')[0].value;
-            
-            try {
-                const response = await fetch("{% url 'verify_razorpay_payment' %}", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
-                    body: JSON.stringify({
-                        razorpay_order_id: razorpayOrderId,
-                        razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                        razorpay_signature: paymentResponse.razorpay_signature,
-                        order_notes: orderNotes
-                    })
-                });
-
-                const result = await response.json();
-                if (result.status === 'success') {
-                    window.location.href = "{% url 'payment_success' %}?order_id=" + result.order_id;
-                } else {
-                    showMessage(result.message || "Payment verification failed.");
-                    setLoading(false);
-                }
-            } catch (e) {
-                console.error(e);
-                showMessage("Error verifying payment.");
-                setLoading(false);
-            }
-        }
-
-        // UI Helpers
-        function showMessage(messageText) {
-            const messageContainer = document.querySelector("#payment-message");
-            messageContainer.style.display = "block";
-            messageContainer.textContent = messageText;
-
-            setTimeout(function () {
-                messageContainer.style.display = "none";
-                messageContainer.textContent = "";
-            }, 6000);
-        }
-
-        function setLoading(isLoading) {
-            if (isLoading) {
-                submitButton.disabled = true;
-                spinner.style.display = "inline-block";
-                buttonText.innerText = "Processing...";
-            } else {
-                submitButton.disabled = false;
-                spinner.style.display = "none";
-                const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
-                buttonText.innerText = selectedMethod === 'Razorpay' ? "Pay and Place Order" : "Place Order";
-            }
-        }
-    });
-</script>
+{% block extra_js %}
+<script src="{% static 'js/checkout.js' %}"></script>
+{% endblock %}
 {% endblock %}

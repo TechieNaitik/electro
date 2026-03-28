@@ -80,6 +80,7 @@ MANIFEST
 
 # VS Code
 .vscode/
+.agent/
 
 # PyCharm
 .idea/
@@ -127,6 +128,7 @@ cover/
 
 # Documentation
 Docs/
+logs/
 docs/_build/
 /site
 *.mo

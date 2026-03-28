@@ -27,7 +27,7 @@ A Django-based E-commerce application.
   - **Security & Sessions**: Secure login wall with hashed passwords, brute-force protection, and independent admin session management.
   - **Resource Management**: Complete CRUD operations for Products and Categories with instant search capability.
 - **Inventory Insights**: Real-time stock alerts and business analytics/statistics.
-- **Invoice Generation**: Pixel-perfect, downloadable A4 PDFs rendered via headless Playwright, featuring a luxury editorial layout (now displaying full product names).
+- **Invoice Generation**: Premium, professional **"Square-style" billing UI** rendered via headless Playwright. Features a space-efficient 3-column Information Grid and absolute-path asset injection for 100% layout reliability in PDF downloads.
 - **Automated Order Lifecycle Notifications**: Event-driven notification system sending branded HTML updates for:
 -   - **Order Confirmation**: With embedded order summary and PDF invoice attachment.
 -   - **Logistics Updates**: "Shipped" and "Out for Delivery" alerts with courier name and tracking links.
@@ -46,6 +46,7 @@ A Django-based E-commerce application.
   - **Rich UI**: Interactive star displays, hover effects, and premium gold-yellow star aesthetics.
   - **Context-Aware Forms**: Intelligent pre-filling of name and email for logged-in customers.
 - **Mock Payment Gateway Integration**: Fully functional end-to-end **Razorpay (Test Mode)** integration using the **Razorpay Checkout modal**. Features include secure server-side order creation, HMAC-SHA256 signature verification for payment security, and real-time transaction finalization.
+- **Dynamic Currency Converter**: Site-wide conversion system fetching live exchange rates from the **ExchangeRate-API** with a **Two-Tier Caching** strategy (L1 server-side memory, L2 client-side `localStorage`). Features reactive price updates across all templates without page reloads and a manual **Admin Sync Governance** tool for real-time rate refreshing.
 - **Contact & Support**: Support pages and contact functionality.
 - **Comprehensive Error Handling**: Built-in diagnostic system that captures and displays detailed error context (code snippets, stack traces, line numbers) for developers, while maintaining a sleek, secure experience for end-users.
 - **Responsive Design**: Modern, glassmorphism-inspired dark mode aesthetic.
@@ -135,14 +136,3 @@ This project uses **pytest** for automated testing and coverage reporting.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Razorpay Payment Testing
-
-To test the payment gateway, ensure you have set your test keys in `myproject/.env`: 
-- `RAZORPAY_KEY_ID` 
-- `RAZORPAY_KEY_SECRET` 
-
-### Test Scenarios
-1. **Success**: Select "Online Payment (Razorpay)" at checkout, enter any test mobile number, and select **"Success"** in the Razorpay test modal.
-2. **Failure**: Select **"Failure"** in the Razorpay test modal to see error handling in action.
-3. **Signature Verification**: The backend uses the official `razorpay` Python SDK to verify `razorpay_signature` before creating any order, ensuring high security.

@@ -69,7 +69,7 @@
                             <a href="{% url 'single' rp.id %}"
                                 class="d-block fw-semibold text-dark text-decoration-none lh-sm mb-1"
                                 style="font-size: 0.92rem;">{{ rp.full_name }}</a>
-                            <span class="text-primary fw-bold" style="font-size: 0.95rem;">₹{{ rp.price }}</span>
+                            <span class="text-primary fw-bold price-display" style="font-size: 0.95rem;" data-base-price="{{ rp.price }}">₹{{ rp.price }}</span>
                         </div>
                     </div>
                     {% endfor %}
@@ -85,18 +85,19 @@
                         <div class="product-gallery">
                             <div class="primary-image-container mb-3 bg-light rounded overflow-hidden">
                                 <img id="main-product-image" src="{{ product.image.url }}" class="img-fluid w-100" 
-                                     alt="{{ product.full_name }}" style="transition: opacity 0.3s ease; height: 100%; object-fit: contain;">
+                                    alt="{{ product.full_name }}" style="transition: opacity 0.3s ease; height: 100%; object-fit: contain;">
                             </div>
                             
                             {% if product.all_images|length > 1 %}
                             <div class="thumbnail-strip d-flex overflow-auto gap-2 pb-2" id="thumbnail-strip">
                                 {% for img in product.all_images %}
                                 <div class="thumbnail-item border rounded bg-light cursor-pointer {% if forloop.first %}active{% endif %}" 
-                                     style="min-width: 80px; width: 80px; height: 80px; overflow: hidden;"
-                                     data-index="{{ forloop.counter0 }}"
-                                     onclick="updateGalleryImage(this, '{{ img.url }}', {{ forloop.counter0 }})">
+                                    style="min-width: 80px; width: 80px; height: 80px; overflow: hidden;"
+                                    data-index="{{ forloop.counter0 }}"
+                                    data-thumb-url="{{ img.url }}"
+                                    data-thumb-index="{{ forloop.counter0 }}">
                                     <img src="{{ img.url }}" class="img-fluid w-100 h-100" style="object-fit: cover;" 
-                                         alt="{{ product.full_name }} thumbnail" loading="lazy">
+                                        alt="{{ product.full_name }} thumbnail" loading="lazy">
                                 </div>
                                 {% endfor %}
                             </div>
@@ -108,7 +109,7 @@
                     <div class="col-xl-6">
                         <h4 class="fw-bold mb-3">{{ product.full_name }}</h4>
                         <p class="mb-3">Category: <strong>{{ product.category_id.name }}</strong></p>
-                        <h5 class="fw-bold mb-3 text-primary">₹{{ product.price }}</h5>
+                        <h5 class="fw-bold mb-3 text-primary price-display" data-base-price="{{ product.price }}">₹{{ product.price }}</h5>
                         <div class="mb-3">
                             <div class="btn btn-primary d-inline-block rounded text-white py-1 px-4 me-2">
                                 <i class="fab fa-facebook-f me-1"></i> Share

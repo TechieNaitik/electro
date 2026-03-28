@@ -129,15 +129,6 @@
                         </div>
 
                     {% endfor %}
-                    <script>
-                        setTimeout(() => {
-                            document.querySelectorAll('.alert-message').forEach(alert => {
-                                alert.style.opacity = '0';
-                                alert.style.transition = 'opacity 0.5s ease';
-                                setTimeout(() => alert.remove(), 500);
-                            });
-                        }, 5000);
-                    </script>
                 {% endif %}
                 {% block content %}{% endblock %}
             </main>

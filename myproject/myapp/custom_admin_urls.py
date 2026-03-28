@@ -41,4 +41,5 @@ urlpatterns = [
     
     # API Endpoints
     path('api/dashboard/stats/', admin_api_views.dashboard_stats_api, name='api_dashboard_stats'),
+    path('api/refresh-currency/', views.admin_refresh_exchange_rates, name='api_refresh_currency'),
 ]

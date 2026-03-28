@@ -34,7 +34,59 @@
             <div class="stat-number">₹{{ total_revenue }}</div>
         </div>
     </div>
+    <div class="stat-card animate-in" id="currency-refresh-card" style="cursor: pointer; transition: transform 0.2s;">
+        <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--success);"><i class="fas fa-rotate"></i></div>
+        <div class="stat-info">
+            <h3>Exchange Rates</h3>
+            <div class="stat-number" style="font-size: 14px; color: var(--text-secondary);">Click to Sync</div>
+        </div>
+    </div>
 </div>
+
+<script>
+document.getElementById('currency-refresh-card').addEventListener('click', function() {
+    const card = this;
+    const icon = card.querySelector('.fa-rotate');
+    const label = card.querySelector('.stat-number');
+    
+    // Start animation
+    icon.classList.add('fa-spin');
+    label.innerText = 'Syncing...';
+    card.style.pointerEvents = 'none';
+    card.style.opacity = '0.7';
+
+    fetch("{% url 'custom_admin:api_refresh_currency' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            label.innerText = 'Refreshed!';
+            label.style.color = 'var(--success)';
+            setTimeout(() => {
+                label.innerText = 'Click to Sync';
+                label.style.color = 'var(--text-secondary)';
+            }, 3000);
+        } else {
+            label.innerText = 'Error!';
+            alert("Error refreshing rates: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        label.innerText = 'Failed!';
+    })
+    .finally(() => {
+        icon.classList.remove('fa-spin');
+        card.style.pointerEvents = 'auto';
+        card.style.opacity = '1';
+    });
+});
+</script>
 
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
     <!-- ═══ Recent Orders ═══ -->

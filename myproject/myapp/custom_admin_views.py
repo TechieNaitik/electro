@@ -13,6 +13,7 @@ from .forms import CategoryForm, ProductForm, BrandForm, ProductImageFormSet
 from .logger import log_action
 from .exports import export_to_csv, export_to_excel, export_to_word, export_to_pdf
 from datetime import datetime
+from .services.currency_service import CurrencyService
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Authentication Decorator
@@ -565,3 +566,24 @@ def admin_products(request):
     
     context = {'active_page': 'products', 'products': products}
     return render(request, 'custom_admin/products.html', context)
+
+@site_admin_required
+def admin_refresh_exchange_rates(request):
+    """
+    Force-refreshes the exchange rate cache.
+    Accessible only to site admins from the custom admin dashboard.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Only POST requests allowed.'}, status=405)
+        
+    try:
+        from .services.currency_service import CurrencyService
+        rates_data = CurrencyService.get_rates(force_refresh=True)
+        log_action(f"Admin: {request.site_admin.username}", "Manual Exchange Rate Refresh", f"Base: {rates_data.get('base')} | Updated: {rates_data.get('timestamp')}")
+        return JsonResponse({
+            'status': 'success', 
+            'message': 'Currency exchange rates successfully updated from the API.',
+            'timestamp': rates_data.get('timestamp')
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

@@ -19,3 +19,4 @@ pytest-cov
 faker
 pytest-mock
 razorpay
+requests

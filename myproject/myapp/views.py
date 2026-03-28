@@ -11,7 +11,9 @@ from django.core.paginator import Paginator
 from .utils import get_paginated_data
 from decimal import Decimal, InvalidOperation
 import json
+from .services.currency_service import CurrencyService
 from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand, ProductReview
+
 from .logger import log_action
 
 # Invoice PDF Generation Imports
@@ -1185,3 +1187,10 @@ def payment_success(request):
     order_id = request.GET.get('order_id')
     return render(request, 'payment_success.html', {'order_id': order_id})
 
+def exchange_rates(request):
+    """
+    API endpoint that returns the latest exchange rates.
+    Implements L1 caching (Server-side) and logs hits/misses.
+    """
+    rates_data = CurrencyService.get_rates()
+    return JsonResponse(rates_data)

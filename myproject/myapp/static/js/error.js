@@ -3,13 +3,28 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (copyBtn) {
         copyBtn.addEventListener('click', function() {
-            // We'll assume the HTML provides this data globally or via some mechanism
-            if (!window.DEBUG_ERROR_CONFIG) {
+            let info = window.DEBUG_ERROR_CONFIG;
+            
+            // Fallback: Read from data attributes if global config is not set
+            if (!info) {
+                const bridge = document.getElementById('debug-data-bridge');
+                if (bridge) {
+                    info = {
+                        type: bridge.dataset.type,
+                        message: bridge.dataset.message,
+                        path: bridge.dataset.path,
+                        file: bridge.dataset.file,
+                        line: bridge.dataset.line,
+                        func: bridge.dataset.func,
+                        trace: bridge.dataset.trace
+                    };
+                }
+            }
+
+            if (!info) {
                 console.error('Debug configuration not found.');
                 return;
             }
-
-            const info = window.DEBUG_ERROR_CONFIG;
 
             const textToCopy = `
 ERROR: ${info.type}
