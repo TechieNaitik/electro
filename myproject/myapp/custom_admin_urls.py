@@ -36,6 +36,12 @@ urlpatterns = [
     path('orders/', views.admin_orders, name='orders'),
     path('orders/<int:order_id>/', views.admin_order_detail, name='order_detail'),
     
+    # Coupons
+    path('coupons/', views.admin_coupons, name='coupons'),
+    path('coupons/add/', views.admin_coupon_add, name='coupon_add'),
+    path('coupons/edit/<int:coupon_id>/', views.admin_coupon_edit, name='coupon_edit'),
+    path('coupons/delete/<int:coupon_id>/', views.admin_coupon_delete, name='coupon_delete'),
+    
     # Export
     path('export/', views.admin_export, name='export'),
     

@@ -74,6 +74,10 @@
                     class="nav-link {% if active_page == 'orders' %}active{% endif %}" id="nav-orders">
                     <i class="fas fa-shopping-bag"></i> Orders
                 </a>
+                <a href="{% url 'custom_admin:coupons' %}"
+                    class="nav-link {% if active_page == 'coupons' %}active{% endif %}" id="nav-coupons">
+                    <i class="fas fa-ticket-alt"></i> Coupons
+                </a>
 
                 <div class="nav-section-label">System</div>
                 <a href="{% url 'home' %}" class="nav-link" id="nav-storefront">

@@ -164,19 +164,23 @@ class CurrencyManager {
     applyRatesToDOM() {
         const self = this;
         $('.price-display, .price-value').each(function() {
-            let basePrice = $(this).data('base-price');
-            if (basePrice === undefined) {
-                // Try to extract from text if data-attr missing (not recommended but for legacy support)
+            // CRITICAL: Use .attr() instead of .data() to avoid jQuery's internal cache
+            // which prevents reactive updates when values change via other scripts.
+            let basePriceAttr = $(this).attr('data-base-price');
+            let basePrice = parseFloat(basePriceAttr);
+            
+            if (isNaN(basePrice)) {
+                // Fallback for elements without attribute but with text
                 const text = $(this).text().replace(/[^0-9.]/g, '');
                 basePrice = parseFloat(text);
-                if (!isNaN(basePrice)) $(this).data('base-price', basePrice);
+                if (!isNaN(basePrice)) $(this).attr('data-base-price', basePrice);
             }
             
             if (isNaN(basePrice)) return;
 
-            const baseCurrency = $(this).data('base-currency') || self.baseCurrency;
+            const baseCurrency = $(this).attr('data-base-currency') || self.baseCurrency;
             
-            // Conversion Logic (Using USD as bridge if rates are relative to USD)
+            // Conversion Logic
             const rateUSD_Base = self.rates[baseCurrency] || 1;
             const rateUSD_Target = self.rates[self.currentCurrency] || 1;
             
@@ -188,11 +192,14 @@ class CurrencyManager {
                 maximumFractionDigits: 2
             });
 
+            const isDiscount = $(this).attr('data-is-discount') === 'true';
+            const prefix = isDiscount && basePrice > 0 ? '-' : '';
+
             // If it's an input or has special formatting, we might want to preserve it
             if ($(this).is('input')) {
                 $(this).val(formattedPrice);
             } else {
-                $(this).html(`<span class="currency-symbol">${symbol}</span>${formattedPrice}`);
+                $(this).html(`${prefix}<span class="currency-symbol">${symbol}</span>${formattedPrice}`);
             }
         });
     }

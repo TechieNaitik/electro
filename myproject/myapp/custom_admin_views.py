@@ -8,8 +8,8 @@ from django.urls import reverse
 from functools import wraps
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from .models import Customer, Category, Product, Cart, Order, OrderItem, SiteAdmin, Brand
-from .forms import CategoryForm, ProductForm, BrandForm, ProductImageFormSet
+from .models import Customer, Category, Product, Cart, Order, OrderItem, SiteAdmin, Brand, Coupon
+from .forms import CategoryForm, ProductForm, BrandForm, ProductImageFormSet, CouponForm
 from .logger import log_action
 from .exports import export_to_csv, export_to_excel, export_to_word, export_to_pdf
 from datetime import datetime
@@ -180,6 +180,61 @@ def admin_customers(request):
     return render(request, 'custom_admin/customers.html', context)
 
 @site_admin_required
+def admin_coupons(request):
+    coupon_list = Coupon.objects.all().order_by('-valid_from')
+    paginator = Paginator(coupon_list, 10)
+    page_number = request.GET.get('page')
+    coupons = paginator.get_page(page_number)
+    
+    from django.utils import timezone
+    context = {'active_page': 'coupons', 'coupons': coupons, 'now': timezone.now()}
+    return render(request, 'custom_admin/coupons.html', context)
+
+@site_admin_required
+def admin_coupon_add(request):
+    if request.method == 'POST':
+        form = CouponForm(request.POST)
+        if form.is_valid():
+            coupon = form.save()
+            log_action(f"Admin: {request.site_admin.username}", "Created Coupon", f"Code: {coupon.code}")
+            messages.success(request, "Coupon created successfully.")
+            return redirect('custom_admin:coupons')
+    else:
+        form = CouponForm()
+    
+    context = {'active_page': 'coupons', 'form': form, 'title': 'Add Coupon'}
+    return render(request, 'custom_admin/coupon_form.html', context)
+
+@site_admin_required
+def admin_coupon_edit(request, coupon_id):
+    coupon = get_object_or_404(Coupon, pk=coupon_id)
+    if request.method == 'POST':
+        form = CouponForm(request.POST, instance=coupon)
+        if form.is_valid():
+            form.save()
+            log_action(f"Admin: {request.site_admin.username}", "Updated Coupon", f"Code: {coupon.code}")
+            messages.success(request, "Coupon updated successfully.")
+            return redirect('custom_admin:coupons')
+    else:
+        form = CouponForm(instance=coupon)
+    
+    context = {'active_page': 'coupons', 'form': form, 'coupon': coupon, 'title': 'Edit Coupon'}
+    return render(request, 'custom_admin/coupon_form.html', context)
+
+@site_admin_required
+def admin_coupon_delete(request, coupon_id):
+    coupon = get_object_or_404(Coupon, pk=coupon_id)
+    if request.method == 'POST':
+        code = coupon.code
+        coupon.delete()
+        log_action(f"Admin: {request.site_admin.username}", "Deleted Coupon", f"Code: {code}")
+        messages.success(request, f"Coupon '{code}' deleted.")
+        return redirect('custom_admin:coupons')
+    
+    context = {'active_page': 'coupons', 'item': coupon, 'type': 'coupon'}
+    return render(request, 'custom_admin/delete_confirm.html', context)
+
+@site_admin_required
 def admin_export(request):
     module = request.GET.get('module')
     export_format = request.GET.get('format', 'csv')
@@ -220,6 +275,14 @@ def admin_export(request):
         def data_func(obj):
             status = 'In Stock' if obj.stock_quantity > 0 else 'Out of Stock'
             return [obj.id, obj.brand.name if obj.brand else 'N/A', obj.model_name or 'N/A', obj.variant_specs or 'N/A', obj.sku or 'N/A', obj.category_id.name, f"₹{obj.price}", obj.stock_quantity, status]
+            
+    elif module == 'coupons':
+        queryset = Coupon.objects.all().order_by('-valid_from')
+        filename = f"coupons_{datetime.now().strftime('%Y-%m-%d')}"
+        title = "Coupons List"
+        headers = ['Code', 'Type', 'Value', 'Min Purchase', 'Expiry', 'Status', 'Used']
+        def data_func(obj):
+            return [obj.code, obj.discount_type, f"{obj.value}", f"₹{obj.min_purchase_amount}", obj.valid_to.strftime('%Y-%m-%d'), 'Active' if obj.active else 'Inactive', f"{obj.used_count}/{obj.usage_limit or '∞'}"]
             
     else:
         messages.error(request, "Invalid export module.")

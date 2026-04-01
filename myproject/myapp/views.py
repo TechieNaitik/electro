@@ -11,8 +11,11 @@ from django.core.paginator import Paginator
 from .utils import get_paginated_data
 from decimal import Decimal, InvalidOperation
 import json
+from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand, ProductReview, Coupon
 from .services.currency_service import CurrencyService
-from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand, ProductReview
+from .services.coupon_service import apply_coupon, get_applied_coupon, clear_coupon
+from django.db.models import F
+from django.views.decorators.http import require_POST
 
 from .logger import log_action
 
@@ -36,7 +39,7 @@ def about(request):
     return render(request, 'about.html', context)
 
 def bestseller(request):
-    all_products = Product.objects.all().select_related('brand', 'category_id')
+    all_products = Product.objects.all().select_related('brand', 'category_id').order_by('-id')
     page_obj = get_paginated_data(request, all_products)
     
     context = {
@@ -101,13 +104,28 @@ def cart(request):
     subtotal = sum(item.total_price() for item in cart_items)
     cart_count = sum(item.quantity for item in cart_items)
     shipping = 100 * cart_count
-    total = subtotal + shipping
+    
+    # Coupon logic
+    applied_coupon = get_applied_coupon(request.session)
+    discount = Decimal('0.00')
+    if applied_coupon:
+        is_valid, msg = applied_coupon.is_valid(subtotal, customer=customer)
+        if is_valid:
+            discount = applied_coupon.calculate_discount(subtotal)
+        else:
+            messages.warning(request, f"Coupon removed: {msg}")
+            clear_coupon(request.session)
+            applied_coupon = None
+            
+    total = Decimal(str(subtotal)) - discount + Decimal(str(shipping))
     
     context = {
         'categories': Category.objects.all(),
         'cart_items': cart_items,
         'subtotal': subtotal,
         'shipping': shipping,
+        'discount': discount,
+        'applied_coupon': applied_coupon,
         'total': total,
         'cart_count': cart_count,
     }
@@ -151,7 +169,19 @@ def checkout(request):
     subtotal = sum(item.total_price() for item in cart_items)
     cart_count = sum(item.quantity for item in cart_items)
     shipping = 100 * cart_count
-    total = subtotal + shipping
+    
+    # Coupon logic
+    applied_coupon = get_applied_coupon(request.session)
+    discount = Decimal('0.00')
+    if applied_coupon:
+        is_valid, _ = applied_coupon.is_valid(subtotal, customer=customer)
+        if is_valid:
+            discount = applied_coupon.calculate_discount(subtotal)
+        else:
+            clear_coupon(request.session)
+            applied_coupon = None
+
+    total = Decimal(str(subtotal)) - discount + Decimal(str(shipping))
     
     if request.method == "POST":
         order_notes = request.POST.get('order_notes', '')
@@ -174,28 +204,50 @@ def checkout(request):
                 messages.error(request, f"Stock for {item.product.name} is insufficient (Only {item.product.stock_quantity} left). Please update your cart.")
                 return redirect('cart')
 
-        order = Order.objects.create(
-            customer=customer,
-            order_notes=order_notes,
-            total_amount=total,
-            payment_method=payment_method,
-            shipping_charge=shipping
-        )
-        
-        log_action(f"Customer: {customer.full_name} <{customer.email}>", "Placed Order", f"Order #{order.id} | Total: {total}")
-        
-        for item in cart_items:
-            # Deduct stock
-            product = item.product
-            product.stock_quantity -= item.quantity
-            product.save()
+        # Final Coupon Validation inside transaction
+        with transaction.atomic():
+            final_coupon = None
+            final_discount = Decimal('0.00')
+            if applied_coupon:
+                # Refresh from DB with lock
+                coupon_db = Coupon.objects.select_for_update().get(pk=applied_coupon.pk)
+                is_valid, msg = coupon_db.is_valid(subtotal, customer=customer)
+                if is_valid:
+                    final_coupon = coupon_db
+                    final_discount = coupon_db.calculate_discount(subtotal)
+                    # Increment usage
+                    Coupon.objects.filter(pk=coupon_db.pk).update(used_count=F('used_count') + 1)
+                    if customer:
+                        coupon_db.used_by_customers.add(customer)
+                else:
+                    messages.error(request, f"Coupon failed at final validation: {msg}")
+                    clear_coupon(request.session)
+                    return redirect('cart')
 
-            OrderItem.objects.create(
-                order=order,
-                product=product,
-                price=product.price,
-                quantity=item.quantity
+            order = Order.objects.create(
+                customer=customer,
+                order_notes=order_notes,
+                total_amount=total, 
+                payment_method=payment_method,
+                shipping_charge=shipping,
+                coupon=final_coupon,
+                discount_amount=final_discount
             )
+            
+            log_action(f"Customer: {customer.full_name} <{customer.email}>", "Placed Order", f"Order #{order.id} | Total: {total}")
+            
+            for item in cart_items:
+                # Deduct stock
+                product = item.product
+                product.stock_quantity -= item.quantity
+                product.save()
+
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    price=product.price,
+                    quantity=item.quantity
+                )
 
         # Trigger Order Confirmation Email (now that items are created)
         import threading
@@ -203,6 +255,8 @@ def checkout(request):
         threading.Thread(target=send_order_email, args=(order, 'confirmation')).start()
             
         cart_items.delete()
+        clear_coupon(request.session)
+        
         # Clear the checkout authorization flag
         if 'checkout_allowed' in request.session:
             del request.session['checkout_allowed']
@@ -215,6 +269,8 @@ def checkout(request):
         'cart_items': cart_items,
         'subtotal': subtotal,
         'shipping': shipping,
+        'discount': discount,
+        'applied_coupon': applied_coupon,
         'total': total,
         'customer': customer,
         'cart_count': cart_count,
@@ -386,7 +442,7 @@ def help(request):
     return render(request, 'help.html', context)
 
 def home(request):
-    all_products = Product.objects.all().select_related('brand', 'category_id')
+    all_products = Product.objects.all().select_related('brand', 'category_id').order_by('-id')
     page_obj = get_paginated_data(request, all_products)
     
     context = {
@@ -397,7 +453,7 @@ def home(request):
     return render(request, 'index.html', context)
 
 def index(request):
-    all_products = Product.objects.all().select_related('brand', 'category_id')
+    all_products = Product.objects.all().select_related('brand', 'category_id').order_by('-id')
     page_obj = get_paginated_data(request, all_products)
     
     context = {
@@ -905,7 +961,19 @@ def update_cart(request, cid, action):
     subtotal = sum(item.total_price() for item in cart_items)
     cart_count = sum(item.quantity for item in cart_items)
     shipping = 100 * cart_count
-    total = subtotal + shipping
+    
+    # Coupon support for update-cart
+    applied_coupon = get_applied_coupon(request.session)
+    discount = Decimal('0.00')
+    if applied_coupon:
+        is_valid, _ = applied_coupon.is_valid(subtotal, customer=customer)
+        if is_valid:
+            discount = applied_coupon.calculate_discount(subtotal)
+        else:
+            clear_coupon(request.session)
+            applied_coupon = None
+
+    total = Decimal(str(subtotal)) - discount + Decimal(str(shipping))
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         item_data = None
@@ -917,11 +985,13 @@ def update_cart(request, cid, action):
         return JsonResponse({
             'status': 'success',
             'item': item_data,
-            'subtotal': subtotal,
-            'shipping': shipping,
-            'total': total,
+            'subtotal': str(subtotal),
+            'shipping': str(shipping),
+            'discount': str(discount),
+            'total': str(total),
             'cart_count': cart_count,
-            'removed': action == 'remove' or not Cart.objects.filter(id=cid).exists()
+            'removed': action == 'remove' or not Cart.objects.filter(id=cid).exists(),
+            'coupon_applied': applied_coupon is not None
         })
 
     return redirect('cart')
@@ -1062,7 +1132,15 @@ def create_razorpay_order(request):
     subtotal = sum(item.total_price() for item in cart_items)
     cart_count = sum(item.quantity for item in cart_items)
     shipping = 100 * cart_count
-    total = subtotal + shipping
+    # Coupon logic for Razorpay
+    applied_coupon = get_applied_coupon(request.session)
+    discount = Decimal('0.00')
+    if applied_coupon:
+        is_valid, _ = applied_coupon.is_valid(subtotal, customer=customer)
+        if is_valid:
+            discount = applied_coupon.calculate_discount(subtotal)
+            
+    total = Decimal(str(subtotal)) - discount + Decimal(str(shipping))
     
     try:
         # Create Razorpay Order
@@ -1132,9 +1210,29 @@ def verify_razorpay_payment(request):
     try:
         with transaction.atomic():
             subtotal = sum(item.total_price() for item in cart_items)
+            subtotal = sum(item.total_price() for item in cart_items)
             cart_count = sum(item.quantity for item in cart_items)
             shipping = 100 * cart_count
-            total = subtotal + shipping
+
+            # Coupon logic
+            applied_coupon = get_applied_coupon(request.session)
+            final_coupon = None
+            final_discount = Decimal('0.00')
+            if applied_coupon:
+                # We already have a transaction context from above (atomic)
+                coupon_db = Coupon.objects.select_for_update().get(pk=applied_coupon.pk)
+                is_valid, msg = coupon_db.is_valid(subtotal, customer=customer)
+                if is_valid:
+                    final_coupon = coupon_db
+                    final_discount = coupon_db.calculate_discount(subtotal)
+                    # Increment usage
+                    Coupon.objects.filter(pk=coupon_db.pk).update(used_count=F('used_count') + 1)
+                    if customer:
+                        coupon_db.used_by_customers.add(customer)
+                # If not valid, we proceed without discount (already reflected in Razorpay amount)
+                # but it shouldn't happen usually as we check before creating RZ order.
+
+            total = Decimal(str(subtotal)) - final_discount + Decimal(str(shipping))
             
             order = Order.objects.create(
                 customer=customer,
@@ -1146,7 +1244,9 @@ def verify_razorpay_payment(request):
                 razorpay_payment_id=razorpay_payment_id,
                 razorpay_signature=razorpay_signature,
                 payment_status='Succeeded',
-                status='Processing'
+                status='Processing',
+                coupon=final_coupon,
+                discount_amount=final_discount
             )
             
             for item in cart_items:
@@ -1170,6 +1270,7 @@ def verify_razorpay_payment(request):
             
             # Clear cart
             cart_items.delete()
+            clear_coupon(request.session)
             
             # Clear session checkout flag
             if 'checkout_allowed' in request.session:
@@ -1194,3 +1295,42 @@ def exchange_rates(request):
     """
     rates_data = CurrencyService.get_rates()
     return JsonResponse(rates_data)
+
+@require_POST
+def apply_coupon_view(request):
+    try:
+        data = json.loads(request.body)
+        code = data.get('code')
+    except:
+        return JsonResponse({"success": False, "message": "Invalid request."})
+
+    customer = None
+    if 'email' in request.session:
+        customer = Customer.objects.filter(email=request.session['email']).first()
+
+    if 'coupon_id' in request.session:
+        return JsonResponse({"success": False, "message": "Only one coupon can be applied per order."})
+
+    # Calculate current cart total (before shipping)
+    cart_items = Cart.objects.filter(customer=customer)
+    subtotal = sum(item.total_price() for item in cart_items)
+
+    result = apply_coupon(code, Decimal(str(subtotal)), request.session, customer=customer)
+    
+    # Format decimals for JSON
+    result['discount'] = str(result['discount'])
+    # Add shipping back to the new_total so the frontend 'Grand Total' is correct
+    cart_count = sum(item.quantity for item in cart_items)
+    shipping = Decimal('100.00') * cart_count
+    result['new_total'] = str(Decimal(result['new_total']) + shipping)
+    result['subtotal'] = str(subtotal)
+    result['shipping'] = str(shipping)
+    
+    result['total'] = result['new_total'] # Consistency with update_cart
+    
+    return JsonResponse(result)
+
+@require_POST
+def remove_coupon_view(request):
+    clear_coupon(request.session)
+    return JsonResponse({"success": True, "message": "Coupon removed."})

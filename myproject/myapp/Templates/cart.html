@@ -101,10 +101,14 @@
           <p class="text-muted small mb-4">Have a coupon code? Enter it below to get amazing discounts on your order.
           </p>
           <div class="input-group mb-0" style="max-width: 400px;">
-            <input type="text" class="form-control border-secondary rounded-start-pill py-3 ps-4"
-              placeholder="Enter coupon code">
-            <button class="btn btn-primary rounded-end-pill px-4 py-3 text-white" type="button">Apply</button>
+            <input type="text" id="coupon-code" class="form-control border-secondary rounded-start-pill py-3 ps-4"
+              placeholder="Enter coupon code" value="{{ applied_coupon.code|default:'' }}" {% if applied_coupon %}disabled{% endif %}>
+            <button id="apply-coupon-btn" class="btn btn-primary rounded-end-pill px-4 py-3 text-white" type="button" 
+              {% if applied_coupon %}style="display:none;"{% endif %}>Apply</button>
+            <button id="remove-coupon-btn" class="btn btn-danger rounded-end-pill px-4 py-3 text-white" type="button" 
+              {% if not applied_coupon %}style="display:none;"{% endif %}>Remove</button>
           </div>
+          <div id="coupon-message" class="mt-2 small"></div>
         </div>
       </div>
       <div class="col-lg-6">
@@ -115,6 +119,11 @@
             <div class="d-flex justify-content-between mb-3">
               <span class="text-muted font-weight-normal">Subtotal</span>
               <span class="fw-bold price-display" id="cart-subtotal" data-base-price="{{ subtotal }}">₹{{ subtotal }}</span>
+            </div>
+
+            <div id="discount-row" class="d-flex justify-content-between mb-3" {% if not applied_coupon %}style="display:none;"{% endif %}>
+              <span class="text-success font-weight-normal" id="discount-label">Discount {% if applied_coupon %}({{ applied_coupon.code }}){% endif %}</span>
+              <span class="text-success fw-bold price-display" id="cart-discount" data-base-price="{{ discount|default:0 }}" data-is-discount="true">{% if discount > 0 %}-{% endif %}₹{{ discount|default:0 }}</span>
             </div>
 
             <div class="d-flex justify-content-between mb-4">

@@ -3,6 +3,8 @@ import os
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from django.utils import timezone
+from decimal import Decimal
 
 class SiteAdmin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='site_admin_profile')
@@ -149,10 +151,12 @@ class Order(models.Model):
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     order_notes = models.TextField(blank=True, null=True)
-    total_amount = models.IntegerField()
+    coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=50)
     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Pending')
-    shipping_charge = models.IntegerField(default=0)
+    shipping_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tracking_number = models.CharField(max_length=100, null=True, blank=True)
     shipping_carrier = models.CharField(max_length=100, null=True, blank=True)
     carrier_url = models.URLField(null=True, blank=True)
@@ -161,10 +165,17 @@ class Order(models.Model):
     razorpay_payment_id = models.CharField(max_length=255, null=True, blank=True)
     razorpay_signature = models.CharField(max_length=255, null=True, blank=True)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='Pending')
+    coupon = models.ForeignKey('Coupon', null=True, blank=True, on_delete=models.SET_NULL)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def subtotal(self):
-        return self.total_amount - self.shipping_charge
+        # Items sum + discount deduction = pre-discount subtotal
+        return Decimal(str(self.total_amount)) - Decimal(str(self.shipping_charge)) + Decimal(str(self.discount_amount))
+
+    @property
+    def final_total_display(self):
+        return Decimal(str(self.total_amount))
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
@@ -207,6 +218,67 @@ class ProductReview(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.product.full_name} ({self.rating} stars)"
+
+class Coupon(models.Model):
+    DISCOUNT_TYPE_CHOICES = [('percentage', 'Percentage'), ('fixed', 'Fixed Amount')]
+
+    code                = models.CharField(max_length=50, unique=True)  # stored uppercase
+    description         = models.CharField(max_length=255, blank=True)  # shown in admin
+    discount_type       = models.CharField(max_length=20, choices=DISCOUNT_TYPE_CHOICES)
+    value               = models.DecimalField(max_digits=10, decimal_places=2)
+    valid_from          = models.DateTimeField()
+    valid_to            = models.DateTimeField()
+    active              = models.BooleanField(default=True)
+    usage_limit         = models.PositiveIntegerField(null=True, blank=True)  # None = unlimited
+    used_count          = models.PositiveIntegerField(default=0)
+    min_purchase_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    stackable           = models.BooleanField(default=False)  # reserved for future use
+    used_by_customers   = models.ManyToManyField(Customer, blank=True, related_name='used_coupons')
+
+    def save(self, *args, **kwargs):
+        self.code = self.code.upper().strip()
+        super().save(*args, **kwargs)
+
+    def is_valid(self, cart_total, customer=None):
+        now = timezone.now()
+        if not self.active:
+            return False, "This coupon is no longer active."
+        if not (self.valid_from <= now <= self.valid_to):
+            return False, "This coupon has expired."
+        if self.usage_limit is not None and self.used_count >= self.usage_limit:
+            return False, "This coupon has reached its usage limit."
+        if Decimal(str(cart_total)) < self.min_purchase_amount:
+            return False, f"Spend at least ₹{self.min_purchase_amount} to use this coupon."
+        if customer and self.used_by_customers.filter(id=customer.id).exists():
+            return False, "You have already used this coupon."
+        return True, ""
+
+    @property
+    def usage_percentage(self):
+        if not self.usage_limit or self.usage_limit == 0:
+            return 100 if self.used_count > 0 else 0
+        return min(100, round((self.used_count / self.usage_limit) * 100, 1))
+
+    @property
+    def is_active_now(self):
+        now = timezone.now()
+        return self.active and (self.valid_from <= now <= self.valid_to)
+
+    def calculate_discount(self, cart_total):
+        cart_total = Decimal(str(cart_total))
+        if self.discount_type == 'percentage':
+            discount = cart_total * (self.value / Decimal('100'))
+        else: # fixed
+            discount = self.value
+        
+        # Cap discount at cart total
+        if discount > cart_total:
+            discount = cart_total
+            
+        return discount.quantize(Decimal('0.01'), rounding='ROUND_HALF_UP')
+
+    def __str__(self):
+        return self.code
 
 @receiver(post_delete, sender=Product)
 def delete_product_image_on_delete(sender, instance, **kwargs):

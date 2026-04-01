@@ -114,6 +114,22 @@
                                         </div>
                                     </td>
                                 </tr>
+                                {% if applied_coupon %}
+                                <tr>
+                                    <th scope="row">
+                                    </th>
+                                    <td class="py-4"></td>
+                                    <td class="py-4"></td>
+                                    <td class="py-4">
+                                        <p class="mb-0 text-success py-2">Discount ({{ applied_coupon.code }})</p>
+                                    </td>
+                                    <td class="py-4 text-center">
+                                        <div class="py-2 border-bottom border-top">
+                                            <p class="mb-0 text-success price-display" data-base-price="{{ discount }}">-₹{{ discount }}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
                                 <tr>
                                     <th scope="row">
                                     </th>

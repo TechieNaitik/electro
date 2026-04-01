@@ -47,6 +47,7 @@ A Django-based E-commerce application.
   - **Context-Aware Forms**: Intelligent pre-filling of name and email for logged-in customers.
 - **Mock Payment Gateway Integration**: Fully functional end-to-end **Razorpay (Test Mode)** integration using the **Razorpay Checkout modal**. Features include secure server-side order creation, HMAC-SHA256 signature verification for payment security, and real-time transaction finalization.
 - **Dynamic Currency Converter**: Site-wide conversion system fetching live exchange rates from the **ExchangeRate-API** with a **Two-Tier Caching** strategy (L1 server-side memory, L2 client-side `localStorage`). Features reactive price updates across all templates without page reloads and a manual **Admin Sync Governance** tool for real-time rate refreshing.
+- **Coupon Code Engine**: Rule-based promotional discount system supporting **Percentage** and **Fixed Amount** coupons with minimum order thresholds, usage limits, date validity, and per-customer tracking. Includes a full admin management dashboard with usage analytics, AJAX-powered cart integration, and automatic embedding in the Invoice PDF.
 - **Contact & Support**: Support pages and contact functionality.
 - **Comprehensive Error Handling**: Built-in diagnostic system that captures and displays detailed error context (code snippets, stack traces, line numbers) for developers, while maintaining a sleek, secure experience for end-users.
 - **Responsive Design**: Modern, glassmorphism-inspired dark mode aesthetic.

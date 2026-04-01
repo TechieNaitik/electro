@@ -157,6 +157,12 @@
             <div class="sum-l">Subtotal</div>
             <div class="sum-v">₹{{ order.subtotal }}</div>
         </div>
+        {% if order.discount_amount > 0 %}
+        <div class="sum-row" style="color: #28a745;">
+            <div class="sum-l" style="color: #28a745;">Discount {% if order.coupon %}({{ order.coupon.code }}){% endif %}</div>
+            <div class="sum-v">-₹{{ order.discount_amount }}</div>
+        </div>
+        {% endif %}
         <div class="sum-row">
             <div class="sum-l">Shipping</div>
             <div class="sum-v">₹{{ order.shipping_charge }}</div>

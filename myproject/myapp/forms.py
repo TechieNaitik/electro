@@ -1,6 +1,30 @@
 from django import forms
-from .models import Category, Product, Brand, ProductImage
+from .models import Category, Product, Brand, ProductImage, Coupon
 from django.forms import inlineformset_factory
+
+class CouponForm(forms.ModelForm):
+    class Meta:
+        model = Coupon
+        fields = ['code', 'description', 'discount_type', 'value', 'valid_from', 'valid_to', 'active', 'usage_limit', 'min_purchase_amount']
+        widgets = {
+            'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. SAVE20'}),
+            'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Optional brief description'}),
+            'discount_type': forms.Select(attrs={'class': 'form-control'}),
+            'value': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'step': '0.01', 'min': 0}),
+            'valid_from': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'valid_to': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'usage_limit': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Leave blank for unlimited', 'min': 0}),
+            'min_purchase_amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'step': '0.01', 'min': 0}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Fix for datetime-local input value display
+        if self.instance and self.instance.valid_from:
+            self.initial['valid_from'] = self.instance.valid_from.strftime('%Y-%m-%dT%H:%M')
+        if self.instance and self.instance.valid_to:
+            self.initial['valid_to'] = self.instance.valid_to.strftime('%Y-%m-%dT%H:%M')
 
 class CategoryForm(forms.ModelForm):
     class Meta:

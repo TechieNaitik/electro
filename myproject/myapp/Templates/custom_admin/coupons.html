@@ -1,0 +1,134 @@
+{% extends 'custom_admin/base.html' %}
+
+{% block title %}Coupons | Admin{% endblock %}
+{% block page_title %}Coupons Management{% endblock %}
+
+{% block content %}
+<div class="animate-in">
+    <div class="section-card">
+        <div class="section-header">
+            <h2>Current Coupons</h2>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <button class="btn btn-secondary btn-sm" onclick="openExportModal('coupons')">
+                    <i class="fas fa-file-export"></i> Export
+                </button>
+                <a href="{% url 'custom_admin:coupon_add' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Add New Coupon
+                </a>
+            </div>
+        </div>
+        <div class="section-body">
+            <div id="data-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Discount</th>
+                            <th>Valid For</th>
+                            <th>Usage</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for coupon in coupons %}
+                        <tr>
+                            <td>
+                                <span style="font-weight: 700; font-family: monospace; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color);">{{ coupon.code }}</span>
+                                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">{{ coupon.description|truncatechars:50 }}</div>
+                            </td>
+                            <td>
+                                {% if coupon.discount_type == 'percentage' %}
+                                    <span class="badge badge-purple">{{ coupon.value }}% Off</span>
+                                {% else %}
+                                    <span class="badge badge-success">₹{{ coupon.value }} Off</span>
+                                {% endif %}
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Min Order: ₹{{ coupon.min_purchase_amount }}</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 0.85rem;">
+                                    <i class="far fa-calendar-check" style="margin-right: 6px; color: var(--success); width: 14px;"></i> {{ coupon.valid_from|date:"d M Y" }}<br>
+                                    <i class="far fa-calendar-times" style="margin-right: 6px; color: var(--danger); width: 14px;"></i> {{ coupon.valid_to|date:"d M Y" }}
+                                </div>
+                            </td>
+                            <td>
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                        <span style="font-weight: 600;">{{ coupon.used_count }} / {{ coupon.usage_limit|default:"∞" }}</span>
+                                        <span class="text-muted">{{ coupon.usage_percentage }}%</span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill" data-progress="{{ coupon.usage_percentage }}"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if coupon.active %}
+                                    {% if coupon.is_active_now %}
+                                        <span class="badge badge-success" title="Active and within valid date range">Active</span>
+                                    {% elif coupon.valid_from > now %}
+                                        <span class="badge badge-warning" title="Starts on {{ coupon.valid_from|date:'d M Y' }}">Scheduled</span>
+                                    {% else %}
+                                        <span class="badge badge-danger" title="Expired on {{ coupon.valid_to|date:'d M Y' }}">Expired</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge badge-secondary" title="Manually disabled">Disabled</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{% url 'custom_admin:coupon_edit' coupon.id %}" class="btn btn-secondary btn-icon" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'custom_admin:coupon_delete' coupon.id %}" class="btn btn-secondary btn-icon" title="Delete" style="color: var(--danger);">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <i class="fas fa-ticket-alt"></i>
+                                    <p>No coupons found.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if coupons.has_other_pages %}
+                <div class="pagination-footer">
+                    {% if coupons.has_previous %}
+                        <a href="?page={{ coupons.previous_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-left"></i></a>
+                    {% endif %}
+                    
+                    {% for i in coupons.paginator.page_range %}
+                        {% if coupons.number == i %}
+                            <span class="btn btn-primary btn-sm">{{ i }}</span>
+                        {% else %}
+                            <a href="?page={{ i }}" class="btn btn-secondary btn-sm">{{ i }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if coupons.has_next %}
+                        <a href="?page={{ coupons.next_page_number }}" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-right"></i></a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.progress-bar-fill').forEach(el => {
+            const progress = el.dataset.progress || 0;
+            el.style.width = progress + '%';
+        });
+    });
+</script>
+{% endblock %}

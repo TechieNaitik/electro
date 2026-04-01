@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
-from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, SiteAdmin, Brand, ProductImage
+from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, SiteAdmin, Brand, ProductImage, Coupon
 from .logger import log_action
+from django.utils.html import format_html
 
 from django import forms
 
@@ -141,3 +142,46 @@ class OrderAdmin(admin.ModelAdmin):
 class WishlistAdmin(admin.ModelAdmin):
     list_display = ('customer', 'product', 'added_at')
     list_filter = ('customer', 'added_at')
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ('code', 'discount_type', 'value', 'valid_from', 'valid_to', 'active', 'used_count', 'usage_limit', 'usage_percentage')
+    list_filter = ('discount_type', 'active', 'valid_from', 'valid_to')
+    search_fields = ('code', 'description')
+    filter_horizontal = ('used_by_customers',)
+    
+    def usage_percentage(self, obj):
+        if obj.usage_limit is None or obj.usage_limit == 0:
+            return "Unlimited"
+        percentage = (obj.used_count / obj.usage_limit) * 100
+        color = 'black'
+        if percentage >= 100: color = 'red'
+        elif percentage >= 80: color = 'orange'
+        return format_html('<span style="color: {};">{}%</span>', color, round(percentage, 1))
+    usage_percentage.short_description = "Usage %"
+
+    actions = ['export_usage_report']
+
+    def export_usage_report(self, request, queryset):
+        import csv
+        from django.http import HttpResponse
+        from django.db.models import Sum
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="coupon_usage_report.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Code', 'Used Count', 'Usage Limit', 'Status', 'Total Discount Issued'])
+        
+        for coupon in queryset:
+            total_discount = Order.objects.filter(coupon=coupon).aggregate(Sum('discount_amount'))['discount_amount__sum'] or 0
+            writer.writerow([
+                coupon.code, 
+                coupon.used_count, 
+                coupon.usage_limit or 'Unlimited', 
+                'Active' if coupon.active else 'Inactive',
+                total_discount
+            ])
+        
+        return response
+    export_usage_report.short_description = "Export usage report (CSV)"

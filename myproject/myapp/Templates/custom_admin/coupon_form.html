@@ -1,0 +1,134 @@
+{% extends 'custom_admin/base.html' %}
+
+{% block title %}{{ title }} | Admin{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="animate-in">
+    <div class="section-card" style="max-width: 900px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        <div class="section-header" style="background: rgba(255,255,255,0.02);">
+            <h2 style="display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text-primary);">
+                <i class="fas fa-ticket-alt" style="color: var(--accent-light); font-size: 1.2rem;"></i>
+                {{ title }}
+            </h2>
+            <a href="{% url 'custom_admin:coupons' %}" class="btn btn-secondary btn-sm" style="border-radius: 30px; padding: 6px 16px;">
+                <i class="fas fa-chevron-left"></i> Back to Coupons
+            </a>
+        </div>
+        <div class="section-body" style="padding: 40px;">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-row" style="margin-bottom: 28px;">
+                    <div class="form-group">
+                        <label for="{{ form.code.id_for_label }}" style="margin-bottom: 10px; display: block; color: var(--accent-light);">
+                            <i class="fas fa-barcode" style="width: 18px;"></i> Coupon Code
+                        </label>
+                        {{ form.code }}
+                        {% if form.code.errors %}<div class="text-danger font-size-xs mt-1"><i class="fas fa-exclamation-circle"></i> {{ form.code.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}" style="margin-bottom: 10px; display: block;">
+                            <i class="fas fa-pen-nib" style="width: 18px;"></i> Description / Purpose
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}<div class="text-danger font-size-xs mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 28px;">
+                    <div class="form-group">
+                        <label for="{{ form.discount_type.id_for_label }}" style="margin-bottom: 10px; display: block;">
+                            <i class="fas fa-tags" style="width: 18px;"></i> Type
+                        </label>
+                        {{ form.discount_type }}
+                        {% if form.discount_type.errors %}<div class="text-danger font-size-xs mt-1">{{ form.discount_type.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.value.id_for_label }}" style="margin-bottom: 10px; display: block;">
+                            <i class="fas fa-hand-holding-usd" style="width: 18px;"></i> Discount Value
+                        </label>
+                        <div style="position: relative;">
+                            {{ form.value }}
+                        </div>
+                        {% if form.value.errors %}<div class="text-danger font-size-xs mt-1">{{ form.value.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.min_purchase_amount.id_for_label }}" style="margin-bottom: 10px; display: block;">
+                            <i class="fas fa-shopping-cart" style="width: 18px;"></i> Min Purchase (₹)
+                        </label>
+                        {{ form.min_purchase_amount }}
+                        {% if form.min_purchase_amount.errors %}<div class="text-danger font-size-xs mt-1">{{ form.min_purchase_amount.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom: 28px;">
+                    <div class="form-group">
+                        <label for="{{ form.valid_from.id_for_label }}" style="margin-bottom: 10px; display: block;">
+                            <i class="far fa-calendar-alt" style="width: 18px;"></i> Activation Date
+                        </label>
+                        {{ form.valid_from }}
+                        {% if form.valid_from.errors %}<div class="text-danger font-size-xs mt-1">{{ form.valid_from.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.valid_to.id_for_label }}" style="margin-bottom: 10px; display: block;">
+                            <i class="far fa-calendar-check" style="width: 18px;"></i> Expiry Date
+                        </label>
+                        {{ form.valid_to }}
+                        {% if form.valid_to.errors %}<div class="text-danger font-size-xs mt-1">{{ form.valid_to.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom: 40px; align-items: flex-end;">
+                    <div class="form-group">
+                        <label for="{{ form.usage_limit.id_for_label }}" style="margin-bottom: 10px; display: block;">
+                            <i class="fas fa-history" style="width: 18px;"></i> Total Usage Limit
+                        </label>
+                        {{ form.usage_limit }}
+                        <div class="font-size-xs text-muted mt-1" style="font-style: italic; opacity: 0.7;">Keep empty for infinite use possibilities.</div>
+                        {% if form.usage_limit.errors %}<div class="text-danger font-size-xs mt-1">{{ form.usage_limit.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="d-flex-center gap-12" style="cursor: pointer; background: rgba(0, 206, 201, 0.05); padding: 14px 20px; border-radius: var(--radius-sm); border: 1px solid rgba(0, 206, 201, 0.2); transition: all 0.2s ease;">
+                            {{ form.active }}
+                            <span style="font-size: 0.9rem; text-transform: none; letter-spacing: normal; color: var(--success); font-weight: 600;">
+                                Enable this coupon immediately
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="padding-top: 32px; border-top: 1px solid var(--border-color); display: flex; gap: 20px; justify-content: flex-end;">
+                    <a href="{% url 'custom_admin:coupons' %}" class="btn btn-secondary" style="min-width: 120px; border-radius: 30px;">
+                        Discard
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="min-width: 180px; border-radius: 30px; box-shadow: 0 4px 15px var(--accent-glow);">
+                        <i class="fas fa-check-circle"></i> Finalize Coupon
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for the checkbox container on hover */
+    .form-group label:hover {
+        background: rgba(0, 206, 201, 0.1) !important;
+        border-color: var(--success) !important;
+    }
+    
+    /* Input transition effects */
+    .form-control {
+        transition: all 0.2s ease;
+        border: 1px solid var(--border-color);
+        background: rgba(0,0,0,0.2);
+    }
+    
+    .form-control:focus {
+        background: rgba(0,0,0,0.4);
+        box-shadow: 0 0 0 4px var(--accent-glow);
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
