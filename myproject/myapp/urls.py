@@ -73,6 +73,7 @@ urlpatterns = [
     path('api/verify-razorpay-payment', views.verify_razorpay_payment, name='verify_razorpay_payment'),
 
     path('api/exchange-rates/', views.exchange_rates, name='exchange_rates'),
+    path('api/variant-options/', views.variant_options_api, name='variant_options_api'),
     path('payment-success', views.payment_success, name='payment_success'),
 
 ]

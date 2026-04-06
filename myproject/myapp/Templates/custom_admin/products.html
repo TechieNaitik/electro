@@ -60,10 +60,14 @@
                             <td><span class="badge badge-purple">{{ product.category_id.name }}</span></td>
                             <td><span style="color: var(--success); font-weight: 700;">₹{{ product.price }}</span></td>
                             <td>
-                                {% if product.stock_quantity <= 5 %}
-                                    <span class="badge badge-danger">{{ product.stock_quantity }} Low</span>
+                                {% if product.variants.exists %}
+                                    <span class="badge badge-purple" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">Varies by Variant</span>
                                 {% else %}
-                                    <span class="badge badge-success">{{ product.stock_quantity }}</span>
+                                    {% if product.stock_quantity <= 5 %}
+                                        <span class="badge badge-danger">{{ product.stock_quantity }} Low</span>
+                                    {% else %}
+                                        <span class="badge badge-success">{{ product.stock_quantity }}</span>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                             <td>

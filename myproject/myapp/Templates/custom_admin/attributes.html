@@ -1,0 +1,98 @@
+{% extends 'custom_admin/base.html' %}
+
+{% block title %}Attributes Library — Electro Admin{% endblock %}
+{% block page_title %}Attributes Management{% endblock %}
+
+{% block content %}
+<div class="animate-in">
+    <div class="section-card">
+        <div class="section-header">
+            <h2>All Attributes</h2>
+            <a href="{% url 'custom_admin:attribute_add' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add New Attribute
+            </a>
+        </div>
+        <div class="section-body">
+            <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; gap: 16px; align-items: center; background: rgba(0,0,0,0.05);">
+                <form action="" method="GET" style="flex: 1; display: flex; gap: 12px;">
+                    <div style="position: relative; flex: 1;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
+                        <input type="text" name="q" class="form-control" placeholder="Search attributes..." value="{{ request.GET.q }}" style="padding-left: 36px;">
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+                    {% if request.GET.q %}
+                        <a href="?" class="btn btn-secondary btn-sm" title="Clear"><i class="fas fa-times"></i></a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Attribute Name</th>
+                        <th>Category Scope</th>
+                        <th>Available Options</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attr in attributes %}
+                    <tr>
+                        <td>#{{ attr.display_order }}</td>
+                        <td><span style="font-weight: 600;">{{ attr.name }}</span></td>
+                        <td>
+                            <span class="badge badge-purple">
+                                {{ attr.category.name|default:"Global Store" }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                {% for val in attr.values.all %}
+                                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; font-size: 11px; border: 1px solid var(--border-color);">
+                                    {% if val.hex_color %}
+                                    <div class="color-dot" data-bg-color="{{ val.hex_color }}" style="width: 8px; height: 8px; border-radius: 50%;"></div>
+                                    {% endif %}
+                                    {{ val.value }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="{% url 'custom_admin:attribute_edit' attr.id %}" class="btn btn-secondary btn-icon" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'custom_admin:attribute_delete' attr.id %}" class="btn btn-secondary btn-icon" title="Delete" style="color: var(--danger);">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i class="fas fa-list-ul"></i>
+                                <p>No attributes found.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            const color = dot.getAttribute('data-bg-color');
+            if (color) {
+                dot.style.backgroundColor = color;
+            }
+        });
+    });
+</script>
+{% endblock %}

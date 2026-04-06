@@ -1,0 +1,189 @@
+{% extends 'custom_admin/base.html' %}
+{% block title %}{{ title }} — Electro Admin{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+{% load static %}
+<link href="{% static 'css/variant_form.css' %}" rel="stylesheet">
+
+<div class="animate-in pb-48">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row g-32 max-w-1100 mx-auto">
+            <!-- 📄 Configuration ───────────────────── -->
+            <div class="col-lg-8">
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="d-flex items-center gap-16">
+                            <div class="module-icon"><i class="fas fa-layer-group"></i></div>
+                            <div>
+                                <h3 class="m-0 font-weight-800">Variant Profile</h3>
+                                <p class="text-muted font-size-xs m-0">Core variant details and override properties.</p>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch p-12 bg-light-muted rounded-12 shadow-sm">
+                            {{ form.is_active }} <span class="font-weight-700 font-size-xs tracking-wider text-success">ACTIVE SKU</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-24">
+                        <label class="form-label font-weight-700 font-size-xs uppercase text-muted mb-8 tracking-wider">Parent Catalog Item</label>
+                        {{ form.product }}
+                        <p class="form-text-muted mt-4 font-size-xs">Link this SKU to a master product model.</p>
+                    </div>
+
+                    <div class="row g-20">
+                        <div class="col-md-6">
+                            <div class="form-group mb-24">
+                                <label class="form-label font-weight-700 font-size-xs uppercase text-muted mb-8 tracking-wider">Unique SKU Code</label>
+                                {{ form.sku }}
+                                <p class="form-text-muted mt-4 font-size-xs">e.g. S24-BLK-256G</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-24">
+                                <label class="form-label font-weight-700 font-size-xs uppercase text-muted mb-8 tracking-wider">Stock Qty</label>
+                                {{ form.stock_quantity }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-24">
+                                <label class="form-label font-weight-700 font-size-xs uppercase text-muted mb-8 tracking-wider">Override Price</label>
+                                {{ form.price }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="module-card pb-16">
+                    <div class="module-header pb-12">
+                        <div class="d-flex items-center gap-16">
+                            <div class="module-icon"><i class="fas fa-magic"></i></div>
+                            <div>
+                                <h3 class="m-0 font-weight-800">Assigned Attributes</h3>
+                                <p class="text-muted font-size-xs m-0">Select the values that make this variant unique.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ attr_formset.management_form }}
+                    <div id="attr-container" class="d-flex flex-column gap-12 mt-12">
+                        {% for af in attr_formset %}
+                        <div class="input-pill p-24 d-flex align-items-center gap-24 attr-row" style="margin-bottom: 24px; flex-wrap: nowrap;">
+                            <div class="flex-grow-1">
+                                {% for h in af.hidden_fields %}{{ h }}{% endfor %}
+                                <label class="form-label font-weight-700 font-size-xs uppercase text-muted mb-8 tracking-wider">Attribute Value Pair</label>
+                                {{ af.attribute_value }}
+                            </div>
+                            <div class="d-flex align-items-center gap-12" style="padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.1); margin-top: 24px;">
+                                <label for="{{ af.DELETE.id_for_label }}" style="cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0; color: var(--danger); font-size: 13px; font-weight: 600;">
+                                    <i class="fas fa-trash-alt"></i> REMOVE
+                                </label>
+                                <div style="display: none;">{{ af.DELETE }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="add-attr-btn" class="btn d-flex align-items-center justify-content-center w-100 mt-16" style="border-radius: 12px; padding: 16px; border: 2px dashed rgba(255,255,255,0.1); font-weight: 700; background: rgba(255,255,255, 0.02); color: var(--text-color); transition: all 0.2s ease;">
+                        <span class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle mr-12" style="width: 24px; height: 24px;"><i class="fas fa-plus font-size-xs"></i></span>
+                        <span style="font-size: 14px; letter-spacing: 0.5px;" class="text-uppercase tracking-wider">Add Attribute</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 📄 Gallery & Assets ────────────────── -->
+            <div class="col-lg-4">
+                <div class="module-card">
+                    <div class="module-header border-0 mb-16">
+                        <div class="d-flex items-center gap-12">
+                            <div class="module-icon" style="width: 36px; height: 36px; font-size: 14px;"><i class="fas fa-camera"></i></div>
+                            <h4 class="m-0 font-weight-800">Variant Gallery</h4>
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted font-size-xs mb-24 font-weight-500 leading-relaxed shadow-sm p-12 bg-light-muted rounded-8">Images specifically for this variant selection will trigger an automatic gallery swap.</p>
+
+                    {{ img_formset.management_form }}
+                    <div id="img-container" class="d-flex flex-column gap-12">
+                        {% for iform in img_formset %}
+                        <div class="bg-light-muted p-12 rounded-12 border border-light img-row">
+                            <div class="d-flex align-items-center gap-12 mb-8">
+                                {% if iform.instance.image %}
+                                <div class="bg-dark rounded-8 border border-light p-4 overflow-hidden" style="width: 48px; height: 48px;">
+                                    <img src="{{ iform.instance.image.url }}" class="img-fluid w-100 h-100 object-fit-cover shadow-sm">
+                                </div>
+                                {% else %}
+                                <div class="bg-dark rounded-8 border border-light d-flex items-center justify-center opacity-50" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-image font-size-xl"></i>
+                                </div>
+                                {% endif %}
+                                <div class="flex-grow-1">
+                                   {{ iform.image }}
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end align-items-center py-8 border-top border-light mt-8 px-12">
+                                <label for="{{ iform.DELETE.id_for_label }}" style="cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0; color: var(--danger); font-size: 13px; font-weight: 600;">
+                                    <i class="fas fa-trash-alt"></i> REMOVE PHOTO
+                                </label>
+                                <div style="display: none;">
+                                    {{ iform.DELETE }}
+                                </div>
+                            </div>
+                            {% for h in iform.hidden_fields %}{{ h }}{% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="add-img-btn" class="btn d-flex align-items-center justify-content-center w-100 mt-16" style="border-radius: 12px; padding: 16px; border: 2px dashed rgba(255,255,255,0.1); font-weight: 700; background: rgba(255,255,255, 0.02); color: var(--text-color); transition: all 0.2s ease;">
+                        <span class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle mr-12" style="width: 24px; height: 24px;"><i class="fas fa-plus font-size-xs"></i></span>
+                        <span style="font-size: 14px; letter-spacing: 0.5px;" class="text-uppercase tracking-wider">Add Picture</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty templates for cloning -->
+        <template id="attr-empty-template">
+            <div class="input-pill p-24 d-flex align-items-center gap-24 attr-row" style="margin-bottom: 24px; display: none; flex-wrap: nowrap;">
+                <div class="flex-grow-1">
+                    {% for h in attr_formset.empty_form.hidden_fields %}{{ h }}{% endfor %}
+                    <label class="form-label font-weight-700 font-size-xs uppercase text-muted mb-8 tracking-wider">Attribute Value Pair</label>
+                    {{ attr_formset.empty_form.attribute_value }}
+                </div>
+                <div class="d-flex align-items-center gap-12" style="padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.1); margin-top: 24px;">
+                    <label for="{{ attr_formset.empty_form.DELETE.id_for_label }}" style="cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0; color: var(--danger); font-size: 13px; font-weight: 600;">
+                        <i class="fas fa-trash-alt"></i> REMOVE
+                    </label>
+                    <div style="display: none;">{{ attr_formset.empty_form.DELETE }}</div>
+                </div>
+            </div>
+        </template>
+        
+        <template id="img-empty-template">
+            <div class="bg-light-muted p-12 rounded-12 border border-light img-row" style="display: none;">
+                <div class="d-flex align-items-center gap-12 mb-8">
+                    <div class="bg-dark rounded-8 border border-light d-flex items-center justify-center opacity-50" style="width: 48px; height: 48px;">
+                        <i class="fas fa-image font-size-xl"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        {{ img_formset.empty_form.image }}
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end align-items-center py-8 border-top border-light mt-8 px-12">
+                    <label for="{{ img_formset.empty_form.DELETE.id_for_label }}" style="cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0; color: var(--danger); font-size: 13px; font-weight: 600;">
+                        <i class="fas fa-trash-alt"></i> REMOVE PHOTO
+                    </label>
+                    <div style="display: none;">{{ img_formset.empty_form.DELETE }}</div>
+                </div>
+                {% for h in img_formset.empty_form.hidden_fields %}{{ h }}{% endfor %}
+            </div>
+        </template>
+
+        <script src="{% static 'js/variant_form.js' %}"></script>
+
+        <div class="d-flex justify-content-end gap-16 mt-32 border-top border-light pt-32">
+            <a href="{% url 'custom_admin:variants' %}" class="btn btn-secondary px-32 h-44 shadow-lg"><i class="fas fa-arrow-left mr-8 opacity-50"></i> Back to Variants</a>
+            <button type="submit" class="btn btn-primary px-48 h-44 shadow-lg font-weight-700">Push to Catalog</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

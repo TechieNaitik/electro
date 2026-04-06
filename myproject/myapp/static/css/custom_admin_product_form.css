@@ -83,3 +83,20 @@
     background-color: var(--bg-hover) !important;
     border-color: var(--accent) !important;
 }
+
+/* Helper utility classes for gallery upload slot */
+.d-none { display: none !important; }
+.d-flex { display: flex !important; }
+.flex-column { flex-direction: column !important; }
+.align-items-center { align-items: center !important; }
+.justify-content-center { justify-content: center !important; }
+.text-center { text-align: center !important; }
+.text-success { color: var(--success) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.text-primary { color: var(--primary) !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.mb-2 { margin-bottom: 0.5rem !important; }
+.mt-2 { margin-top: 0.5rem !important; }
+.px-2 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+.fs-2 { font-size: 2rem !important; }
+.w-100 { width: 100% !important; }

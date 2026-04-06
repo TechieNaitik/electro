@@ -14,7 +14,7 @@
             </a>
         </div>
         <div class="section-body" style="padding: 32px;">
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data" id="product-edit-form">
                 {% csrf_token %}
                 
                 {% if form.errors or formset.errors %}
@@ -53,15 +53,9 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;">
-                    <div class="detail-item">
-                        <label>Model Name</label>
-                        {{ form.model_name }}
-                    </div>
-                    <div class="detail-item">
-                        <label>Variant Specs</label>
-                        {{ form.variant_specs }}
-                    </div>
+                <div class="detail-item" style="margin-top: 24px;">
+                    <label>Model Name</label>
+                    {{ form.model_name }}
                 </div>
 
                 <div class="detail-item" style="margin: 24px 0;">
@@ -162,14 +156,85 @@
                         <i class="fas fa-info-circle me-1"></i> Images marked for deletion will be removed upon saving.
                     </p>
                 </div>
-
-                <div style="display: flex; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 32px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Save Product
-                    </button>
-                    <a href="{% url 'custom_admin:products' %}" class="btn btn-secondary">Cancel</a>
-                </div>
             </form>
+
+            {% if product %}
+            <div class="section-divider" style="height: 1px; background: var(--border-color); margin: 32px 0;"></div>
+            <div class="variants-section">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 12px;">
+                    <h4 class="mb-0" style="font-weight: 500;"><i class="fas fa-layer-group me-2 text-primary"></i> Product Variants</h4>
+                    <a href="{% url 'custom_admin:variant_add' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Variant
+                    </a>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Manage specific configurations (color, RAM, size) and their individual price/stock details.
+                </p>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Attributes</th>
+                            <th>Price Override</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for variant in product.variants.all %}
+                        <tr>
+                            <td><span style="font-family: 'SF Mono', monospace; background: rgba(99, 102, 241, 0.1); padding: 4px 8px; border-radius: 4px; color: var(--primary); font-weight: 600; font-size: 11px;">{{ variant.sku }}</span></td>
+                            <td>
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                    {% for va in variant.attributes.all %}
+                                    <span style="font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-muted);">{{ va.value }}</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <span {% if variant.price %}style="color: var(--warning); font-weight: 700;"{% else %}style="color: var(--text-muted); font-weight: 500;"{% endif %}>
+                                    {% if variant.price %}₹{{ variant.price }}{% else %}Inherited (₹{{ product.price }}){% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if variant.stock_quantity <= 0 %}
+                                    <span class="badge badge-danger">Out of Stock</span>
+                                {% elif variant.stock_quantity <= 10 %}
+                                    <span class="badge badge-warning">{{ variant.stock_quantity }} Low</span>
+                                {% else %}
+                                    <span class="badge badge-success">{{ variant.stock_quantity }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{% url 'custom_admin:variant_edit' variant.id %}" class="btn btn-secondary btn-icon" title="Edit Variant" style="width: 28px; height: 28px;">
+                                        <i class="fas fa-edit font-size-xs"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <i class="fas fa-layer-group"></i>
+                                    <p>No variants configured for this product yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <div style="display: flex; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 32px; margin-top: 32px;">
+                <button type="submit" form="product-edit-form" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Product
+                </button>
+                <a href="{% url 'custom_admin:products' %}" class="btn btn-secondary">Cancel</a>
+            </div>
         </div>
     </div>
 </div>

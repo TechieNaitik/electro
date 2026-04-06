@@ -80,17 +80,13 @@ class Product(models.Model):
 
     @property
     def full_name(self):
-        """Constructs the full product name: Brand + Model + Variant"""
+        """Constructs the full product name: Brand + Model Name."""
         parts = []
         if self.brand:
             parts.append(self.brand.name)
         if self.model_name:
             parts.append(self.model_name)
-        if self.variant_specs:
-            parts.append(self.variant_specs)
-        
-        # Fallback to old name if restructuring isn't done yet
-        return " ".join(parts).strip() or self.name or "Unnamed Product"
+        return " ".join(parts).strip() or "Unnamed Product"
 
     @property
     def all_images(self):
@@ -122,14 +118,19 @@ class ProductView(models.Model):
 
 class Cart(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variant  = models.ForeignKey('ProductVariant', null=True, blank=True,
+                                  on_delete=models.SET_NULL)   # Phase 1: nullable
     quantity = models.PositiveIntegerField(default=1)
 
     def total_price(self):
-        return self.quantity * self.product.price
+        # Use variant's effective_price if a variant is attached
+        unit_price = self.variant.effective_price if self.variant else self.product.price
+        return self.quantity * unit_price
 
     def __str__(self):
-        return f"{self.customer.full_name} - {self.product.name}"
+        variant_label = f" [{self.variant.sku}]" if self.variant else ""
+        return f"{self.customer.full_name} - {self.product.full_name}{variant_label}"
 
 class Order(models.Model):
     ORDER_STATUS_CHOICES = [
@@ -165,8 +166,6 @@ class Order(models.Model):
     razorpay_payment_id = models.CharField(max_length=255, null=True, blank=True)
     razorpay_signature = models.CharField(max_length=255, null=True, blank=True)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='Pending')
-    coupon = models.ForeignKey('Coupon', null=True, blank=True, on_delete=models.SET_NULL)
-    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def subtotal(self):
@@ -178,9 +177,18 @@ class Order(models.Model):
         return Decimal(str(self.total_amount))
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    price = models.IntegerField()
+    order    = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variant  = models.ForeignKey('ProductVariant', null=True, blank=True,
+                                  on_delete=models.SET_NULL)
+    # Snapshot fields — values captured at the moment of purchase so
+    # the line item remains accurate even if variant/product is later modified.
+    snapshot_sku        = models.CharField(max_length=100, blank=True)
+    snapshot_price      = models.DecimalField(max_digits=10, decimal_places=2,
+                                               null=True, blank=True)
+    snapshot_attributes = models.JSONField(default=dict, blank=True)
+    # e.g. {"Color": "Blue", "Storage": "256GB"}
+    price    = models.IntegerField()   # keep for backward compat with existing orders
     quantity = models.PositiveIntegerField(default=1)
 
     def line_total(self):
@@ -189,13 +197,16 @@ class OrderItem(models.Model):
 class Wishlist(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     product  = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variant  = models.ForeignKey('ProductVariant', null=True, blank=True,
+                                  on_delete=models.SET_NULL)
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('customer', 'product')  # prevent duplicates
+        unique_together = ('customer', 'product', 'variant')
 
     def __str__(self):
-        return f"{self.customer.full_name} — {self.product.name}"
+        variant_label = f" [{self.variant.sku}]" if self.variant else ""
+        return f"{self.customer.full_name} — {self.product.full_name}{variant_label}"
 
 class ProductReview(models.Model):
     """Stores detailed product reviews and ratings from individual users."""
@@ -290,11 +301,28 @@ def delete_product_image_on_delete(sender, instance, **kwargs):
             os.remove(instance.image.path)
 
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='img/')
-    created_at = models.DateTimeField(auto_now_add=True)
+    product       = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    variant       = models.ForeignKey(
+                        'ProductVariant', null=True, blank=True,
+                        on_delete=models.SET_NULL,
+                        related_name='variant_images'
+                    )  # Specific to a variant
+    attribute_value = models.ForeignKey(
+                        'AttributeValue', null=True, blank=True,
+                        on_delete=models.SET_NULL,
+                        related_name='attribute_images'
+                    )  # Specific to an attribute (e.g. Color=Blue)
+    image         = models.ImageField(upload_to='img/')
+    display_order = models.PositiveSmallIntegerField(default=0)
+    alt_text      = models.CharField(max_length=200, blank=True)
+    created_at    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['display_order', 'created_at']
 
     def __str__(self):
+        if self.variant:
+            return f"Image for {self.variant.sku} (variant of {self.product.full_name})"
         return f"Image for {self.product.full_name}"
 
 @receiver(post_delete, sender=ProductImage)
@@ -305,3 +333,112 @@ def delete_product_extra_image_on_delete(sender, instance, **kwargs):
     if instance.image:
         if os.path.isfile(instance.image.path):
             os.remove(instance.image.path)
+
+
+# ===========================================================================
+# VARIANT MODELS
+# ===========================================================================
+
+class Attribute(models.Model):
+    """Represents a dimension of variation, optionally scoped to a category."""
+    name          = models.CharField(max_length=100)
+    category      = models.ForeignKey(
+                        'Category', null=True, blank=True,
+                        on_delete=models.SET_NULL,
+                        related_name='attributes'
+                    )  # None = global attribute (applies to all categories)
+    display_order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('name', 'category')
+        ordering = ['display_order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class AttributeValue(models.Model):
+    """Represents a specific option within an attribute."""
+    attribute     = models.ForeignKey(Attribute, on_delete=models.CASCADE,
+                                      related_name='values')
+    value         = models.CharField(max_length=100)   # e.g., "Blue", "256GB"
+    hex_color     = models.CharField(max_length=7, blank=True)  # optional, for colour swatches
+    display_order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('attribute', 'value')
+        ordering = ['display_order', 'value']
+
+    def __str__(self):
+        return f"{self.attribute.name}: {self.value}"
+
+
+class ProductVariant(models.Model):
+    """The purchasable unit — one record per unique combination of attribute values."""
+    product        = models.ForeignKey('Product', on_delete=models.CASCADE,
+                                       related_name='variants')
+    attributes     = models.ManyToManyField(AttributeValue,
+                                            through='VariantAttribute')
+    sku            = models.CharField(max_length=100, unique=True)
+    price          = models.DecimalField(max_digits=10, decimal_places=2,
+                                         null=True, blank=True)
+                                         # None = inherit from Product.price
+    stock_quantity    = models.PositiveIntegerField(default=0)
+    reorder_threshold = models.PositiveIntegerField(default=10)
+    is_active      = models.BooleanField(default=True)
+
+    @property
+    def effective_price(self):
+        """Returns the variant's own price, or falls back to the parent product price."""
+        return self.price if self.price is not None else self.product.price
+
+    @property
+    def in_stock(self):
+        return self.stock_quantity > 0
+
+    @property
+    def gallery(self):
+        """
+        Returns all images scoped specifically to this variant AND images 
+        scoped to its attribute values (like Color=Lavender).
+        """
+        # Specific variant images
+        v_imgs = list(self.variant_images.all())
+        
+        # Shared attribute images (e.g., if an image is linked to the 'Lavender' Color)
+        from .models import ProductImage # Internal import to avoid circular dependency if needed, though we are in models
+        attr_imgs = list(ProductImage.objects.filter(
+            product=self.product,
+            attribute_value__in=self.attributes.all()
+        ))
+        
+        # Merge and remove duplicates (by ID)
+        merged = {img.id: img for img in (v_imgs + attr_imgs)}
+        return sorted(merged.values(), key=lambda x: (x.display_order, x.created_at))
+
+    @property
+    def primary_image(self):
+        """Returns the first variant image (including shared attribute images)."""
+        gallery = self.gallery
+        return gallery[0] if gallery else None
+
+    def __str__(self):
+        return f"{self.product} — {self.sku}"
+
+
+class VariantAttribute(models.Model):
+    """Explicit through table for the M2M between ProductVariant and AttributeValue."""
+    variant         = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    attribute_value = models.ForeignKey(AttributeValue, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('variant', 'attribute_value')
+
+
+@receiver(post_delete, sender=ProductVariant)
+def delete_variant_images_on_delete(sender, instance, **kwargs):
+    """Also delete variant images on disk when a ProductVariant is deleted."""
+    for pi in instance.variant_images.all():
+        if pi.image and os.path.isfile(pi.image.path):
+            os.remove(pi.image.path)
+        pi.delete()

@@ -45,12 +45,11 @@ class BrandForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['category_id', 'brand', 'model_name', 'variant_specs', 'image', 'description', 'price', 'stock_quantity']
+        fields = ['category_id', 'brand', 'model_name', 'image', 'description', 'price', 'stock_quantity']
         widgets = {
             'category_id': forms.Select(attrs={'class': 'form-select'}),
             'brand': forms.Select(attrs={'class': 'form-select'}),
             'model_name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g. iPhone 15'}),
-            'variant_specs': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g. 128GB, Blue'}),
             'image': forms.FileInput(attrs={'class': 'form-input-file'}),
             'description': forms.Textarea(attrs={'class': 'form-input', 'placeholder': 'Product Description', 'rows': 4}),
             'price': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Price', 'min': 0}),
@@ -83,5 +82,72 @@ ProductImageFormSet = inlineformset_factory(
     ProductImage, 
     form=ProductImageForm, 
     extra=5, 
+    can_delete=True
+)
+
+from .models import Attribute, AttributeValue, ProductVariant, VariantAttribute
+
+class AttributeForm(forms.ModelForm):
+    class Meta:
+        model = Attribute
+        fields = ['name', 'category', 'display_order']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Color'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'display_order': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+        }
+
+class AttributeValueForm(forms.ModelForm):
+    class Meta:
+        model = AttributeValue
+        fields = ['value', 'hex_color', 'display_order']
+        widgets = {
+            'value': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Midnight'}),
+            'hex_color': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '#000000'}),
+            'display_order': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+        }
+
+AttributeValueFormSet = inlineformset_factory(
+    Attribute,
+    AttributeValue,
+    form=AttributeValueForm,
+    extra=5,
+    can_delete=True
+)
+
+class ProductVariantForm(forms.ModelForm):
+    class Meta:
+        model = ProductVariant
+        fields = ['product', 'sku', 'price', 'stock_quantity', 'is_active']
+        widgets = {
+            'product': forms.Select(attrs={'class': 'form-control'}),
+            'sku': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. IPH15-BLK-128'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Optional price override'}),
+            'stock_quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+class VariantAttributeForm(forms.ModelForm):
+    class Meta:
+        model = VariantAttribute
+        fields = ['attribute_value']
+        widgets = {
+            'attribute_value': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+VariantAttributeFormSet = inlineformset_factory(
+    ProductVariant,
+    VariantAttribute,
+    form=VariantAttributeForm,
+    extra=4,
+    can_delete=True
+)
+
+VariantImageFormSet = inlineformset_factory(
+    ProductVariant,
+    ProductImage,
+    form=ProductImageForm,
+    fk_name='variant',
+    extra=5,
     can_delete=True
 )

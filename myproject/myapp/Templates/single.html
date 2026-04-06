@@ -2,8 +2,9 @@
 {% block title %}{{ product.full_name }}{% endblock %}
 {% load static %}
 
-{% block extra_css %}
+{% block extra_head %}
 <link href="{% static 'lib/lightbox/css/lightbox.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/single.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -58,12 +59,10 @@
                     {% for rp in related_products %}
                     <div class="d-flex align-items-center border rounded mb-3 overflow-hidden"
                         style="min-height: 90px;">
-                        <!-- Thumbnail -->
                         <div class="flex-shrink-0 bg-light border-end" style="width: 90px; height: 90px;">
                             <img src="{{ rp.image.url }}" class="img-fluid w-100 h-100" style="object-fit: cover;"
                                 alt="{{ rp.full_name }}">
                         </div>
-                        <!-- Info -->
                         <div class="px-3 py-2 flex-grow-1">
                             <small class="text-muted d-block mb-1">{{ rp.category_id.name }}</small>
                             <a href="{% url 'single' rp.id %}"
@@ -84,19 +83,18 @@
                     <div class="col-xl-6">
                         <div class="product-gallery">
                             <div class="primary-image-container mb-3 bg-light rounded overflow-hidden">
-                                <img id="main-product-image" src="{{ product.image.url }}" class="img-fluid w-100" 
+                                <img id="main-product-image" src="{{ product.image.url }}" class="img-fluid w-100"
                                     alt="{{ product.full_name }}" style="transition: opacity 0.3s ease; height: 100%; object-fit: contain;">
                             </div>
-                            
                             {% if product.all_images|length > 1 %}
                             <div class="thumbnail-strip d-flex overflow-auto gap-2 pb-2" id="thumbnail-strip">
                                 {% for img in product.all_images %}
-                                <div class="thumbnail-item border rounded bg-light cursor-pointer {% if forloop.first %}active{% endif %}" 
+                                <div class="thumbnail-item border rounded bg-light cursor-pointer {% if forloop.first %}active{% endif %}"
                                     style="min-width: 80px; width: 80px; height: 80px; overflow: hidden;"
                                     data-index="{{ forloop.counter0 }}"
                                     data-thumb-url="{{ img.url }}"
                                     data-thumb-index="{{ forloop.counter0 }}">
-                                    <img src="{{ img.url }}" class="img-fluid w-100 h-100" style="object-fit: cover;" 
+                                    <img src="{{ img.url }}" class="img-fluid w-100 h-100" style="object-fit: cover;"
                                         alt="{{ product.full_name }} thumbnail" loading="lazy">
                                 </div>
                                 {% endfor %}
@@ -109,7 +107,30 @@
                     <div class="col-xl-6">
                         <h4 class="fw-bold mb-3">{{ product.full_name }}</h4>
                         <p class="mb-3">Category: <strong>{{ product.category_id.name }}</strong></p>
-                        <h5 class="fw-bold mb-3 text-primary price-display" data-base-price="{{ product.price }}">₹{{ product.price }}</h5>
+                        <h5 class="fw-bold mb-2 text-primary price-display" id="variant-price" data-base-price="{{ product.price }}">₹{{ product.price }}</h5>
+                        <div id="variant-sku-container" class="mb-3" style="display: none;">
+                            <small class="text-muted">SKU: <span id="variant-sku-value" class="fw-bold text-dark"></span></small>
+                        </div>
+
+                        <!-- Stock status badge -->
+                        <div id="stock-status-badge" class="mb-3">
+                            {% if has_variants %}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2" style="font-size:.88rem;">
+                                <i class="fas fa-hand-pointer me-1"></i> Select options to view stock
+                            </span>
+                            {% else %}
+                                {% if product.stock_quantity > 0 %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2" style="font-size:.88rem;">
+                                    <i class="fas fa-check-circle me-1"></i> In Stock
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2" style="font-size:.88rem;">
+                                    <i class="fas fa-times-circle me-1"></i> Out of Stock
+                                </span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
                         <div class="mb-3">
                             <div class="btn btn-primary d-inline-block rounded text-white py-1 px-4 me-2">
                                 <i class="fab fa-facebook-f me-1"></i> Share
@@ -120,8 +141,6 @@
                         </div>
                         <div class="d-flex flex-column mb-3">
                             <small>Product ID: #{{ product.id }}</small>
-                            <small>Available: <strong class="text-primary">{% if product.stock_quantity > 0 %}{{ product.stock_quantity }}
-                                    In Stock{% else %}Out of Stock{% endif %}</strong></small>
                         </div>
                         <div class="rating-readonly d-flex align-items-center mb-3" data-product-id="{{ product.id }}">
                             {% for _ in "12345" %}
@@ -134,11 +153,67 @@
                             </span>
                             {% endfor %}
                         </div>
+
+                        <!-- ── Variant Selectors ────────────────────────── -->
+                        {% if has_variants %}
+                        <div id="variant-selectors" class="mb-4">
+                            {% for attr_name, values in attribute_groups.items %}
+                            <div class="variant-section">
+                                <div class="variant-label">
+                                    {{ attr_name }}:
+                                    <span class="selected-value" id="selected-{{ attr_name|slugify }}">—</span>
+                                </div>
+                                {% if attr_name == "Color" %}
+                                <div class="color-swatches" id="swatch-container-{{ forloop.counter }}" data-attr-name="{{ attr_name }}">
+                                    {% for av in values %}
+                                    <button type="button"
+                                        class="color-swatch-btn"
+                                        title="{{ av.value }}"
+                                        data-swatch-color="{{ av.hex_color|default:'#cccccc' }}"
+                                        data-av-id="{{ av.id }}"
+                                        data-av-value="{{ av.value }}"
+                                        data-attr-name="{{ attr_name }}"
+                                        aria-label="{{ av.value }}">
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                                <script>
+                                    // Dynamically apply background colors to swatches without causing CSS linting errors in the IDE
+                                    (function() {
+                                        const container = document.getElementById('swatch-container-{{ forloop.counter }}');
+                                        if (container) {
+                                            container.querySelectorAll('.color-swatch-btn').forEach(btn => {
+                                                const color = btn.getAttribute('data-swatch-color');
+                                                if (color) btn.style.backgroundColor = color;
+                                            });
+                                        }
+                                    })();
+                                </script>
+                                {% else %}
+                                <div class="pill-options" data-attr-name="{{ attr_name }}">
+                                    {% for av in values %}
+                                    <button type="button"
+                                        class="pill-btn"
+                                        data-av-id="{{ av.id }}"
+                                        data-av-value="{{ av.value }}"
+                                        data-attr-name="{{ attr_name }}">
+                                        {{ av.value }}
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <!-- ── End Variant Selectors ──────────────────────── -->
+
                         <form id="ajax-add-to-cart-form" method="POST" action="{% url 'add_to_cart' product.id %}">
                             {% csrf_token %}
+                            <!-- Hidden variant_id — populated by JS when a variant is selected -->
+                            <input type="hidden" name="variant_id" id="selected-variant-id" value="">
                             <div class="input-group quantity mb-5" style="width: 100px;">
-                                <input type="text" name="qty" class="form-control form-control-sm text-center border-0"
-                                    value="1">
+                                <input type="text" name="qty" class="form-control form-control-sm text-center border-0" value="1">
                                 <div class="input-group-btn">
                                     <button type="button" class="btn btn-sm btn-minus rounded-circle bg-light border">
                                         <i class="fa fa-minus"></i>
@@ -150,7 +225,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <button type="submit"
+                            <button type="submit" id="add-to-cart-btn"
                                 class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary">
                                 <i class="fa fa-shopping-bag me-2 text-white"></i> Add to cart
                             </button>
@@ -239,7 +314,6 @@
                                         placeholder="Your Review *" spellcheck="false" required></textarea>
                                 </div>
                             </div>
-
                             <div class="col-lg-12 d-flex align-items-center">
                                 <span class="me-3 fw-bold">Your Rating:</span>
                                 <div class="rating-interactive d-flex align-items-center" data-product-id="{{ product.id }}" data-product-name="{{ product.full_name }}">
@@ -251,7 +325,6 @@
                                     <input type="hidden" name="rating" id="selected-rating" value="">
                                 </div>
                             </div>
-
                             <div class="col-lg-12">
                                 <div class="d-flex justify-content-between py-3 mb-5">
                                     <button type="submit" id="submit-review-btn"
@@ -279,4 +352,14 @@
 <script src="{% static 'lib/counterup/counterup.min.js' %}"></script>
 <script src="{% static 'lib/lightbox/js/lightbox.min.js' %}"></script>
 <script src="{% static 'js/single.js' %}"></script>
+
+{% if has_variants %}
+<!-- ── Variant Selector Logic ─────────────────────────── -->
+<script>
+    window.PRODUCT_ID    = parseInt('{{ product.id }}');
+    window.ALL_VARIANTS  = JSON.parse('{{ variants_json|escapejs }}');
+    window.ORIGINAL_GALLERY = JSON.parse('{{ base_gallery_json|escapejs }}');
+</script>
+<script src="{% static 'js/single_inline.js' %}"></script>
+{% endif %}
 {% endblock %}

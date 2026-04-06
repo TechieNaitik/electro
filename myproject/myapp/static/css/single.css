@@ -1,0 +1,47 @@
+/* ── Variant Selector Styles ─────────────────────────── */
+.variant-section { margin-bottom: 1.25rem; }
+.variant-label { font-size: 0.85rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .5rem; }
+.variant-label span.selected-value { color: #1a1a2e; font-weight: 700; margin-left: .4rem; }
+
+/* Color swatches */
+/* Color swatches container */
+.color-swatches { display: flex; flex-wrap: wrap; gap: 0.8rem; padding: 4px 0; }
+
+.color-swatch-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    position: relative;
+    padding: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.color-swatch-btn::after {
+    content: ''; position: absolute; inset: 2px;
+    border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);
+}
+.color-swatch-btn:hover { transform: scale(1.12); }
+.color-swatch-btn.active, .color-swatch-btn:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, .25), inset 0 0 0 1px rgba(0,0,0,.12);
+}
+.color-swatch-btn.unavailable { opacity: .3; cursor: not-allowed; pointer-events: none; }
+
+/* Pill buttons */
+.pill-options { display: flex; flex-wrap: wrap; gap: .4rem; }
+.pill-btn {
+    padding: .3rem .85rem; border-radius: 20px;
+    border: 1.5px solid #d1d5db; font-size: .85rem; font-weight: 500;
+    cursor: pointer; transition: all .15s; background: #fff; color: #374151;
+    white-space: nowrap;
+}
+.pill-btn:hover:not(.unavailable) { border-color: #0d6efd; color: #0d6efd; }
+.pill-btn.active { border-color: #0d6efd; background: #0d6efd; color: #fff; }
+.pill-btn.unavailable { opacity: .35; cursor: not-allowed; pointer-events: none; text-decoration: line-through; }
+
+/* Gallery transitions */
+#main-product-image { transition: opacity .3s ease; }
+.img-crossfade-out { opacity: 0 !important; }
+
+/* Stock badge */
+#stock-status-badge .badge { font-size: .9rem; padding: .4em .8em; }

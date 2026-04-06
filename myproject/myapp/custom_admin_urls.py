@@ -42,6 +42,17 @@ urlpatterns = [
     path('coupons/edit/<int:coupon_id>/', views.admin_coupon_edit, name='coupon_edit'),
     path('coupons/delete/<int:coupon_id>/', views.admin_coupon_delete, name='coupon_delete'),
     
+    # Variants & Attributes
+    path('productvariant/', views.admin_variants, name='variants'),
+    path('productvariant/add/', views.admin_variant_add, name='variant_add'),
+    path('productvariant/edit/<int:variant_id>/', views.admin_variant_edit, name='variant_edit'),
+    path('productvariant/delete/<int:variant_id>/', views.admin_variant_delete, name='variant_delete'),
+
+    path('attribute/', views.admin_attributes, name='attributes'),
+    path('attribute/add/', views.admin_attribute_add, name='attribute_add'),
+    path('attribute/edit/<int:attribute_id>/', views.admin_attribute_edit, name='attribute_edit'),
+    path('attribute/delete/<int:attribute_id>/', views.admin_attribute_delete, name='attribute_delete'),
+    
     # Export
     path('export/', views.admin_export, name='export'),
     

@@ -650,3 +650,145 @@ def admin_refresh_exchange_rates(request):
         })
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+from .models import Attribute, AttributeValue, ProductVariant, VariantAttribute
+from .forms import AttributeForm, AttributeValueFormSet, ProductVariantForm, VariantAttributeFormSet, VariantImageFormSet
+
+@site_admin_required
+def admin_attributes(request):
+    attributes = Attribute.objects.prefetch_related('values').all().order_by('display_order', 'name')
+    context = {'active_page': 'attributes', 'attributes': attributes}
+    return render(request, 'custom_admin/attributes.html', context)
+
+@site_admin_required
+def admin_attribute_add(request):
+    if request.method == 'POST':
+        form = AttributeForm(request.POST)
+        formset = AttributeValueFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            attr = form.save()
+            formset.instance = attr
+            formset.save()
+            messages.success(request, f"Attribute '{attr.name}' added successfully.")
+            return redirect('custom_admin:attributes')
+    else:
+        form = AttributeForm()
+        formset = AttributeValueFormSet()
+    
+    context = {'form': form, 'formset': formset, 'title': 'Add Attribute', 'active_page': 'attributes'}
+    return render(request, 'custom_admin/attribute_form.html', context)
+
+@site_admin_required
+def admin_attribute_edit(request, attribute_id):
+    attr = get_object_or_404(Attribute, pk=attribute_id)
+    if request.method == 'POST':
+        form = AttributeForm(request.POST, instance=attr)
+        formset = AttributeValueFormSet(request.POST, instance=attr)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, f"Attribute '{attr.name}' updated.")
+            return redirect('custom_admin:attributes')
+    else:
+        form = AttributeForm(instance=attr)
+        formset = AttributeValueFormSet(instance=attr)
+    
+    context = {'form': form, 'formset': formset, 'title': 'Edit Attribute', 'active_page': 'attributes'}
+    return render(request, 'custom_admin/attribute_form.html', context)
+
+@site_admin_required
+def admin_attribute_delete(request, attribute_id):
+    attr = get_object_or_404(Attribute, pk=attribute_id)
+    if request.method == 'POST':
+        name = attr.name
+        attr.delete()
+        messages.success(request, f"Attribute '{name}' deleted.")
+        return redirect('custom_admin:attributes')
+    return render(request, 'custom_admin/delete_confirm.html', {'item': attr, 'type': 'attribute', 'active_page': 'attributes'})
+
+@site_admin_required
+def admin_variants(request):
+    query = request.GET.get('q')
+    variants = ProductVariant.objects.select_related('product').prefetch_related('attributes__attribute').all().order_by('-id')
+    if query:
+        variants = variants.filter(Q(sku__icontains=query) | Q(product__model_name__icontains=query))
+    
+    paginator = Paginator(variants, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {'active_page': 'variants', 'variants': page_obj}
+    return render(request, 'custom_admin/variants.html', context)
+
+@site_admin_required
+def admin_variant_add(request):
+    product_id = request.GET.get('product_id')
+    initial = {}
+    if product_id:
+        initial['product'] = get_object_or_404(Product, pk=product_id)
+
+    if request.method == 'POST':
+        form = ProductVariantForm(request.POST)
+        attr_formset = VariantAttributeFormSet(request.POST)
+        img_formset = VariantImageFormSet(request.POST, request.FILES)
+        
+        if form.is_valid() and attr_formset.is_valid() and img_formset.is_valid():
+            variant = form.save()
+            attr_formset.instance = variant
+            attr_formset.save()
+            img_formset.instance = variant
+            
+            images = img_formset.save(commit=False)
+            for img in images:
+                img.product = variant.product
+                img.save()
+            for obj in img_formset.deleted_objects:
+                obj.delete()
+                
+            messages.success(request, f"Variant {variant.sku} added.")
+            return redirect('custom_admin:variants')
+    else:
+        form = ProductVariantForm(initial=initial)
+        attr_formset = VariantAttributeFormSet()
+        img_formset = VariantImageFormSet()
+        
+    context = {'form': form, 'attr_formset': attr_formset, 'img_formset': img_formset, 'title': 'Add Variant', 'active_page': 'variants'}
+    return render(request, 'custom_admin/variant_form.html', context)
+
+@site_admin_required
+def admin_variant_edit(request, variant_id):
+    variant = get_object_or_404(ProductVariant, pk=variant_id)
+    if request.method == 'POST':
+        form = ProductVariantForm(request.POST, instance=variant)
+        attr_formset = VariantAttributeFormSet(request.POST, instance=variant)
+        img_formset = VariantImageFormSet(request.POST, request.FILES, instance=variant)
+        
+        if form.is_valid() and attr_formset.is_valid() and img_formset.is_valid():
+            form.save()
+            attr_formset.save()
+            
+            images = img_formset.save(commit=False)
+            for img in images:
+                img.product = variant.product
+                img.save()
+            for obj in img_formset.deleted_objects:
+                obj.delete()
+            messages.success(request, f"Variant {variant.sku} updated.")
+            return redirect('custom_admin:variants')
+    else:
+        form = ProductVariantForm(instance=variant)
+        attr_formset = VariantAttributeFormSet(instance=variant)
+        img_formset = VariantImageFormSet(instance=variant)
+        
+    context = {'form': form, 'attr_formset': attr_formset, 'img_formset': img_formset, 'variant': variant, 'title': 'Edit Variant', 'active_page': 'variants'}
+    return render(request, 'custom_admin/variant_form.html', context)
+
+@site_admin_required
+def admin_variant_delete(request, variant_id):
+    variant = get_object_or_404(ProductVariant, pk=variant_id)
+    if request.method == 'POST':
+        sku = variant.sku
+        variant.delete()
+        messages.success(request, f"Variant {sku} deleted.")
+        return redirect('custom_admin:variants')
+    return render(request, 'custom_admin/delete_confirm.html', {'item': variant, 'type': 'variant', 'active_page': 'variants'})

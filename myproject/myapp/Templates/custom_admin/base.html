@@ -74,6 +74,14 @@
                     class="nav-link {% if active_page == 'orders' %}active{% endif %}" id="nav-orders">
                     <i class="fas fa-shopping-bag"></i> Orders
                 </a>
+                <a href="{% url 'custom_admin:attributes' %}"
+                    class="nav-link" id="nav-attributes">
+                    <i class="fas fa-list-ul"></i> Attributes
+                </a>
+                <a href="{% url 'custom_admin:variants' %}"
+                    class="nav-link" id="nav-variants">
+                    <i class="fas fa-layer-group"></i> Variants
+                </a>
                 <a href="{% url 'custom_admin:coupons' %}"
                     class="nav-link {% if active_page == 'coupons' %}active{% endif %}" id="nav-coupons">
                     <i class="fas fa-ticket-alt"></i> Coupons

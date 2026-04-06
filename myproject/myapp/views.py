@@ -11,7 +11,7 @@ from django.core.paginator import Paginator
 from .utils import get_paginated_data
 from decimal import Decimal, InvalidOperation
 import json
-from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand, ProductReview, Coupon
+from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, Brand, ProductReview, Coupon, ProductVariant, Attribute, AttributeValue
 from .services.currency_service import CurrencyService
 from .services.coupon_service import apply_coupon, get_applied_coupon, clear_coupon
 from django.db.models import F
@@ -237,16 +237,36 @@ def checkout(request):
             log_action(f"Customer: {customer.full_name} <{customer.email}>", "Placed Order", f"Order #{order.id} | Total: {total}")
             
             for item in cart_items:
-                # Deduct stock
+                # Determine the stock entity and price to use
                 product = item.product
-                product.stock_quantity -= item.quantity
-                product.save()
+                if item.variant:
+                    # Decrement variant stock
+                    item.variant.stock_quantity -= item.quantity
+                    item.variant.save()
+                    snap_price = item.variant.effective_price
+                    snap_sku   = item.variant.sku
+                    snap_attrs = {
+                        va.attribute_value.attribute.name: va.attribute_value.value
+                        for va in item.variant.variantattribute_set.select_related(
+                            'attribute_value__attribute'
+                        ).all()
+                    }
+                else:
+                    product.stock_quantity -= item.quantity
+                    product.save()
+                    snap_price = product.price
+                    snap_sku   = product.sku or ''
+                    snap_attrs = {}
 
                 OrderItem.objects.create(
                     order=order,
                     product=product,
-                    price=product.price,
-                    quantity=item.quantity
+                    variant=item.variant,
+                    price=int(snap_price),
+                    quantity=item.quantity,
+                    snapshot_sku=snap_sku,
+                    snapshot_price=snap_price,
+                    snapshot_attributes=snap_attrs,
                 )
 
         # Trigger Order Confirmation Email (now that items are created)
@@ -813,7 +833,10 @@ def shop(request, cid=0):
     return render(request, 'shop.html', context)
 
 def single(request, pid):
-    product = get_object_or_404(Product.objects.prefetch_related('images'), pk=pid)
+    product = get_object_or_404(
+        Product.objects.prefetch_related('images', 'variants__attributes'),
+        pk=pid
+    )
     
     # Track view
     from .models import ProductView
@@ -825,14 +848,42 @@ def single(request, pid):
     customer = None
     user_has_reviewed = False
     
+    # Build variant data for the frontend
+    variants = product.variants.filter(is_active=True).prefetch_related(
+        'variantattribute_set__attribute_value__attribute'
+    )
+
+    # Group attributes by their type for the variant selector UI
+    attribute_groups = {}  # {attr_name: [{id, value, hex_color, display_order}, ...]}
+    for variant in variants:
+        for va in variant.variantattribute_set.all():
+            av = va.attribute_value
+            attr_name = av.attribute.name
+            if attr_name not in attribute_groups:
+                attribute_groups[attr_name] = []
+            entry = {
+                'id': av.id,
+                'value': av.value,
+                'hex_color': av.hex_color,
+                'display_order': av.display_order,
+            }
+            if entry not in attribute_groups[attr_name]:
+                attribute_groups[attr_name].append(entry)
+
+    # Sort each group by display_order
+    for attr_name in attribute_groups:
+        attribute_groups[attr_name] = sorted(
+            attribute_groups[attr_name], key=lambda x: x['display_order']
+        )
+
+    has_variants = variants.exists()
+    
     if 'email' in request.session:
         customer = Customer.objects.filter(email=request.session['email']).first()
         if customer:
-            # For logged-in users, ONLY check their customer record
             user_has_reviewed = ProductReview.objects.filter(product=product, customer=customer).exists()
 
     if not customer:
-        # ONLY for guest users, check IP and Session for spam prevention
         ip = get_client_ip(request)
         user_has_reviewed = ProductReview.objects.filter(product=product, ip_address=ip).exists()
         
@@ -845,6 +896,31 @@ def single(request, pid):
         'related_products': related_products,
         'customer': customer,
         'user_has_reviewed': user_has_reviewed,
+        'has_variants': has_variants,
+        'attribute_groups': attribute_groups,
+        'base_gallery_json': json.dumps([
+            {'url': product.image.url, 'alt': product.full_name}
+        ] + [
+            {'url': img.image.url, 'alt': ''} for img in product.images.all()
+        ]),
+        'variants_json': json.dumps([
+            {
+                'id': v.id,
+                'sku': v.sku,
+                'price': str(v.effective_price),
+                'stock_quantity': v.stock_quantity,
+                'in_stock': v.in_stock,
+                'attributes': {
+                    va.attribute_value.attribute.name: va.attribute_value.value
+                    for va in v.variantattribute_set.all()
+                },
+                'attribute_ids': [
+                    va.attribute_value.id for va in v.variantattribute_set.all()
+                ],
+                'featured_image': v.primary_image.image.url if v.primary_image else product.image.url,
+            }
+            for v in variants
+        ])
     }
     return render(request, 'single.html', context)
 
@@ -888,19 +964,47 @@ def add_to_cart(request, pid):
         qty = int(qty)
     except ValueError:
         qty = 1
-        
-    cart_item = Cart.objects.filter(customer=customer, product=product).first()
+
+    # --- Variant support ---
+    variant = None
+    variant_id = request.POST.get('variant_id') or request.GET.get('variant_id')
+    if variant_id:
+        try:
+            variant = ProductVariant.objects.select_related('product').get(
+                pk=int(variant_id), product=product, is_active=True
+            )
+        except (ProductVariant.DoesNotExist, ValueError):
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': 'Selected variant not found.'})
+            messages.error(request, "Selected variant not found.")
+            return redirect(request.META.get('HTTP_REFERER', 'cart'))
+
+    # Stock check against the appropriate entity
+    if variant:
+        available_stock = variant.stock_quantity
+        stock_label = variant.sku
+    else:
+        available_stock = product.stock_quantity
+        stock_label = product.full_name
+
+    cart_filter = {'customer': customer, 'product': product, 'variant': variant}
+    cart_item = Cart.objects.filter(**cart_filter).first()
     current_qty = cart_item.quantity if cart_item else 0
     
-    if product.stock_quantity < current_qty + qty:
-        messages.error(request, f"Only {product.stock_quantity} units of {product.name} are available. You already have {current_qty} in cart.")
+    if available_stock < current_qty + qty:
+        err_msg = f"Only {available_stock} units of {stock_label} are available. You already have {current_qty} in cart."
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'error', 'message': err_msg})
+        messages.error(request, err_msg)
         return redirect(request.META.get('HTTP_REFERER', 'cart'))
 
     if cart_item:
         cart_item.quantity += qty
         cart_item.save()
     else:
-        cart_item = Cart.objects.create(customer=customer, product=product, quantity=qty)
+        cart_item = Cart.objects.create(
+            customer=customer, product=product, variant=variant, quantity=qty
+        )
         
     cart_items = Cart.objects.filter(customer=customer)
     cart_count = sum(item.quantity for item in cart_items)
@@ -995,6 +1099,95 @@ def update_cart(request, cid, action):
         })
 
     return redirect('cart')
+
+# =========================================================================
+#  VARIANT OPTIONS API
+# =========================================================================
+
+def variant_options_api(request):
+    """
+    GET /api/variant-options/?product_id=42&color=3&storage=7
+    Returns all active variants for a product, optionally filtered by
+    attribute_value IDs. Returns a 'selected_variant' only when the
+    provided IDs resolve to exactly one active variant.
+    """
+    product_id = request.GET.get('product_id')
+    if not product_id:
+        return JsonResponse({'error': 'product_id required'}, status=400)
+
+    product = get_object_or_404(Product, pk=product_id)
+    all_variants = product.variants.filter(is_active=True).prefetch_related(
+        'variantattribute_set__attribute_value__attribute',
+        'variant_images',
+    )
+
+    # Collect any attribute_value IDs supplied as query params
+    # Query string may look like ?product_id=42&Color=3&Storage=7
+    # or ?product_id=42&av_ids=3,7
+    av_ids = []
+    av_ids_param = request.GET.get('av_ids', '')
+    if av_ids_param:
+        av_ids = [int(x) for x in av_ids_param.split(',') if x.isdigit()]
+    else:
+        # Try to parse individual attribute params like ?Color=3
+        for key, val in request.GET.items():
+            if key not in ('product_id',) and val.isdigit():
+                av_ids.append(int(val))
+
+    def build_gallery(variant):
+        # Keeps ALL product images in the strip but puts relevant variant images first
+        v_images = []
+        other_images = [{'url': request.build_absolute_uri(product.image.url), 'alt': product.full_name}]
+        
+        for pi in product.images.all().order_by('display_order'):
+            img_data = {'url': request.build_absolute_uri(pi.image.url), 'alt': pi.alt_text or product.full_name}
+            if pi.variant == variant:
+                v_images.append(img_data)
+            else:
+                other_images.append(img_data)
+        
+        return v_images + other_images展厅
+
+    def serialize_variant(v):
+        return {
+            'id': v.id,
+            'sku': v.sku,
+            'price': str(v.effective_price),
+            'stock_quantity': v.stock_quantity,
+            'in_stock': v.in_stock,
+            'attributes': {
+                va.attribute_value.attribute.name: va.attribute_value.value
+                for va in v.variantattribute_set.all()
+            },
+            'attribute_ids': [
+                va.attribute_value.id for va in v.variantattribute_set.all()
+            ],
+            'gallery': build_gallery(v),
+        }
+
+    # Filter: include only variants that contain ALL requested av_ids
+    if av_ids:
+        matching = [
+            v for v in all_variants
+            if all(aid in [va.attribute_value.id for va in v.variantattribute_set.all()]
+                   for aid in av_ids)
+        ]
+    else:
+        matching = list(all_variants)
+
+    selected_variant = None
+    featured_gallery = None
+    if matching:
+        featured_gallery = build_gallery(matching[0])
+        if len(matching) == 1:
+            selected_variant = serialize_variant(matching[0])
+
+    return JsonResponse({
+        'available_variants': [serialize_variant(v) for v in matching],
+        'selected_variant': selected_variant,
+        'featured_gallery': featured_gallery,
+    })
+
 
 # =========================================================================
 #  RATING SYSTEM API
@@ -1251,14 +1444,33 @@ def verify_razorpay_payment(request):
             
             for item in cart_items:
                 product = item.product
-                product.stock_quantity -= item.quantity
-                product.save()
-                
+                if item.variant:
+                    item.variant.stock_quantity -= item.quantity
+                    item.variant.save()
+                    snap_price = item.variant.effective_price
+                    snap_sku   = item.variant.sku
+                    snap_attrs = {
+                        va.attribute_value.attribute.name: va.attribute_value.value
+                        for va in item.variant.variantattribute_set.select_related(
+                            'attribute_value__attribute'
+                        ).all()
+                    }
+                else:
+                    product.stock_quantity -= item.quantity
+                    product.save()
+                    snap_price = product.price
+                    snap_sku   = product.sku or ''
+                    snap_attrs = {}
+
                 OrderItem.objects.create(
                     order=order,
                     product=product,
-                    price=product.price,
-                    quantity=item.quantity
+                    variant=item.variant,
+                    price=int(snap_price),
+                    quantity=item.quantity,
+                    snapshot_sku=snap_sku,
+                    snapshot_price=snap_price,
+                    snapshot_attributes=snap_attrs,
                 )
                 
             log_action(f"Customer: {customer.full_name}", "Placed Order (Razorpay)", f"Order #{order.id} | PayID: {razorpay_payment_id}")

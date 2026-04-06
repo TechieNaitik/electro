@@ -6,6 +6,7 @@ A Django-based E-commerce application.
 
 - **Refactored Product Model**: Advanced data structure splitting generic names into specific `Brand`, `Model Name`, and `Variant Specs` for improved searchability and SEO.
 - **Brand Management**: Dedicated ecosystem for managing brands independently, with full relationship mapping to products.
+- **Multi-variant Ecosystem**: Engineered a robust relational database schema that supports infinite product variations (Color, Storage, Size, etc.) attached to a parent product. Features include custom pricing overrides, individualized stock tracking, dedicated SKU mapping, isolated multi-image galleries per variant, and an interactive, lightning-fast variant selector on the product page.
 - **User Authentication**: Custom customer registration, login system, and password reset via OTP.
 - **Product Browsing**: Shop page with advanced brand-wise sorting/filtering, single product view, bestsellers, and dynamic inventory status.
 - **Product Pagination**: Robust, centralized pagination across Shop, Bestsellers, Home, and Category Filter pages, featuring a 3x4 grid layout (12 products per page) and persistent filter/sorting parameters across pages.

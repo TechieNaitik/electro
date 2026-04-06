@@ -1,6 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
-from .models import Customer, Category, Product, Cart, Order, OrderItem, Wishlist, SiteAdmin, Brand, ProductImage, Coupon
+from .models import (
+    Customer, Category, Product, Cart, Order, OrderItem, Wishlist,
+    SiteAdmin, Brand, ProductImage, Coupon,
+    Attribute, AttributeValue, ProductVariant, VariantAttribute
+)
 from .logger import log_action
 from django.utils.html import format_html
 
@@ -100,7 +104,35 @@ class BrandAdmin(admin.ModelAdmin):
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
+    fk_name = 'product'          # use the product FK, not the variant FK
     extra = 1
+    fields = ('image', 'variant', 'attribute_value', 'display_order', 'alt_text', 'image_preview')
+    readonly_fields = ('image_preview',)
+
+    def image_preview(self, obj):
+        from django.utils.html import mark_safe
+        if obj.pk and obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" style="height:60px;border-radius:4px;">')
+        return "—"
+    image_preview.short_description = "Preview"
+
+
+class ProductVariantInlineForProduct(admin.TabularInline):
+    model = ProductVariant
+    extra = 1
+    fields = ('sku', 'price', 'stock_quantity', 'reorder_threshold', 'is_active', 'stock_badge')
+    readonly_fields = ('stock_badge',)
+    show_change_link = True
+
+    def stock_badge(self, obj):
+        from django.utils.html import mark_safe
+        if obj.pk and obj.in_stock:
+            return mark_safe('<span style="color:green">🟢 In Stock</span>')
+        elif obj.pk:
+            return mark_safe('<span style="color:red">🔴 Out of Stock</span>')
+        return "—"
+    stock_badge.short_description = "Stock Status"
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -108,7 +140,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('model_name', 'brand__name', 'variant_specs', 'sku')
     list_filter = ('brand', 'category_id')
     raw_id_fields = ('brand',)
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, ProductVariantInlineForProduct]
     
     def save_model(self, request, obj, form, change):
         if not change:
@@ -123,8 +155,9 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'product', 'quantity')
+    list_display = ('customer', 'product', 'variant', 'quantity')
     list_filter = ('customer',)
+    raw_id_fields = ('variant',)
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
@@ -140,8 +173,9 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Wishlist)
 class WishlistAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'product', 'added_at')
+    list_display = ('customer', 'product', 'variant', 'added_at')
     list_filter = ('customer', 'added_at')
+    raw_id_fields = ('variant',)
 
 @admin.register(Coupon)
 class CouponAdmin(admin.ModelAdmin):
@@ -185,3 +219,86 @@ class CouponAdmin(admin.ModelAdmin):
         
         return response
     export_usage_report.short_description = "Export usage report (CSV)"
+
+
+# ===========================================================================
+# VARIANT ADMIN
+# ===========================================================================
+
+class VariantAttributeInline(admin.TabularInline):
+    model = VariantAttribute
+    extra = 1
+    autocomplete_fields = ['attribute_value']
+
+
+class VariantImageInline(admin.TabularInline):
+    """Manages the per-variant image gallery directly on the variant admin."""
+    model = ProductImage
+    fk_name = 'variant'          # use the variant FK, not the product FK
+    extra = 1
+    fields = ('image', 'attribute_value', 'display_order', 'alt_text', 'image_preview')
+    readonly_fields = ('image_preview',)
+
+    def image_preview(self, obj):
+        from django.utils.html import mark_safe
+        if obj.pk and obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" style="height:60px;border-radius:4px;">')
+        return "—"
+    image_preview.short_description = "Preview"
+
+
+@admin.register(ProductVariant)
+class ProductVariantAdmin(admin.ModelAdmin):
+    """Dedicated admin page for a variant — shows its attribute assignments AND image gallery."""
+    inlines = [VariantAttributeInline, VariantImageInline]
+    list_display  = ('sku', 'product', 'effective_price', 'stock_quantity', 'is_active')
+    list_filter   = ('is_active', 'product__category_id')
+    search_fields = ('sku', 'product__model_name')
+    actions       = ['bulk_mark_active', 'bulk_mark_inactive']
+
+    def effective_price(self, obj):
+        return obj.effective_price
+    effective_price.short_description = 'Price'
+
+    @admin.action(description='Mark selected variants as Active')
+    def bulk_mark_active(self, request, queryset):
+        updated = queryset.update(is_active=True)
+        self.message_user(request, f"{updated} variant(s) marked as active.")
+
+    @admin.action(description='Mark selected variants as Inactive')
+    def bulk_mark_inactive(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f"{updated} variant(s) marked as inactive.")
+
+
+class AttributeValueInline(admin.TabularInline):
+    model = AttributeValue
+    extra = 1
+
+
+@admin.register(Attribute)
+class AttributeAdmin(admin.ModelAdmin):
+    inlines = [AttributeValueInline]
+    list_display = ('name', 'category', 'display_order')
+    list_filter  = ('category',)
+    search_fields = ('name',)
+
+
+class AttributeImageInline(admin.TabularInline):
+    model = ProductImage
+    fk_name = 'attribute_value'
+    extra = 1
+    fields = ('product', 'image', 'display_order', 'image_preview')
+    readonly_fields = ('image_preview',)
+    def image_preview(self, obj):
+        from django.utils.html import mark_safe
+        if obj.pk and obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" style="height:60px;border-radius:4px;">')
+        return "—"
+
+@admin.register(AttributeValue)
+class AttributeValueAdmin(admin.ModelAdmin):
+    inlines = [AttributeImageInline]
+    list_display  = ('attribute', 'value', 'hex_color', 'display_order')
+    list_filter   = ('attribute',)
+    search_fields = ('value', 'attribute__name')
