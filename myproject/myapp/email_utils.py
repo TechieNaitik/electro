@@ -33,16 +33,16 @@ def send_order_email(order, event_type):
     subject = f"Electro - Order Update #{order.id}"
     
     template_map = {
-        'confirmation': 'myapp/emails/order_confirmation.html',
-        'shipping': 'myapp/emails/shipping_update.html',
-        'out_for_delivery': 'myapp/emails/out_for_delivery.html',
-        'delivered': 'myapp/emails/delivery_confirmation.html',
-        'cancelled': 'myapp/emails/status_update.html',
-        'returned': 'myapp/emails/status_update.html',
+        'confirmation': 'emails/order_confirmation.html',
+        'shipping': 'emails/shipping_update.html',
+        'out_for_delivery': 'emails/out_for_delivery.html',
+        'delivered': 'emails/delivery_confirmation.html',
+        'cancelled': 'emails/status_update.html',
+        'returned': 'emails/status_update.html',
     }
     
     if event_type not in template_map:
-        template_name = 'myapp/emails/status_update.html'
+        template_name = 'emails/status_update.html'
     else:
         template_name = template_map[event_type]
         

@@ -73,7 +73,7 @@
                     {% for product in products|slice:":3" %}
                     <div class="featured-product-item">
                         <div class="rounded me-4" style="width: 100px; height: 100px;">
-                            <img src="{{ product.image.url }}" class="img-fluid rounded" alt="Image">
+                            <img src="{{ product.featured_image_url }}" class="img-fluid rounded" alt="Image">
                         </div>
                         <div class="d-flex flex-column justify-content-center">
                             <h6 class="mb-2">{{ product.full_name }}</h6>
@@ -136,7 +136,7 @@
                                 <div class="product-item rounded wow fadeInUp" data-wow-delay="0.1s">
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
-                                            <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top"
+                                            <img src="{{ product.featured_image_url }}" class="img-fluid w-100 rounded-top"
                                                 alt="">
                                             <!-- <div class="product-new">New</div> -->
                                             <div class="product-details">
@@ -188,7 +188,7 @@
                             </div>
                             {% endfor %}
                             <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
-                            {% include "partials/pagination.html" with page_obj=products %}
+                            {% include "pagination.html" with page_obj=products %}
                             </div>
                         </div>
                     </div>
@@ -200,7 +200,7 @@
                                     <div class="row g-0">
                                         <div class="col-5">
                                             <div class="products-mini-img border-end h-100">
-                                                <img src="{{ product.image.url }}" class="img-fluid w-100 h-100"
+                                                <img src="{{ product.featured_image_url }}" class="img-fluid w-100 h-100"
                                                     alt="Image">
                                                 <div class="products-mini-icon rounded-circle bg-primary">
                                                     <a href="{% url 'single' product.id %}"><i
@@ -246,7 +246,7 @@
                             </div>
                             {% endfor %}
                             <div class="col-12 wow fadeInUp" data-wow-delay="0.1s">
-                            {% include "partials/pagination.html" with page_obj=products %}
+                            {% include "pagination.html" with page_obj=products %}
                             </div>
                         </div>
                     </div>

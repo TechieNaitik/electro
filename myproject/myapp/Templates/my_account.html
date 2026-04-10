@@ -153,7 +153,7 @@
                                         <div class="col-md-8">
                                             <div class="d-flex flex-wrap mb-2">
                                                 {% for item in order.items.all|slice:":3" %}
-                                                <img src="{{ item.product.image.url }}" class="me-2 rounded border" style="width: 50px; height: 50px; object-fit: cover;" title="{{ item.product.name }}">
+                                                <img src="{{ item.product.featured_image_url }}" class="me-2 rounded border" style="width: 50px; height: 50px; object-fit: cover;" title="{{ item.product.name }}">
                                                 {% endfor %}
                                                 {% if order.items.count > 3 %}
                                                 <span class="text-muted align-self-center small">+ {{ order.items.count|add:"-3" }} more</span>
@@ -213,7 +213,7 @@
                                         <tr>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <img src="{{ item.product.image.url }}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    <img src="{{ item.product.featured_image_url }}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
                                                     <a href="{% url 'single' item.product.id %}" class="fw-bold">{{ item.product.name }}</a>
                                                 </div>
                                             </td>

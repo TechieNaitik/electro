@@ -100,9 +100,17 @@ class Product(models.Model):
         
         # Add additional images
         for extra in self.images.all():
-            imgs.append({'url': extra.image.url, 'main': False})
+            imgs.append({'url': extra.image_url, 'main': False})
         
         return imgs
+
+    @property
+    def featured_image_url(self):
+        """Safely returns the URL of the main product image or an empty string if it doesn't exist."""
+        try:
+            return self.image.url
+        except ValueError:
+            return ""
 
     def __str__(self):
         return self.full_name
@@ -320,6 +328,14 @@ class ProductImage(models.Model):
     class Meta:
         ordering = ['display_order', 'created_at']
 
+    @property
+    def image_url(self):
+        """Safely returns the URL of this image or an empty string if it doesn't exist."""
+        try:
+            return self.image.url
+        except ValueError:
+            return ""
+
     def __str__(self):
         if self.variant:
             return f"Image for {self.variant.sku} (variant of {self.product.full_name})"
@@ -421,6 +437,11 @@ class ProductVariant(models.Model):
         """Returns the first variant image (including shared attribute images)."""
         gallery = self.gallery
         return gallery[0] if gallery else None
+
+    @property
+    def attribute_summary(self):
+        """Returns a string summary of all attribute values (e.g. 'Color: Black, Storage: 256GB')."""
+        return ", ".join([str(val) for val in self.attributes.all()])
 
     def __str__(self):
         return f"{self.product} — {self.sku}"

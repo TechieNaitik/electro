@@ -1,140 +1,365 @@
-# Electro
+<div align="center">
 
-A Django-based E-commerce application.
+<br/>
+
+```
+███████╗██╗     ███████╗ ██████╗████████╗██████╗  ██████╗
+██╔════╝██║     ██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔═══██╗
+█████╗  ██║     █████╗  ██║        ██║   ██████╔╝██║   ██║
+██╔══╝  ██║     ██╔══╝  ██║        ██║   ██╔══██╗██║   ██║
+███████╗███████╗███████╗╚██████╗   ██║   ██║  ██║╚██████╔╝
+╚══════╝╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝
+```
+
+**A production-grade Django e-commerce platform built for the modern web.**
+
+<br/>
+
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Django](https://img.shields.io/badge/Django-6.0+-092E20?style=flat-square&logo=django&logoColor=white)](https://djangoproject.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-F7DC6F?style=flat-square)](LICENSE)
+[![pytest](https://img.shields.io/badge/Tested_with-pytest-0A9EDC?style=flat-square&logo=pytest&logoColor=white)](https://docs.pytest.org)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/firstcontributions/first-contributions)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?style=flat-square&logo=bootstrap&logoColor=white)](https://getbootstrap.com)
+
+<br/>
+
+</div>
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Administrative Setup](#administrative-setup)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Security Architecture](#security-architecture)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Overview
+
+**Electro** is a fully-featured, production-ready e-commerce platform built with Django. It ships with everything you'd expect from a serious commercial application — payment processing, inventory management, AI-powered sales forecasting, PDF invoice generation, and a custom admin dashboard — all wrapped in a glassmorphism dark-mode UI.
+
+> Built to be extended, not just demoed.
+
+---
 
 ## Features
 
-- **Refactored Product Model**: Advanced data structure splitting generic names into specific `Brand`, `Model Name`, and `Variant Specs` for improved searchability and SEO.
-- **Brand Management**: Dedicated ecosystem for managing brands independently, with full relationship mapping to products.
-- **Multi-variant Ecosystem**: Engineered a robust relational database schema that supports infinite product variations (Color, Storage, Size, etc.) attached to a parent product. Features include custom pricing overrides, individualized stock tracking, dedicated SKU mapping, isolated multi-image galleries per variant, and an interactive, lightning-fast variant selector on the product page.
-- **User Authentication**: Custom customer registration, login system, and password reset via OTP.
-- **Product Browsing**: Shop page with advanced brand-wise sorting/filtering, single product view, bestsellers, and dynamic inventory status.
-- **Product Pagination**: Robust, centralized pagination across Shop, Bestsellers, Home, and Category Filter pages, featuring a 3x4 grid layout (12 products per page) and persistent filter/sorting parameters across pages.
-- **Wishlist**: Per-user product saving system with AJAX-powered live updates and a dedicated wishlist management page.
-- **Product Comparison**: Full-featured side-by-side comparison suite, accessible exclusively from individual product pages:
-  - **Highlight Differences Toggle**: Real-time row-level visual diff that yellow-flags diverging values and green-tints matching ones across all compared products.
-  - **Quantity Selector**: Inline `+`/`−` stepper per product column that dynamically updates the Add-to-Cart link with the chosen quantity.
-  - **Wishlist Integration**: AJAX-powered wishlist toggle within the compare table, reflecting saved state on load and updating in real-time without page refresh.
-- **Shopping Cart**: Interactive AJAX-powered cart with real-time updates and toast notifications.
-- **One-Click Checkout**: Refactored checkout flow that pulls shipping and billing details (including State and Phone) directly from stored user profiles.
-- **Centralized Profile Management**: Comprehensive user dashboard for managing personal details, contact info, and multi-field shipping addresses (Address, City, State, Country, Zip).
-- **Inventory Management**: Real-time stock validation and automatic stock deduction upon order completion.
-- **Product Image Gallery**: Interactive multi-image gallery on product detail pages featuring thumbnail navigation and native touch-swipe support for mobile devices.
-- **Custom Site Administration**: A premium, isolated administration dashboard featuring:
-  - **Brand Ecosystem**: Full CRUD operations for Brands.
-  - **Advanced Analytical Dashboard**: Real-time business intelligence using Chart.js to visualize sales trends by brand/category, order activity heatmaps, and AI-powered 7-day sales forecasting via scikit-learn.
-  - **Dynamic Data Export**: Advanced administrative tools to export Customers, Orders, and Products into multiple professional formats (.pdf, .xlsx, .docx, .csv).
-  - **Gallery Management**: Re-engineered administrative backend for handling secondary product images, featuring a robust "Mark for Deletion" flow to prevent accidental data loss and real-time selection success indicators with count-based update notifications.
-  - **Security & Sessions**: Secure login wall with hashed passwords, brute-force protection, and independent admin session management.
-  - **Resource Management**: Complete CRUD operations for Products and Categories with instant search capability.
-- **Inventory Insights**: Real-time stock alerts and business analytics/statistics.
-- **Invoice Generation**: Premium, professional **"Square-style" billing UI** rendered via headless Playwright. Features a space-efficient 3-column Information Grid and absolute-path asset injection for 100% layout reliability in PDF downloads.
-- **Automated Order Lifecycle Notifications**: Event-driven notification system sending branded HTML updates for:
--   - **Order Confirmation**: With embedded order summary and PDF invoice attachment.
--   - **Logistics Updates**: "Shipped" and "Out for Delivery" alerts with courier name and tracking links.
--   - **Delivery Confirmation**: Success confirmation with review prompts.
--   - **Returns & Cancellations**: Specialized variants for reversed orders.
--   - **Async Execution**: Leverages Python threading to ensure zero impact on frontend performance.
-- **Automated Testing & Coverage Dashboard**: Full-featured `pytest` suite integrated directly into the custom site-admin panel:
-  - **Live Terminal Stream**: Real-time terminal output streaming directly to the browser via AJAX for instant test feedback and auto-scrolling terminal logs.
-  - **Visual Coverage Dashboard**: Automated `pytest-cov` reporting with a dedicated, auto-refreshing interface to track code quality and logic gaps.
-- **Universal Star Rating & Review System**: Comprehensive peer-review ecosystem featuring:
-  - **Individual Reviews**: Per-user rating and review submission for every product.
-  - **Review Interactivity**: Selective star rating on product pages and interactive feedback forms.
-  - **Mandatory Feedback**: Enforced rating (1-5) and written review text for all submissions.
-  - **Dynamic Aggregation**: Global average ratings calculated in real-time from all user reviews across the platform.
-  - **Advanced User Tracking**: Multi-layered duplicate prevention for individual reviews (Account-based, Session-based, and IP-based).
-  - **Rich UI**: Interactive star displays, hover effects, and premium gold-yellow star aesthetics.
-  - **Context-Aware Forms**: Intelligent pre-filling of name and email for logged-in customers.
-- **Mock Payment Gateway Integration**: Fully functional end-to-end **Razorpay (Test Mode)** integration using the **Razorpay Checkout modal**. Features include secure server-side order creation, HMAC-SHA256 signature verification for payment security, and real-time transaction finalization.
-- **Dynamic Currency Converter**: Site-wide conversion system fetching live exchange rates from the **ExchangeRate-API** with a **Two-Tier Caching** strategy (L1 server-side memory, L2 client-side `localStorage`). Features reactive price updates across all templates without page reloads and a manual **Admin Sync Governance** tool for real-time rate refreshing.
-- **Coupon Code Engine**: Rule-based promotional discount system supporting **Percentage** and **Fixed Amount** coupons with minimum order thresholds, usage limits, date validity, and per-customer tracking. Includes a full admin management dashboard with usage analytics, AJAX-powered cart integration, and automatic embedding in the Invoice PDF.
-- **Contact & Support**: Support pages and contact functionality.
-- **Comprehensive Error Handling**: Built-in diagnostic system that captures and displays detailed error context (code snippets, stack traces, line numbers) for developers, while maintaining a sleek, secure experience for end-users.
-- **Responsive Design**: Modern, glassmorphism-inspired dark mode aesthetic.
+### 🛒 Shopping Experience
 
-## Tech Stack
+| Feature | Description |
+| --- | --- |
+| **Product Browsing & Discovery** | Advanced catalog with brand-wise filtering, bestseller tracking, and real-time inventory indicators |
+| **Multi-variant Ecosystem** | Relational schema supporting infinite variations (Color, Storage, etc.) with custom pricing, stock, and image galleries |
+| **Product Comparison Suite** | Side-by-side analysis with visual diff highlighting, inline quantity steppers, and AJAX wishlist controls |
+| **Product Image Gallery** | Interactive multi-image views with thumbnail navigation and mobile-optimized touch-swipe support |
+| **Shopping Cart** | AJAX-powered cart with live state synchronization and toast notifications |
+| **Wishlist Management** | Per-user product saving with AJAX live updates and a dedicated management interface |
+| **Universal Star Ratings & Reviews** | Peer-review ecosystem with multi-layered duplicate prevention (IP/Session-based) and aggregated scores |
 
-- **Backend**: Django 6.0+
-- **Database**: SQLite (default)
-- **Testing**: Pytest, Pytest-Django, Pytest-Cov
-- **Frontend**: HTML, CSS, JavaScript (AJAX)
+### 📦 Orders & Inventory
+
+| Feature | Description |
+| --- | --- |
+| **One-Click Checkout** | Streamlined flow with profile-based pre-filling and secure status transitions |
+| **Order Lifecycle Management** | Customer tools for Order History, Detailed Trackers, "Buy Again" (cart restoration), and Cancellation/Return requests |
+| **Automated Order Notifications** | Event-driven HTML emails for Confirmation, Shipping, Delivery, and Returns |
+| **Inventory & Stock Management** | Real-time validation, automatic deduction on purchase, and intelligent restoration upon cancellation |
+| **Coupon Code Engine** | Rule-based promotional system with percentage/fixed discounts, usage limits, and PDF invoice integration |
+
+### 🔐 Payments & Security
+
+| Feature | Description |
+| --- | --- |
+| **Mock Payment Gateway** | End-to-end Razorpay (Test Mode) integration with HMAC-SHA256 signature verification and server-side finalization |
+| **Invoice Generation** | Professional PDF billing using headless Playwright for pixel-perfect, zero-dependency rendering |
+| **Comprehensive Error Handling** | Captures detailed context (code snippets, stack traces) for developers; clean UI for end users |
+| **Automated Activity Logging** | System-wide event tracking stored in daily audit logs for security oversight |
+
+### 📊 Admin & Analytics
+
+| Feature | Description |
+| --- | --- |
+| **Custom Site Administration** | Isolated dashboard with BI charts (Chart.js), sales forecasting (scikit-learn), and multi-format exports (.pdf, .xlsx) |
+| **Automated Testing Dashboard** | Full `pytest` suite with live terminal streaming and visual coverage reports in the admin panel |
+| **Brand Management** | Dedicated ecosystem for managing brands with full relationship mapping to products |
+| **Dynamic Currency Converter** | Site-wide reactive conversion using live exchange rates with a Two-Tier Caching strategy |
+
+### 👤 User & Platform
+
+| Feature | Description |
+| --- | --- |
+| **Centralized Profile Management** | Comprehensive dashboard for personal details, contact info, and multi-field shipping addresses |
+| **Contact & Support Suite** | Integrated Contact forms, FAQ, Help docs, and Legal policies (Privacy, Terms) |
+| **Product Pagination** | 3×4 grid layout with persistent filtering and sorting across all catalog views |
+| **Responsive Design** | Glassmorphism-inspired dark mode aesthetic |
+
+---
+
+## 🛠️ Tech Stack
+
+### ⚙️ Backend
+
+| Layer | Technology |
+| --- | --- |
+| Core Framework | [Django 6.0+](https://www.djangoproject.com/) |
+| Database (Dev) | SQLite3 |
+| Payment Gateway | [Razorpay SDK](https://razorpay.com/docs/) |
+| AI & Forecasting | [scikit-learn](https://scikit-learn.org/) + [NumPy](https://numpy.org/) |
+| Static File Serving | [WhiteNoise](https://whitenoise.readthedocs.io/) (with Brotli) |
+
+### 🎨 Frontend
+
+| Layer | Technology |
+| --- | --- |
+| Markup & Styling | HTML5, CSS3 (Glassmorphism), [Bootstrap 5](https://getbootstrap.com/) |
+| Interactivity | JavaScript (ES6+), AJAX (Fetch API), [jQuery](https://jquery.com/) |
+| Visualizations | [Chart.js](https://www.chartjs.org/) |
+
+### 📄 Reporting & Documents
+
+| Format | Library |
+| --- | --- |
+| PDF (Premium) | [Playwright](https://playwright.dev/) — headless browser rendering |
+| PDF (Legacy) | [ReportLab](https://www.reportlab.com/) + [PyPDF2](https://pypdf2.readthedocs.io/) |
+| Excel | [openpyxl](https://openpyxl.readthedocs.io/) |
+| Word | [python-docx](https://python-docx.readthedocs.io/) |
+
+### 🧪 Testing
+
+| Tool | Purpose |
+| --- | --- |
+| [pytest](https://docs.pytest.org/) + `pytest-django` | Test framework |
+| `pytest-cov` | Coverage reporting |
+| `factory-boy` + `faker` | Data factories |
+| `pytest-mock` | Mocking utilities |
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.10 or higher
-- pip (Python package installer)
+- Python 3.10+
+- Node.js (required for Playwright's headless browser engine)
+- Git
 
 ### Installation
 
-1. **Navigate to the project directory**:
+<details>
+<summary><strong>Step-by-step setup guide</strong></summary>
 
-   ```bash
-   cd e:\Sem-8\Maxgen\Django\electro
-   ```
+<br/>
 
-2. **Create and activate a virtual environment** (recommended):
+**1. Clone the repository**
 
-   ```bash
-   # Windows
-   python -m venv venv
-   venv\Scripts\activate
+```bash
+git clone https://github.com/TechieNaitik/electro.git
+cd electro
+```
 
-   # macOS/Linux
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+**2. Set up a virtual environment**
 
-3. **Install dependencies**:
+```bash
+python -m venv venv
 
-   ```bash
-   pip install -r requirements.txt
-   playwright install chromium
-   ```
+# Windows
+.\venv\Scripts\activate
 
-4. **Apply database migrations**:
+# macOS / Linux
+source venv/bin/activate
+```
 
-   ```bash
-   cd myproject
-   python manage.py migrate
-   ```
+**3. Install dependencies**
 
-5. **Run the development server**:
+```bash
+pip install -r requirements.txt
+playwright install chromium
+```
 
-   ```bash
-   python manage.py runserver
-   ```
+**4. Configure environment variables**
 
-   Open your browser and navigate to `http://127.0.0.1:8000/`.
+Create a `.env` file inside the `myproject/` directory:
 
-## Testing
+```env
+SECRET_KEY=your-secret-key-here
+RAZORPAY_KEY_ID=your-razorpay-key
+RAZORPAY_KEY_SECRET=your-razorpay-secret
+EMAIL_HOST_USER=your-email@example.com
+EMAIL_HOST_PASSWORD=your-email-password
+EXCHANGE_RATE_API_KEY=your-exchange-rate-api-key
+```
 
-This project uses **pytest** for automated testing and coverage reporting.
+> ⚠️ Never commit your `.env` file. It is already listed in `.gitignore`.
 
-1. **Run tests via Command Line**:
-   ```bash
-   # From the project root
-   pytest
-   ```
+**5. Initialize the database**
 
-2. **Run tests via Admin Panel**:
-   - Log in to the **Site Admin** dashboard (`/admin/login/`).
-   - Navigate to **"Pytest Reports"** in the sidebar.
-   - Click **"Run Tests"** to initiate the live streaming test engine and view the visual coverage report.
+```bash
+cd myproject
+python manage.py migrate
+python manage.py createsuperuser
+```
 
+**6. Start the development server**
+
+```bash
+python manage.py runserver
+```
+
+Visit `http://127.0.0.1:8000` to see the app running.
+
+</details>
+
+---
+
+## Administrative Setup
+
+To access the custom site-admin dashboard, you need a `SiteAdmin` profile linked to a Django User.
+
+**Method 1 — CLI (recommended for initial setup)**
+
+```bash
+python manage.py create_site_admin <username> <email> <password>
+```
+
+**Method 2 — Django Admin Panel (for team management)**
+
+1. Log in at `http://127.0.0.1:8000/django-admin/`
+2. Navigate to **Site Admins → Add Site Admin**
+3. Enter credentials — the system automatically creates the linked Django User and hashes the password
+
+---
 
 ## Project Structure
 
-- `myproject/`: Main Django project container.
-  - `manage.py`: Django's command-line utility.
-  - `myapp/`: Main application containing:
-    - `models.py`: Database models (e.g., Customer).
-    - `views.py`: Application logic and route handlers.
-    - `templates/`: HTML templates for the UI.
-  - `myproject/`: Project-level settings and configuration.
+<details>
+<summary><strong>View full directory tree</strong></summary>
+
+<br/>
+
+```text
+electro/
+├── LICENSE                    # MIT License
+├── README.md                  # Project documentation
+├── .gitignore                 # Git ignore rules
+├── pytest.ini                 # Pytest configuration
+├── requirements.txt           # Python dependencies
+└── myproject/                 # Django project root
+    ├── manage.py              # Management utility
+    ├── myproject/             # Project config (settings, urls, wsgi)
+    └── myapp/                 # Core application
+        ├── migrations/        # Database migration history
+        ├── management/        # Custom management commands
+        ├── services/          # Business logic: Coupon, Currency, AI Forecasting
+        ├── static/            # Public assets (CSS, JS, images)
+        ├── templates/         # HTML templates
+        ├── admin.py           # Django admin config
+        ├── apps.py            # App configuration
+        ├── models.py          # Database models
+        ├── urls.py            # URL routing
+        └── views.py           # Views and business logic
+```
+
+</details>
+
+---
+
+## Testing
+
+**From the terminal:**
+
+```bash
+pytest
+```
+
+Runs the full unit and integration test suite from the project root.
+
+**From the admin dashboard:**
+
+The built-in **Pytest Reports** view streams live test results and renders visual coverage maps — no terminal needed.
+
+---
+
+## Security Architecture
+
+- **Client/Server separation** — Strict boundary between public assets (CSS/JS) and private business logic (Python/Django)
+- **Secrets management** — All credentials externalized to `.env`; never exposed in `static/` or JavaScript
+- **CSRF & session security** — Full Django middleware stack: CSRF protection, XSS filtering, signed sessions
+- **Secure file serving** — Sensitive media and admin logs served via authenticated Django views, not raw static paths
+
+---
+
+## Preview
+
+### 🏠 Storefront & Discovery
+
+![Home Page Carousel](screenshots/Home_Carousel.png)
+*Modern Landing Page with Interactive Carousel*
+
+![Top Selling Products](screenshots/Home_TopSelling.png)
+*Dynamic "Top Selling" and "Featured" Product Tabs*
+
+![Shop Page](screenshots/Shop.png)
+*Advanced Product Catalog with Multi-Category Filtering*
+
+### 🛍️ Shopping Experience
+
+![Compare Products](screenshots/Compare%20Products.png)
+*Side-by-side Product Comparison with Difference Highlighting*
+
+![Shopping Cart](screenshots/Cart.png)
+*AJAX-powered Shopping Cart with Live Quantity Updates*
+
+### 💳 Checkout & Billing
+
+![Checkout Interface 1](screenshots/Checkout_1.png)
+![Checkout Interface 2](screenshots/Checkout_2.png)
+*Streamlined Two-Step Checkout with Profile Autocomplete*
+
+![PDF Invoice](screenshots/PDF_Invoice.png)
+*Pixel-perfect PDF Invoices rendered via Playwright*
+
+![Email Notifications](screenshots/Email_Invoice.png)
+*Event-driven HTML Emails for Order Confirmation*
+
+### 📊 Admin Intelligence & Analytics
+
+![Analytical Dashboard 1](screenshots/Analytical%20Dashboard_1.png)
+![Analytical Dashboard 2](screenshots/Analytical%20Dashboard_2.png)
+*Custom Admin Portal with BI Charts (chart.js) and AI Sales Forecasting (scikit-learn)*
+
+---
+
+## Contributing
+
+Contributions are welcome. To get started:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m 'Add your feature'`
+4. Push to the branch: `git push origin feature/your-feature`
+5. Open a Pull Request
+
+Please ensure all new features are covered by tests and that `pytest` passes before submitting.
+
+---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+---
+
+
+<div align="center">
+
+Built with Django · Styled with glassmorphism · Powered by Python
+
+</div>

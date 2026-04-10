@@ -899,9 +899,9 @@ def single(request, pid):
         'has_variants': has_variants,
         'attribute_groups': attribute_groups,
         'base_gallery_json': json.dumps([
-            {'url': product.image.url, 'alt': product.full_name}
+            {'url': product.featured_image_url, 'alt': product.full_name}
         ] + [
-            {'url': img.image.url, 'alt': ''} for img in product.images.all()
+            {'url': img.image_url, 'alt': ''} for img in product.images.all()
         ]),
         'variants_json': json.dumps([
             {
@@ -917,7 +917,7 @@ def single(request, pid):
                 'attribute_ids': [
                     va.attribute_value.id for va in v.variantattribute_set.all()
                 ],
-                'featured_image': v.primary_image.image.url if v.primary_image else product.image.url,
+                'featured_image': v.primary_image.image_url if v.primary_image else product.featured_image_url,
             }
             for v in variants
         ])

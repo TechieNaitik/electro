@@ -56,7 +56,7 @@
                         <th id="comp-header-{{ product.id }}">
                             <div class="compare-header-product">
                                 <a href="{% url 'single' product.id %}">
-                                    <img src="{{ product.image.url }}" alt="{{ product.full_name }}" class="img-fluid rounded">
+                                    <img src="{{ product.featured_image_url }}" alt="{{ product.full_name }}" class="img-fluid rounded">
                                 </a>
                                 <h6 class="mt-2">{{ product.full_name }}</h6>
                                 <button class="btn btn-sm btn-link compare-remove-btn" data-product-id="{{ product.id }}">

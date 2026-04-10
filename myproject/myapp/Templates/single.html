@@ -60,7 +60,7 @@
                     <div class="d-flex align-items-center border rounded mb-3 overflow-hidden"
                         style="min-height: 90px;">
                         <div class="flex-shrink-0 bg-light border-end" style="width: 90px; height: 90px;">
-                            <img src="{{ rp.image.url }}" class="img-fluid w-100 h-100" style="object-fit: cover;"
+                            <img src="{{ rp.featured_image_url }}" class="img-fluid w-100 h-100" style="object-fit: cover;"
                                 alt="{{ rp.full_name }}">
                         </div>
                         <div class="px-3 py-2 flex-grow-1">
@@ -83,7 +83,7 @@
                     <div class="col-xl-6">
                         <div class="product-gallery">
                             <div class="primary-image-container mb-3 bg-light rounded overflow-hidden">
-                                <img id="main-product-image" src="{{ product.image.url }}" class="img-fluid w-100"
+                                <img id="main-product-image" src="{{ product.featured_image_url }}" class="img-fluid w-100"
                                     alt="{{ product.full_name }}" style="transition: opacity 0.3s ease; height: 100%; object-fit: contain;">
                             </div>
                             {% if product.all_images|length > 1 %}
@@ -239,7 +239,7 @@
                                 class="btn border border-secondary rounded-pill px-4 py-2 mb-4 ms-2 compare-toggle-btn"
                                 data-product-id="{{ product.id }}"
                                 data-product-name="{{ product.full_name }}"
-                                data-product-image="{{ product.image.url }}">
+                                data-product-image="{{ product.featured_image_url }}">
                                 <i class="fas fa-balance-scale me-1"></i>
                                 <span>Compare</span>
                             </a>

@@ -128,6 +128,7 @@ cover/
 
 # Documentation
 Docs/
+Poster/
 logs/
 docs/_build/
 /site
@@ -151,6 +152,8 @@ cython_debug/
 
 # Project Specific Exclusions
 reset_db.py
+fix_views*.py
+test_out.txt
 
 # Ignore local product/ui images (re-generated during setup)
 myproject/myapp/static/img/

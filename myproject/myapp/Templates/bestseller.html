@@ -33,7 +33,7 @@
                     <div class="row g-0">
                         <div class="col-5">
                             <div class="products-mini-img border-end h-100">
-                                <img src="{{ product.image.url }}" class="img-fluid w-100 h-100" alt="Image">
+                                <img src="{{ product.featured_image_url }}" class="img-fluid w-100 h-100" alt="Image">
                                 <div class="products-mini-icon rounded-circle bg-primary">
                                     <a href="{% url 'single' product.id %}"><i
                                             class="fa fa-eye fa-1x text-white"></i></a>
@@ -80,7 +80,7 @@
             </div>
             {% endfor %}
             
-            {% include "partials/pagination.html" with page_obj=products %}
+            {% include "pagination.html" with page_obj=products %}
         </div>
     </div>
 </div>
@@ -101,7 +101,7 @@
                     <div class="row g-0">
                         <div class="col-5">
                             <div class="products-mini-img border-end h-100">
-                                <img src="{{ product.image.url }}" class="img-fluid w-100 h-100" alt="Image">
+                                <img src="{{ product.featured_image_url }}" class="img-fluid w-100 h-100" alt="Image">
                                 <div class="products-mini-icon rounded-circle bg-primary">
                                     <a href="{% url 'single' product.id %}"><i
                                             class="fa fa-eye fa-1x text-white"></i></a>
