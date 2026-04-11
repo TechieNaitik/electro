@@ -16,7 +16,6 @@ async function runPytest() {
         return;
     }
 
-    const progress = document.getElementById('testProgress');
     const iframe = document.getElementById('reportIframe');
     const container = document.getElementById('reportContainer');
     const placeholder = document.getElementById('reportPlaceholder');
@@ -27,13 +26,12 @@ async function runPytest() {
     // UI Setup
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Testing...';
-    progress.style.display = 'flex';
 
     // Hide Report & Show Terminal
     if (container) container.classList.remove('visible');
     if (placeholder) placeholder.classList.remove('visible');
     terminalContainer.style.display = 'block';
-    terminalText.textContent = '> Initializing Pytest Engine...\n';
+    terminalText.innerHTML = '<span style="color:var(--accent-light)">> Initializing Pytest Engine...</span><br>';
     terminalStatus.textContent = 'RUNNING';
     terminalStatus.style.color = 'var(--accent-light)';
 
@@ -48,7 +46,8 @@ async function runPytest() {
             if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            terminalText.textContent += chunk;
+            // Convert ANSI to HTML for colors
+            terminalText.innerHTML += ansiToHtml(chunk);
 
             // Auto scroll
             terminalText.parentElement.scrollTop = terminalText.parentElement.scrollHeight;
@@ -60,27 +59,40 @@ async function runPytest() {
         // Final UI cleanup
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-play" style="margin-right:5px;"></i> Run Tests';
-        progress.style.display = 'none';
-
-        // Refresh Iframe & Show after a short delay
+        
+        // Finalize: Show finished state but keep terminal visible.
+        // User requested: Don't open coverage report by default.
         setTimeout(() => {
-            terminalContainer.style.display = 'none';
-            if (container) {
-                container.classList.add('visible');
-                const timestamp = new Date().getTime();
-                iframe.src = config.reportBaseUrl + '?t=' + timestamp;
-            }
+            console.log("Test execution finished. Terminal remains visible.");
         }, 300);
-
-
-
 
     } catch (error) {
         console.error("Stream Error:", error);
-        terminalText.textContent += "\n[ERROR] Connection lost or server error.\n";
+        terminalText.innerHTML += "\n<span style='color:var(--danger)'>[ERROR] Connection lost or server error.</span>\n";
         terminalStatus.textContent = 'ERROR';
         terminalStatus.style.color = 'var(--danger)';
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-play" style="margin-right:5px;"></i> Run Tests';
     }
+}
+
+// Simple ANSI to HTML converter for Terminal Colors
+function ansiToHtml(text) {
+    if (!text) return "";
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\u001b\[31m/g, '<span style="color:#ff5555">') // Red
+        .replace(/\u001b\[32m/g, '<span style="color:#50fa7b">') // Green
+        .replace(/\u001b\[33m/g, '<span style="color:#f1fa8c">') // Yellow
+        .replace(/\u001b\[34m/g, '<span style="color:#8be9fd">') // Cyan (Blue-ish)
+        .replace(/\u001b\[35m/g, '<span style="color:#ff79c6">') // Magenta
+        .replace(/\u001b\[36m/g, '<span style="color:#8be9fd">') // Cyan
+        .replace(/\u001b\[0;31;40m/g, '<span style="color:#ff5555">') // Red variant
+        .replace(/\u001b\[0;32;40m/g, '<span style="color:#50fa7b">') // Green variant
+        .replace(/\u001b\[1m/g, '<b>')                          // Bold
+        .replace(/\u001b\[0m/g, '</span></b>')                  // reset
+        .replace(/\r\n/g, '<br>')
+        .replace(/\n/g, '<br>');
 }

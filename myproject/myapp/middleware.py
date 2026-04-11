@@ -58,8 +58,9 @@ class ErrorHandlingMiddleware:
         
         stack_trace = traceback.format_exc()
         
+        exc_name = exc_type.__name__ if exc_type else "Exception"
         # Log server-side in all environments (as requested)
-        logger.error(f"Unhandled Exception ({exc_type.__name__}): {exception}\nPath: {request.path}\n{stack_trace}")
+        logger.error(f"Unhandled Exception ({exc_name}): {exception}\nPath: {request.path}\n{stack_trace}")
 
         context = {
             'error_type': exc_type.__name__ if exc_type else "Error",

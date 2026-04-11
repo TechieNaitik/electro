@@ -356,8 +356,8 @@ def admin_dashboard(request):
 @site_admin_required
 def admin_pytest_reports(request):
     import os
-    # Coverage report path relative to root
-    report_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'htmlcov', 'index.html')
+    from django.conf import settings
+    report_path = os.path.join(str(settings.BASE_DIR.parent), 'htmlcov', 'index.html')
     exists = os.path.exists(report_path)
     
     context = {
@@ -376,7 +376,9 @@ def run_pytest_api(request):
         
     try:
         # Get project root (parent of myproject/)
-        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # Using settings.BASE_DIR is more reliable
+        from django.conf import settings
+        root_dir = str(settings.BASE_DIR.parent)
         
         # Run pytest. 
         # We use --cov-report=html to ensure the report is updated.
@@ -415,7 +417,8 @@ def stream_pytest_api(request):
     import sys
 
     # Get project root (parent of myproject/)
-    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    from django.conf import settings
+    root_dir = str(settings.BASE_DIR.parent)
 
     def stream_output():
         # Set PYTHONUNBUFFERED to see output in real time
@@ -423,7 +426,7 @@ def stream_pytest_api(request):
         env['PYTHONUNBUFFERED'] = '1'
         
         process = subprocess.Popen(
-            ['pytest', '-v', '--color=no'],
+            ['pytest', '-v', '--color=yes'],
             cwd=root_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -432,19 +435,26 @@ def stream_pytest_api(request):
             env=env
         )
 
+        # Capture output for split reporting
+        all_output = []
         for line in process.stdout:
+            all_output.append(line)
             yield line
 
         process.wait()
+        
+        # Update dynamic reports (Success, Failure, etc.)
+        try:
+            update_split_reports("".join(all_output), root_dir)
+        except Exception as e:
+            yield f"\n[Warning] Could not update split reports: {str(e)}\n"
+            
         yield "\n--- FINISHED ---"
 
     response = StreamingHttpResponse(stream_output(), content_type='text/plain')
     response['X-Accel-Buffering'] = 'no'
     return response
-
-
-
-
+    
 @site_admin_required
 def admin_analytical_dashboard(request):
     """
@@ -792,3 +802,181 @@ def admin_variant_delete(request, variant_id):
         messages.success(request, f"Variant {sku} deleted.")
         return redirect('custom_admin:variants')
     return render(request, 'custom_admin/delete_confirm.html', {'item': variant, 'type': 'variant', 'active_page': 'variants'})
+
+def update_split_reports(output, root_dir):
+    """
+    Parses pytest -v output and generates passed_tests.html, failed_tests.html, etc.
+    in the htmlcov directory.
+    """
+    import os
+    import re
+
+    report_dir = os.path.join(root_dir, 'htmlcov')
+    if not os.path.exists(report_dir):
+        os.makedirs(report_dir)
+
+    passed = []
+    failed = []
+    warnings = []
+    
+    # Track items to avoid duplicates
+    seen_passed = set()
+    seen_failed = set()
+
+    lines = output.splitlines()
+    
+    # 1. Parse individual test results (PASSED, FAILED, etc.)
+    for line in lines:
+        clean_line = re.sub(r'\x1b\[[0-9;]*m', '', line)
+        
+        # Match pattern: path/to/test.py::test_name STATUS [PROGRESS%]
+        # Example: myproject/myapp/tests/test_views.py::test_index PASSED [ 5%]
+        match = re.search(r'^(.*?)\s+(PASSED|FAILED|ERROR|SKIPPED|XPASS|XFAIL)', clean_line)
+        if match:
+            test_id = match.group(1).split(' [')[0].strip()
+            status = match.group(2)
+            
+            # Extract duration if present (usually at end of line if -v -v or similar)
+            duration = "N/A"
+            dur_match = re.search(r'in\s+([\d\.]+s)', clean_line)
+            if dur_match:
+                duration = dur_match.group(1)
+            
+            item = {'name': test_id, 'duration': duration}
+            
+            if status == 'PASSED':
+                if test_id not in seen_passed:
+                    passed.append(item)
+                    seen_passed.add(test_id)
+            elif status in ('FAILED', 'ERROR'):
+                if test_id not in seen_failed:
+                    failed.append(item)
+                    seen_failed.add(test_id)
+        
+    # 2. Parse Warnings (usually in summary section)
+    in_warnings_summary = False
+    for line in lines:
+        clean_line = re.sub(r'\x1b\[[0-9;]*m', '', line)
+        if 'warnings summary' in clean_line.lower():
+            in_warnings_summary = True
+            continue
+        if in_warnings_summary and (clean_line.startswith('===') or clean_line.startswith('---')):
+            in_warnings_summary = False
+            continue
+            
+        if in_warnings_summary:
+            # Look for lines that look like test IDs
+            if '::' in clean_line and not clean_line.startswith(' '):
+                test_id = clean_line.strip()
+                if test_id not in [w['name'] for w in warnings]:
+                    warnings.append({'name': test_id, 'duration': 'Warning'})
+
+    def generate_html(title, items, filename, color):
+        html_content = f"""
+        <html>
+        <head>
+            <title>{title}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Code&display=swap" rel="stylesheet">
+            <style>
+                body {{ 
+                    font-family: 'Inter', sans-serif; 
+                    padding: 40px; 
+                    background: #0f172a; 
+                    color: #f1f5f9; 
+                    line-height: 1.6; 
+                    margin: 0;
+                }}
+                .container {{
+                    max-width: 1200px;
+                    margin: 0 auto;
+                }}
+                h1 {{ 
+                    color: {color}; 
+                    border-bottom: 2px solid {color}44; 
+                    padding-bottom: 16px; 
+                    margin-bottom: 40px; 
+                    font-weight: 600; 
+                    font-size: 2.5rem;
+                }}
+                .test-list {{
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                }}
+                .test-item {{ 
+                    background: #1e293b; 
+                    padding: 24px; 
+                    border-radius: 16px; 
+                    border-left: 6px solid {color}; 
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
+                    transition: all 0.2s ease;
+                }}
+                .test-item:hover {{ 
+                    transform: translateY(-2px);
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+                }}
+                .test-header {{
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 0;
+                    gap: 20px;
+                }}
+                .test-name {{ 
+                    font-weight: 500; 
+                    font-family: 'Fira Code', monospace; 
+                    font-size: 0.95rem; 
+                    color: #e2e8f0; 
+                    word-break: break-all; 
+                    flex: 1;
+                }}
+                .test-duration {{ 
+                    font-size: 0.85rem; 
+                    color: #94a3b8; 
+                    font-weight: 600; 
+                    background: #334155; 
+                    padding: 4px 12px; 
+                    border-radius: 9999px;
+                    white-space: nowrap;
+                }}
+                .no-items {{ 
+                    font-style: italic; 
+                    color: #94a3b8; 
+                    text-align: center; 
+                    padding: 80px; 
+                    background: #1e293b; 
+                    border-radius: 16px;
+                    font-size: 1.1rem;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>{title} ({len(items)})</h1>
+                <div class="test-list">
+        """
+        if not items:
+            html_content += f'<p class="no-items">No test cases found in this category.</p>'
+        else:
+            for item in items:
+                html_content += f"""
+                <div class="test-item">
+                    <div class="test-header">
+                        <span class="test-name">{item['name']}</span>
+                        <span class="test-duration">{item['duration']}</span>
+                    </div>
+                </div>
+                """
+        
+        html_content += """
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        with open(os.path.join(report_dir, filename), 'w', encoding='utf-8') as f:
+            f.write(html_content)
+
+    generate_html("Passed Test Cases Report", passed, "passed_tests.html", "#4ade80")
+    generate_html("Failed Test Cases Report", failed, "failed_tests.html", "#f87171")
+    generate_html("Warning Test Cases Report", warnings, "warnings_tests.html", "#fbbf24")

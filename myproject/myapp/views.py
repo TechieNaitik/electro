@@ -462,24 +462,56 @@ def help(request):
     return render(request, 'help.html', context)
 
 def home(request):
+    from django.db.models import Sum
     all_products = Product.objects.all().select_related('brand', 'category_id').order_by('-id')
+    featured_products_all = Product.objects.filter(is_featured=True).select_related('brand', 'category_id')
+    new_arrivals = Product.objects.all().select_related('brand', 'category_id').order_by('-id')[:8]
+    featured_tab = featured_products_all[:8]
+    top_selling = Product.objects.annotate(total_sold=Sum('orderitem__quantity')).order_by('-total_sold')[:8]
+    
+    # Prioritize iPhone for special offer
+    special_offer = Product.objects.filter(model_name__icontains='iPhone').order_by('?').first()
+    if not special_offer:
+        special_offer = featured_products_all.order_by('?').first()
+
     page_obj = get_paginated_data(request, all_products)
     
     context = {
         'categories': Category.objects.all(),
         'products': page_obj,
         'all_products': all_products,
+        'featured_products': featured_products_all[:5], # For carousel
+        'special_offer': special_offer,
+        'new_arrivals': new_arrivals,
+        'featured_tab': featured_tab,
+        'top_selling': top_selling,
     }
     return render(request, 'index.html', context)
 
 def index(request):
+    from django.db.models import Sum
     all_products = Product.objects.all().select_related('brand', 'category_id').order_by('-id')
+    featured_products_all = Product.objects.filter(is_featured=True).select_related('brand', 'category_id')
+    new_arrivals = Product.objects.all().select_related('brand', 'category_id').order_by('-id')[:8]
+    featured_tab = featured_products_all[:8]
+    top_selling = Product.objects.annotate(total_sold=Sum('orderitem__quantity')).order_by('-total_sold')[:8]
+    
+    # Prioritize iPhone for special offer
+    special_offer = Product.objects.filter(model_name__icontains='iPhone').order_by('?').first()
+    if not special_offer:
+        special_offer = featured_products_all.order_by('?').first()
+
     page_obj = get_paginated_data(request, all_products)
     
     context = {
         'categories': Category.objects.all(),
         'products': page_obj,
         'all_products': all_products,
+        'featured_products': featured_products_all[:5], # For carousel
+        'special_offer': special_offer,
+        'new_arrivals': new_arrivals,
+        'featured_tab': featured_tab,
+        'top_selling': top_selling,
     }
     return render(request, 'index.html', context)
 
@@ -755,6 +787,18 @@ def return_order(request, oid):
         messages.error(request, "This order is not eligible for return.")
         
     return redirect('order_detail', oid=oid)
+
+def returns(request):
+    context = {
+        'categories': Category.objects.all(),
+    }
+    return render(request, 'returns.html', context)
+
+def warranty(request):
+    context = {
+        'categories': Category.objects.all(),
+    }
+    return render(request, 'warranty.html', context)
 
 def shop(request, cid=0):
     from django.db.models import Q, Count

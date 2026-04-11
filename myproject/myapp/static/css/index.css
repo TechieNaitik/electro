@@ -164,3 +164,26 @@
 .cursor-pointer {
   cursor: pointer;
 }
+
+/* Carousel Image Styling */
+.carousel-product-image {
+  height: 450px;
+  object-fit: contain;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.3s ease;
+}
+
+.header-carousel-item:hover .carousel-product-image {
+  transform: scale(1.02);
+}
+
+.carousel-content h1 {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.carousel-banner-content h4 {
+  font-weight: 600;
+}

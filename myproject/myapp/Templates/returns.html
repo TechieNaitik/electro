@@ -1,0 +1,42 @@
+{% extends 'index.html' %}
+{% block title %}Return Policy{% endblock %}
+{% load static %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Return Policy</h1>
+    <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+        <li class="breadcrumb-item active text-white">Return Policy</li>
+    </ol>
+</div>
+
+<!-- Returns Content -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row g-5">
+            <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="bg-light rounded p-5">
+                    <h2 class="text-primary fw-bold mb-4">Hassle-Free Returns</h2>
+                    <p class="mb-4">At Electro, we want you to be completely satisfied with your purchase. If for any reason you are not happy with your electronics, we're here to help.</p>
+                    
+                    <h5 class="fw-bold"><i class="fas fa-calendar-check text-primary me-2"></i> 30-Day Return Window</h5>
+                    <p class="mb-4">You have 30 calendar days to return an item from the date you received it. To be eligible for a return, your item must be unused and in the same condition that you received it.</p>
+                    
+                    <h5 class="fw-bold"><i class="fas fa-box text-primary me-2"></i> Original Packaging</h5>
+                    <p class="mb-4">Your item must be in the original packaging. This includes all manuals, cables, and accessories that were included in the box.</p>
+                    
+                    <h5 class="fw-bold"><i class="fas fa-file-invoice-dollar text-primary me-2"></i> Proof of Purchase</h5>
+                    <p class="mb-4">Your item needs to have the receipt or proof of purchase (Order ID) from our store.</p>
+                    
+                    <h5 class="fw-bold"><i class="fas fa-hand-holding-usd text-primary me-2"></i> Refund Process</h5>
+                    <p class="mb-4">Once we receive your item, we will inspect it and notify you that we have received your returned item. We will immediately notify you on the status of your refund after inspecting the item. If your return is approved, we will initiate a refund to your original method of payment.</p>
+                    
+                    <a href="{% url 'contact' %}" class="btn btn-primary rounded-pill py-3 px-5 mt-3">Contact Support for Return</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

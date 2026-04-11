@@ -1,9 +1,9 @@
 import pytest
 import sys
+import tempfile
+import shutil
 from unittest.mock import patch
 from django.conf import settings
-
-
 from django.contrib.auth.models import User
 from myapp.models import Category, Brand, Product, Customer, Cart, Order, OrderItem, Wishlist, ProductReview
 import factory
@@ -24,12 +24,16 @@ def use_dummy_staticfiles(settings):
     settings.WHITENOISE_MANIFEST_STRICT = False
 
 @pytest.fixture(autouse=True)
+def media_storage(settings):
+    temp_media = tempfile.mkdtemp()
+    settings.MEDIA_ROOT = temp_media
+    yield
+    shutil.rmtree(temp_media, ignore_errors=True)
+
+@pytest.fixture(autouse=True)
 def mock_background_tasks():
     with patch('threading.Thread'), patch('myapp.email_utils.send_order_email'):
         yield
-
-
-
 
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:

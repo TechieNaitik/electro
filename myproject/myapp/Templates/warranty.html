@@ -1,0 +1,61 @@
+{% extends 'index.html' %}
+{% block title %}Warranty Information{% endblock %}
+{% load static %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Warranty Information</h1>
+    <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+        <li class="breadcrumb-item active text-white">Warranty</li>
+    </ol>
+</div>
+
+<!-- Warranty Content -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row g-5">
+            <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="bg-light rounded p-5">
+                    <h2 class="text-primary fw-bold mb-4">Manufacturer & Store Warranty</h2>
+                    <p class="mb-4">We stand behind the quality of every tech product we sell. Most products on Electro come with both a Manufacturer Warranty and our own Store Guarantee.</p>
+                    
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="bg-white p-4 rounded shadow-sm border-start border-primary border-5">
+                                <h5 class="fw-bold"><i class="fas fa-microchip text-primary me-2"></i> Standard Hardware Warranty</h5>
+                                <p class="mb-0">Most electronics include a 1-year limited warranty covering defects in materials and workmanship under normal use.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-white p-4 rounded shadow-sm border-start border-primary border-5">
+                                <h5 class="fw-bold"><i class="fas fa-shield-alt text-primary me-2"></i> Electro Plus Plan</h5>
+                                <p class="mb-0">Optional extended coverage is available for up to 3 years, including accidental damage protection for screens and water damage.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="fw-bold mb-3">What is Covered?</h5>
+                    <ul class="mb-4">
+                        <li>Technical malfunctions (e.g., battery failure, screen flickering).</li>
+                        <li>Hardware defects present at the time of purchase.</li>
+                        <li>Internal circuit failures.</li>
+                    </ul>
+                    
+                    <h5 class="fw-bold mb-3">What is NOT Covered?</h5>
+                    <ul class="mb-4">
+                        <li>Cosmetic damage (scratches, dents) caused by regular use.</li>
+                        <li>Unauthorized repairs or modifications.</li>
+                        <li>Loss or theft of the device.</li>
+                    </ul>
+                    
+                    <div class="alert alert-info border-0 shadow-sm rounded-pill px-4">
+                        <i class="fas fa-info-circle me-2"></i> <strong>Pro Tip:</strong> Register your device within 14 days of purchase to activate full manufacturer benefits.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

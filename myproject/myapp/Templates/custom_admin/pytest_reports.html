@@ -15,12 +15,18 @@
                     data-csrf-token="{{ csrf_token }}">
                 <i class="fas fa-play" style="margin-right:5px;"></i> Run Tests
             </button>
-            <div id="testProgress" class="progress-indicator" style="display:none; color:var(--accent-light); font-size:0.8rem; font-weight:600;">
-                <div class="spinner-sm"></div> Running Suite...
-            </div>
             {% if report_exists %}
             <a href="{% static 'pytest_reports/index.html' %}" target="_blank" class="btn btn-primary btn-sm">
-                <i class="fas fa-external-link-alt"></i> Open Full Report
+                <i class="fas fa-external-link-alt"></i> Open Coverage Report
+            </a>
+            <a href="{% static 'pytest_reports/passed_tests.html' %}" target="_blank" class="btn btn-sm" style="background: #27ae60; color: white;">
+                <i class="fas fa-check-circle"></i> Success Cases Report
+            </a>
+            <a href="{% static 'pytest_reports/failed_tests.html' %}" target="_blank" class="btn btn-sm" style="background: #e74c3c; color: white;">
+                <i class="fas fa-times-circle"></i> Failed Cases Report
+            </a>
+            <a href="{% static 'pytest_reports/warnings_tests.html' %}" target="_blank" class="btn btn-sm" style="background: #f39c12; color: white;">
+                <i class="fas fa-exclamation-triangle"></i> Warnings Cases Report
             </a>
             {% endif %}
         </div>
@@ -32,8 +38,8 @@
                 <span style="color:#fff; font-size:0.8rem; font-family:monospace;"><i class="fas fa-terminal" style="margin-right:8px;"></i>pytest-stream</span>
                 <span id="terminalStatus" style="color:var(--accent-light); font-size:0.75rem; font-weight:600;">ACTIVE</span>
             </div>
-            <div class="terminal-body" style="background:#000; color:#0f0; padding:20px; border-radius:0 0 8px 8px; font-family:monospace; font-size:0.85rem; height:500px; overflow-y:auto; line-height:1.5; border:1px solid #333;">
-                <pre id="liveTerminalText" style="margin:0; white-space:pre-wrap; word-wrap:break-word;"></pre>
+            <div class="terminal-body" style="background:#000; color:#ddd; padding:20px; border-radius:0 0 8px 8px; font-family:'Menlo', 'Monaco', 'Courier New', monospace; font-size:0.85rem; height:500px; overflow-y:auto; line-height:1.6; border:1px solid #333;">
+                <div id="liveTerminalText" style="margin:0;"></div>
             </div>
         </div>
 
@@ -57,4 +63,3 @@
 
 <script src="{% static 'js/custom_admin_pytest_reports.js' %}"></script>
 {% endblock %}
-

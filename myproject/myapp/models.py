@@ -60,6 +60,7 @@ class Product(models.Model):
     price       = models.IntegerField()
     stock_quantity = models.PositiveIntegerField(default=50)
     reorder_threshold = models.PositiveIntegerField(default=10) # For KPI alerts
+    is_featured = models.BooleanField(default=False)
 
     @property
     def rating(self):
@@ -113,7 +114,10 @@ class Product(models.Model):
             return ""
 
     def __str__(self):
-        return self.full_name
+        parts = [self.full_name]
+        if self.variant_specs:
+            parts.append(self.variant_specs)
+        return " ".join(parts).strip()
 
 class ProductView(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='views')
@@ -127,8 +131,7 @@ class ProductView(models.Model):
 class Cart(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     product  = models.ForeignKey(Product, on_delete=models.CASCADE)
-    variant  = models.ForeignKey('ProductVariant', null=True, blank=True,
-                                  on_delete=models.SET_NULL)   # Phase 1: nullable
+    variant  = models.ForeignKey('ProductVariant', null=True, blank=True, on_delete=models.SET_NULL)   # Phase 1: nullable
     quantity = models.PositiveIntegerField(default=1)
 
     def total_price(self):
@@ -210,7 +213,18 @@ class Wishlist(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('customer', 'product', 'variant')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['customer', 'product'], 
+                condition=models.Q(variant__isnull=True),
+                name='unique_customer_product_no_variant'
+            ),
+            models.UniqueConstraint(
+                fields=['customer', 'product', 'variant'], 
+                condition=models.Q(variant__isnull=False),
+                name='unique_customer_product_variant'
+            )
+        ]
 
     def __str__(self):
         variant_label = f" [{self.variant.sku}]" if self.variant else ""
