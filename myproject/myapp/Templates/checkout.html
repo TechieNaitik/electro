@@ -78,7 +78,7 @@
                                         {{ item.product.full_name }}
                                     </th>
                                     <td class="py-4">{{ item.product.category_id.name }}</td>
-                                    <td class="py-4 price-display" data-base-price="{{ item.product.price }}">₹{{ item.product.price }}</td>
+                                    <td class="py-4 price-display" data-base-price="{{ item.unit_price }}">₹{{ item.unit_price }}</td>
                                     <td class="py-4 text-center">{{ item.quantity }}</td>
                                     <td class="py-4 price-display" data-base-price="{{ item.total_price }}">₹{{ item.total_price }}</td>
                                 </tr>

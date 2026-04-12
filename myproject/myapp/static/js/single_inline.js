@@ -18,42 +18,81 @@
     const variantSkuValue     = document.getElementById('variant-sku-value');
 
     // ── Gallery swap with crossfade ───────────────────────────────────────────
-    function swapGallery(images) {
-        if (!images || !images.length) return;
-        mainImg.classList.add('img-crossfade-out');
-        setTimeout(() => {
-            mainImg.src = images[0].url;
-            mainImg.alt = images[0].alt || '';
-            mainImg.classList.remove('img-crossfade-out');
-        }, 300);
-
+    // ── Gallery Highlighting logic ───────────────────────────────────────────
+    function highlightGallery(avIds) {
         if (!thumbStrip) return;
-        thumbStrip.innerHTML = '';
-        images.forEach((img, idx) => {
-            const div = document.createElement('div');
-            div.className = 'thumbnail-item border rounded bg-light cursor-pointer' + (idx === 0 ? ' active' : '');
-            div.style.cssText = 'min-width:80px;width:80px;height:80px;overflow:hidden;';
-            div.innerHTML = `<img src="${img.url}" class="img-fluid w-100 h-100" style="object-fit:cover;" alt="${img.alt || 'thumbnail'}" loading="lazy">`;
-            
+        const thumbnails = thumbStrip.querySelectorAll('.thumbnail-item');
+        if (!thumbnails.length) return;
+
+        // If no attributes selected, reset all to semi-neutral
+        if (!avIds || !avIds.length) {
+            thumbnails.forEach(t => {
+                t.classList.remove('dimmed', 'highlighted');
+            });
+            return;
+        }
+
+        let firstMatch = null;
+
+        thumbnails.forEach(t => {
+            const tAvId = t.dataset.avId;
+            // Highlight if it's a general image (no av_id) OR if it matches any selected avId
+            const isGeneral = !tAvId;
+            const isMatch   = avIds.includes(parseInt(tAvId));
+
+            if (isMatch) {
+                t.classList.add('highlighted');
+                t.classList.remove('dimmed');
+                if (!firstMatch) firstMatch = t;
+            } else if (isGeneral) {
+                t.classList.remove('dimmed', 'highlighted');
+            } else {
+                t.classList.add('dimmed');
+                t.classList.remove('highlighted');
+            }
+        });
+
+        // Smooth scroll to the first match if it exists
+        if (firstMatch) {
+            firstMatch.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            // Also trigger main image update to the first highlighted image
+            const imgUrl = firstMatch.dataset.thumbUrl;
+            if (imgUrl && mainImg.src !== imgUrl) {
+                mainImg.classList.add('img-crossfade-out');
+                setTimeout(() => {
+                    mainImg.src = imgUrl;
+                    mainImg.classList.remove('img-crossfade-out');
+                }, 300);
+                
+                thumbnails.forEach(th => th.classList.remove('active'));
+                firstMatch.classList.add('active');
+            }
+        }
+    }
+
+    // Initialize the existing thumbnails with click handlers (since we no longer clear the strip)
+    if (thumbStrip) {
+        thumbStrip.querySelectorAll('.thumbnail-item').forEach(div => {
             div.addEventListener('click', () => {
+                const imgUrl = div.dataset.thumbUrl;
                 thumbStrip.querySelectorAll('.thumbnail-item').forEach(t => t.classList.remove('active'));
                 div.classList.add('active');
+                
                 mainImg.classList.add('img-crossfade-out');
-                setTimeout(() => { mainImg.src = img.url; mainImg.classList.remove('img-crossfade-out'); }, 300);
+                setTimeout(() => { 
+                    mainImg.src = imgUrl; 
+                    mainImg.classList.remove('img-crossfade-out'); 
+                }, 300);
 
-                // CONNECTION: If this thumbnail belongs to a variant, select its attributes
-                const matchingV = ALL_VARIANTS.find(v => v.featured_image === img.url);
-                if (matchingV) {
-                    matchingV.attribute_ids.forEach(avId => {
-                        const el = document.querySelector(`[data-av-id="${avId}"]`);
-                        if (el && !el.classList.contains('active')) {
-                            // Only click if it's a "Color" attribute to avoid over-selecting
-                            if (el.dataset.attrName === 'Color') el.click();
-                        }
-                    });
+                // CONNECTION: If this thumbnail belongs to a variant color, select it
+                const tAvId = parseInt(div.dataset.avId);
+                if (tAvId) {
+                    const el = document.querySelector(`[data-av-id="${tAvId}"]`);
+                    if (el && el.dataset.attrName === 'Color' && !el.classList.contains('active')) {
+                        el.click();
+                    }
                 }
             });
-            thumbStrip.appendChild(div);
         });
     }
 
@@ -115,33 +154,8 @@
             }
         }
 
-        // Gallery swap via AJAX (Trigger on any selection to show representational images)
-        if (avIds.length > 0) {
-            // INSTANT SWAP: Find first matching variant in client-side data and swap main image immediately
-            const instantMatch = matching.length > 0 ? matching[0] : ALL_VARIANTS.find(v => avIds.some(id => v.attribute_ids.includes(id)));
-            if (instantMatch && instantMatch.featured_image) {
-                // Don't swapGallery here as that clears thumbnails, just update the main image
-                mainImg.classList.add('img-crossfade-out');
-                setTimeout(() => {
-                    mainImg.src = instantMatch.featured_image;
-                    mainImg.classList.remove('img-crossfade-out');
-                }, 300);
-            }
-
-            fetch(`/api/variant-options/?product_id=${PRODUCT_ID}&av_ids=${avIds.join(',')}`)
-                .then(r => r.json())
-                .then(data => {
-                    // Use featured_gallery from partial selection if selected_variant is fully resolving yet
-                    const galleryToUse = data.featured_gallery || (data.selected_variant ? data.selected_variant.gallery : null);
-                    if (galleryToUse && galleryToUse.length > 0) {
-                        swapGallery(galleryToUse);
-                    }
-                })
-                .catch(() => {});
-        } else {
-            // Return to default gallery if nothing is selected
-             swapGallery(ORIGINAL_GALLERY);
-        }
+        // Highlight thumbnails instead of swapping
+        highlightGallery(avIds);
 
         // Persist to URL
         const params = new URLSearchParams(window.location.search);

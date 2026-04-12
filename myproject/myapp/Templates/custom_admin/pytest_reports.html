@@ -4,7 +4,7 @@
 {% block page_title %}Pytest Reports{% endblock %}
 
 {% block content %}
-<link href="{% static 'css/custom_admin_pytest_reports.css' %}" rel="stylesheet">
+<link href="{% static 'css/custom_admin/pytest_reports.css' %}" rel="stylesheet">
 <div class="section-card animate-in">
     <div class="section-header">
         <h2><i class="fas fa-file-invoice" style="margin-right:8px; color:var(--accent-light);"></i>Automated Testing & Coverage</h2>
@@ -15,20 +15,23 @@
                     data-csrf-token="{{ csrf_token }}">
                 <i class="fas fa-play" style="margin-right:5px;"></i> Run Tests
             </button>
-            {% if report_exists %}
-            <a href="{% static 'pytest_reports/index.html' %}" target="_blank" class="btn btn-primary btn-sm">
-                <i class="fas fa-external-link-alt"></i> Open Coverage Report
-            </a>
-            <a href="{% static 'pytest_reports/passed_tests.html' %}" target="_blank" class="btn btn-sm" style="background: #27ae60; color: white;">
-                <i class="fas fa-check-circle"></i> Success Cases Report
-            </a>
-            <a href="{% static 'pytest_reports/failed_tests.html' %}" target="_blank" class="btn btn-sm" style="background: #e74c3c; color: white;">
-                <i class="fas fa-times-circle"></i> Failed Cases Report
-            </a>
-            <a href="{% static 'pytest_reports/warnings_tests.html' %}" target="_blank" class="btn btn-sm" style="background: #f39c12; color: white;">
-                <i class="fas fa-exclamation-triangle"></i> Warnings Cases Report
-            </a>
-            {% endif %}
+            <div class="report-group" style="display:flex; gap:10px;">
+                <a href="{% static 'pytest_reports/index.html' %}" target="_blank" class="btn btn-primary btn-sm report-btn {% if not report_exists %}disabled{% endif %}">
+                    <i class="fas fa-external-link-alt"></i> Coverage
+                </a>
+                <a href="{% static 'pytest_reports/passed_tests.html' %}" target="_blank" class="btn btn-sm report-btn {% if not report_exists %}disabled{% endif %}" style="background: #2196F3; color: white; border: none;">
+                    <i class="fas fa-check-circle"></i> Success
+                </a>
+                <a href="{% static 'pytest_reports/failed_tests.html' %}" target="_blank" class="btn btn-sm report-btn {% if not report_exists %}disabled{% endif %}" style="background: #f44336; color: white; border: none;">
+                    <i class="fas fa-times-circle"></i> Failures
+                </a>
+                <a href="{% static 'pytest_reports/error_tests.html' %}" target="_blank" class="btn btn-sm report-btn {% if not report_exists %}disabled{% endif %}" style="background: #fb8c00; color: white; border: none;">
+                    <i class="fas fa-bug"></i> Errors
+                </a>
+                <a href="{% static 'pytest_reports/warnings_tests.html' %}" target="_blank" class="btn btn-sm report-btn {% if not report_exists %}disabled{% endif %}" style="background: #757575; color: white; border: none;">
+                    <i class="fas fa-exclamation-triangle"></i> Warnings
+                </a>
+            </div>
         </div>
     </div>
     
@@ -61,5 +64,5 @@
     </div>
 </div>
 
-<script src="{% static 'js/custom_admin_pytest_reports.js' %}"></script>
+<script src="{% static 'js/custom_admin/pytest_reports.js' %}"></script>
 {% endblock %}

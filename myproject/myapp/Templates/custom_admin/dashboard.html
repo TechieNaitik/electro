@@ -164,35 +164,36 @@ document.getElementById('currency-refresh-card').addEventListener('click', funct
 </div>
 
 <!-- ═══ Low Stock Alert ═══ -->
-{% if low_stock_products %}
+{% if low_stock_variants %}
 <div class="section-card animate-in" style="margin-top:24px;">
     <div class="section-header">
-        <h2><i class="fas fa-exclamation-triangle" style="margin-right:8px; color:var(--warning);"></i>Low Stock Alert
-        </h2>
+        <h2><i class="fas fa-exclamation-triangle" style="margin-right:8px; color:var(--warning);"></i>Low Stock Alert (Variants)</h2>
     </div>
     <div class="section-body">
         <table class="data-table">
             <thead>
                 <tr>
+                    <th>Variant</th>
                     <th>Product</th>
-                    <th>Category</th>
                     <th>Price</th>
                     <th>Stock</th>
+                    <th>Threshold</th>
                 </tr>
             </thead>
             <tbody>
-                {% for product in low_stock_products %}
+                {% for variant in low_stock_variants %}
                 <tr>
-                    <td><strong>{{ product.full_name }}</strong></td>
-                    <td>{{ product.category_id.name }}</td>
-                    <td>₹{{ product.price }}</td>
+                    <td><code>{{ variant.sku }}</code></td>
+                    <td><strong>{{ variant.product.full_name }}</strong></td>
+                    <td>₹{{ variant.price }}</td>
                     <td>
-                        {% if product.stock_quantity == 0 %}
+                        {% if variant.stock_quantity == 0 %}
                         <span class="badge badge-danger">Out of Stock</span>
                         {% else %}
-                        <span class="badge badge-warning">{{ product.stock_quantity }} left</span>
+                        <span class="badge badge-warning">{{ variant.stock_quantity }} left</span>
                         {% endif %}
                     </td>
+                    <td>{{ variant.reorder_threshold }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -201,5 +202,5 @@ document.getElementById('currency-refresh-card').addEventListener('click', funct
 </div>
 {% endif %}
 
-<script src="{% static 'js/custom_admin_dashboard.js' %}"></script>
+<script src="{% static 'js/custom_admin/dashboard.js' %}"></script>
 {% endblock %}

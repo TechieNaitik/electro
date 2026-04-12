@@ -100,3 +100,21 @@
 .px-2 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
 .fs-2 { font-size: 2rem !important; }
 .w-100 { width: 100% !important; }
+.gallery-meta-fields .form-select,
+.gallery-meta-fields .form-input {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
+    background: rgba(0,0,0,0.2) !important;
+    border-color: rgba(255,255,255,0.05) !important;
+}
+
+.gallery-meta-fields .form-select:focus,
+.gallery-meta-fields .form-input:focus {
+    background: var(--bg-primary) !important;
+    border-color: var(--accent) !important;
+}
+
+.gallery-card-inner:hover .gallery-meta-fields .form-select,
+.gallery-card-inner:hover .gallery-meta-fields .form-input {
+    border-color: rgba(255,255,255,0.1) !important;
+}

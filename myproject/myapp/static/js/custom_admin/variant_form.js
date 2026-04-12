@@ -7,14 +7,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const rows = Array.from(container.querySelectorAll('.' + rowClass));
         const addBtn = document.getElementById(btnId);
         
-        let hiddenPrefix = "";
-        if (rowClass === 'attr-row') hiddenPrefix = 'attributes';
-        if (rowClass === 'img-row') hiddenPrefix = 'variant_images';
+        let hiddenPrefix = "attributes";
         let formTotal = document.querySelector(`input[name="${hiddenPrefix}-TOTAL_FORMS"]`);
         
         // Safe fallback in case relations are internally mapped differently
         if (!formTotal) {
-            hiddenPrefix = rowClass === 'attr-row' ? 'variantattribute_set' : 'productimage_set';
+            hiddenPrefix = 'variantattribute_set';
             formTotal = document.querySelector(`input[name="${hiddenPrefix}-TOTAL_FORMS"]`);
         }
         
@@ -22,23 +20,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const template = document.getElementById(templateId).innerHTML;
         
-        let visibleCount = 0;
         rows.forEach(row => {
             let isEmpty = false;
-            if (isSelect) {
-                const select = row.querySelector('select');
-                if (select && select.value === '') isEmpty = true;
-            } else {
-                const fileInput = row.querySelector('input[type="file"]');
-                const hasImage = row.querySelector('img');
-                if (fileInput && !fileInput.value && !hasImage) isEmpty = true;
-            }
+            const select = row.querySelector('select');
+            if (select && select.value === '') isEmpty = true;
             
             const idInput = row.querySelector('input[name$="-id"]');
             if (isEmpty && (!idInput || !idInput.value)) {
                 row.style.display = 'none';
-            } else {
-                visibleCount++;
             }
         });
         
@@ -47,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             let hiddenRow = Array.from(container.querySelectorAll('.' + rowClass)).find(r => r.style.display === 'none');
             
-            let targetDisplay = rowClass === 'attr-row' ? 'flex' : 'block';
+            let targetDisplay = 'flex';
             
             if (hiddenRow) {
                 hiddenRow.style.display = targetDisplay;
@@ -70,12 +59,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     setupFormset('attr-container', 'attr-row', 'add-attr-btn', 'attr-empty-template', true);
-    setupFormset('img-container', 'img-row', 'add-img-btn', 'img-empty-template', false);
     
     document.addEventListener('click', function(e) {
         let removeLabel = e.target.closest('label');
         if (removeLabel && removeLabel.textContent.includes('REMOVE')) {
-            let row = removeLabel.closest('.attr-row') || removeLabel.closest('.img-row');
+            let row = removeLabel.closest('.attr-row');
             if (row) {
                 row.style.transition = "all 0.3s ease";
                 row.style.opacity = '0.3';

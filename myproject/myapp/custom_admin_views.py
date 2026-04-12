@@ -1,14 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, StreamingHttpResponse
 from django.contrib import messages
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, F
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from functools import wraps
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from .models import Customer, Category, Product, Cart, Order, OrderItem, SiteAdmin, Brand, Coupon
+from .models import (
+    Customer, Category, Product, Cart, Order, OrderItem, 
+    SiteAdmin, Brand, Coupon, ProductVariant
+)
 from .forms import CategoryForm, ProductForm, BrandForm, ProductImageFormSet, CouponForm
 from .logger import log_action
 from .exports import export_to_csv, export_to_excel, export_to_word, export_to_pdf
@@ -263,18 +266,20 @@ def admin_export(request):
         queryset = OrderItem.objects.select_related('order', 'product').all().order_by('-order__created_at')
         filename = f"order_details_{datetime.now().strftime('%Y-%m-%d')}"
         title = "Order Details (Line Items)"
-        headers = ['Order ID', 'Product', 'SKU', 'Quantity', 'Unit Price', 'Subtotal']
+        headers = ['Order ID', 'Product', 'Variant SKU', 'Quantity', 'Unit Price', 'Subtotal']
         def data_func(obj):
-            return [obj.order.id, obj.product.name, obj.product.sku or 'N/A', obj.quantity, f"${obj.price}", f"${obj.line_total()}"]
+            sku = obj.variant.sku if obj.variant else (obj.snapshot_sku or 'N/A')
+            return [obj.order.id, obj.product.full_name, sku, obj.quantity, f"₹{obj.price}", f"₹{obj.line_total()}"]
 
     elif module == 'products':
         queryset = Product.objects.select_related('category_id', 'brand').all().order_by('brand__name', 'model_name')
         filename = f"products_{datetime.now().strftime('%Y-%m-%d')}"
         title = "Product Listing"
-        headers = ['ID', 'Brand', 'Model', 'Variant', 'SKU', 'Category', 'Price', 'Stock', 'Status']
+        headers = ['ID', 'Brand', 'Model', 'Category', 'Starting Price', 'Total Stock', 'Status']
         def data_func(obj):
-            status = 'In Stock' if obj.stock_quantity > 0 else 'Out of Stock'
-            return [obj.id, obj.brand.name if obj.brand else 'N/A', obj.model_name or 'N/A', obj.variant_specs or 'N/A', obj.sku or 'N/A', obj.category_id.name, f"₹{obj.price}", obj.stock_quantity, status]
+            stock = obj.total_stock
+            status = 'In Stock' if stock > 0 else 'Out of Stock'
+            return [obj.id, obj.brand.name if obj.brand else 'N/A', obj.model_name or 'N/A', obj.category_id.name, f"₹{obj.min_price}", stock, status]
             
     elif module == 'coupons':
         queryset = Coupon.objects.all().order_by('-valid_from')
@@ -314,7 +319,7 @@ def admin_export(request):
         elif module == 'orders':
             queryset = queryset.filter(Q(full_name__icontains=query) | Q(id__icontains=query))
         elif module == 'products':
-            queryset = queryset.filter(Q(brand__name__icontains=query) | Q(model_name__icontains=query) | Q(sku__icontains=query))
+            queryset = queryset.filter(Q(brand__name__icontains=query) | Q(model_name__icontains=query) | Q(variants__sku__icontains=query)).distinct()
 
     # Export based on format
     if export_format == 'csv':
@@ -338,7 +343,7 @@ def admin_dashboard(request):
 
     recent_orders = Order.objects.select_related('customer').order_by('-created_at')[:5]
     recent_customers = Customer.objects.order_by('-created_at')[:5]
-    low_stock_products = Product.objects.filter(stock_quantity__lte=5).order_by('stock_quantity')
+    low_stock_products = ProductVariant.objects.filter(stock_quantity__lt=F('reorder_threshold')).select_related('product')[:10]
 
     context = {
         'active_page': 'dashboard',
@@ -349,7 +354,7 @@ def admin_dashboard(request):
         'total_revenue': total_revenue,
         'recent_orders': recent_orders,
         'recent_customers': recent_customers,
-        'low_stock_products': low_stock_products,
+        'low_stock_variants': low_stock_products,
     }
     return render(request, 'custom_admin/dashboard.html', context)
     
@@ -357,7 +362,7 @@ def admin_dashboard(request):
 def admin_pytest_reports(request):
     import os
     from django.conf import settings
-    report_path = os.path.join(str(settings.BASE_DIR.parent), 'htmlcov', 'index.html')
+    report_path = os.path.join(str(settings.BASE_DIR), 'htmlcov', 'index.html')
     exists = os.path.exists(report_path)
     
     context = {
@@ -378,14 +383,17 @@ def run_pytest_api(request):
         # Get project root (parent of myproject/)
         # Using settings.BASE_DIR is more reliable
         from django.conf import settings
-        root_dir = str(settings.BASE_DIR.parent)
+        root_dir = str(settings.BASE_DIR)
+        
+        # Create absolute report path to prevent directory drift
+        report_dir = os.path.join(settings.BASE_DIR, 'htmlcov')
         
         # Run pytest. 
         # We use --cov-report=html to ensure the report is updated.
         # Note: In a production environment, this should be a background task (e.g. Celery).
         # For this project, we'll run it synchronously for simplicity.
         result = subprocess.run(
-            ['pytest'], 
+            ['pytest', f'--cov-report=html:{report_dir}'], 
             cwd=root_dir, 
             capture_output=True, 
             text=True,
@@ -416,9 +424,9 @@ def stream_pytest_api(request):
     import os
     import sys
 
-    # Get project root (parent of myproject/)
+    # Get project root (myproject/)
     from django.conf import settings
-    root_dir = str(settings.BASE_DIR.parent)
+    root_dir = str(settings.BASE_DIR)
 
     def stream_output():
         # Set PYTHONUNBUFFERED to see output in real time
@@ -631,7 +639,7 @@ def admin_products(request):
     product_list = Product.objects.select_related('category_id', 'brand').order_by('brand__name', 'model_name')
     
     if query:
-        product_list = product_list.filter(Q(brand__name__icontains=query) | Q(model_name__icontains=query) | Q(sku__icontains=query))
+        product_list = product_list.filter(Q(brand__name__icontains=query) | Q(model_name__icontains=query) | Q(variants__sku__icontains=query)).distinct()
         
     paginator = Paginator(product_list, 10) # 10 products per page
     page_number = request.GET.get('page')
@@ -662,7 +670,7 @@ def admin_refresh_exchange_rates(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 from .models import Attribute, AttributeValue, ProductVariant, VariantAttribute
-from .forms import AttributeForm, AttributeValueFormSet, ProductVariantForm, VariantAttributeFormSet, VariantImageFormSet
+from .forms import AttributeForm, AttributeValueFormSet, ProductVariantForm, VariantAttributeFormSet
 
 @site_admin_required
 def admin_attributes(request):
@@ -740,29 +748,18 @@ def admin_variant_add(request):
     if request.method == 'POST':
         form = ProductVariantForm(request.POST)
         attr_formset = VariantAttributeFormSet(request.POST)
-        img_formset = VariantImageFormSet(request.POST, request.FILES)
         
-        if form.is_valid() and attr_formset.is_valid() and img_formset.is_valid():
+        if form.is_valid() and attr_formset.is_valid():
             variant = form.save()
             attr_formset.instance = variant
             attr_formset.save()
-            img_formset.instance = variant
-            
-            images = img_formset.save(commit=False)
-            for img in images:
-                img.product = variant.product
-                img.save()
-            for obj in img_formset.deleted_objects:
-                obj.delete()
-                
             messages.success(request, f"Variant {variant.sku} added.")
             return redirect('custom_admin:variants')
     else:
         form = ProductVariantForm(initial=initial)
         attr_formset = VariantAttributeFormSet()
-        img_formset = VariantImageFormSet()
         
-    context = {'form': form, 'attr_formset': attr_formset, 'img_formset': img_formset, 'title': 'Add Variant', 'active_page': 'variants'}
+    context = {'form': form, 'attr_formset': attr_formset, 'title': 'Add Variant', 'active_page': 'variants'}
     return render(request, 'custom_admin/variant_form.html', context)
 
 @site_admin_required
@@ -771,26 +768,17 @@ def admin_variant_edit(request, variant_id):
     if request.method == 'POST':
         form = ProductVariantForm(request.POST, instance=variant)
         attr_formset = VariantAttributeFormSet(request.POST, instance=variant)
-        img_formset = VariantImageFormSet(request.POST, request.FILES, instance=variant)
         
-        if form.is_valid() and attr_formset.is_valid() and img_formset.is_valid():
+        if form.is_valid() and attr_formset.is_valid():
             form.save()
             attr_formset.save()
-            
-            images = img_formset.save(commit=False)
-            for img in images:
-                img.product = variant.product
-                img.save()
-            for obj in img_formset.deleted_objects:
-                obj.delete()
             messages.success(request, f"Variant {variant.sku} updated.")
             return redirect('custom_admin:variants')
     else:
         form = ProductVariantForm(instance=variant)
         attr_formset = VariantAttributeFormSet(instance=variant)
-        img_formset = VariantImageFormSet(instance=variant)
         
-    context = {'form': form, 'attr_formset': attr_formset, 'img_formset': img_formset, 'variant': variant, 'title': 'Edit Variant', 'active_page': 'variants'}
+    context = {'form': form, 'attr_formset': attr_formset, 'variant': variant, 'title': 'Edit Variant', 'active_page': 'variants'}
     return render(request, 'custom_admin/variant_form.html', context)
 
 @site_admin_required
@@ -817,11 +805,13 @@ def update_split_reports(output, root_dir):
 
     passed = []
     failed = []
+    errors = []
     warnings = []
     
     # Track items to avoid duplicates
     seen_passed = set()
     seen_failed = set()
+    seen_errors = set()
 
     lines = output.splitlines()
     
@@ -848,10 +838,14 @@ def update_split_reports(output, root_dir):
                 if test_id not in seen_passed:
                     passed.append(item)
                     seen_passed.add(test_id)
-            elif status in ('FAILED', 'ERROR'):
+            elif status == 'FAILED':
                 if test_id not in seen_failed:
                     failed.append(item)
                     seen_failed.add(test_id)
+            elif status == 'ERROR':
+                if test_id not in seen_errors:
+                    errors.append(item)
+                    seen_errors.add(test_id)
         
     # 2. Parse Warnings (usually in summary section)
     in_warnings_summary = False
@@ -979,4 +973,5 @@ def update_split_reports(output, root_dir):
 
     generate_html("Passed Test Cases Report", passed, "passed_tests.html", "#4ade80")
     generate_html("Failed Test Cases Report", failed, "failed_tests.html", "#f87171")
+    generate_html("System Errors Report", errors, "error_tests.html", "#ff4444")
     generate_html("Warning Test Cases Report", warnings, "warnings_tests.html", "#fbbf24")

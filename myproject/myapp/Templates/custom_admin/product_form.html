@@ -63,30 +63,6 @@
                     {{ form.description }}
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                    <div class="detail-item">
-                        <label>Price (₹)</label>
-                        {{ form.price }}
-                    </div>
-                    <div class="detail-item">
-                        <label>Stock Quantity</label>
-                        {{ form.stock_quantity }}
-                    </div>
-                </div>
-
-                <!-- Main Product Image -->
-                <div class="detail-item" style="margin-bottom: 32px;">
-                    <label>Main Product Image</label>
-                    <div style="display: flex; flex-direction: column; gap: 16px;">
-                        {{ form.image }}
-                        {% if product.image %}
-                        <div style="padding: 12px; background: var(--bg-primary); border-radius: var(--radius); border: 1px dashed var(--border-color); width: fit-content;">
-                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Current Main Image:</p>
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 120px; border-radius: var(--radius-sm);">
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
 
                 <!-- Image Gallery (Multiple) -->
                 <div class="section-divider" style="height: 1px; background: var(--border-color); margin: 32px 0;"></div>
@@ -113,14 +89,26 @@
                                             <i class="fas fa-trash-alt text-white fs-3"></i>
                                         </div>
                                     </div>
-                                    <div class="gallery-controls" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-top: 1px solid var(--border-color); background: var(--bg-card);">
-                                        <span class="text-muted" style="font-size: 0.75rem; font-weight: 500;">Image #{{ forloop.counter }}</span>
-                                        <div class="delete-action">
-                                            <label class="delete-label cursor-pointer mb-0 p-1" for="{{ gform.DELETE.id_for_label }}" title="Mark for Deletion" style="display: flex; align-items: center;">
-                                                <i class="far fa-trash-alt text-muted hover-danger" style="transition: all 0.2s ease; font-size: 0.9rem;"></i>
-                                            </label>
-                                            <div class="d-none">
-                                                {{ gform.DELETE }}
+                                    <div class="gallery-controls" style="display: flex; flex-direction: column; padding: 10px 12px; border-top: 1px solid var(--border-color); background: var(--bg-card); gap: 8px;">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <span class="text-muted" style="font-size: 0.75rem; font-weight: 500;">Image #{{ forloop.counter }}</span>
+                                            <div class="delete-action">
+                                                <label class="delete-label cursor-pointer mb-0 p-1" for="{{ gform.DELETE.id_for_label }}" title="Mark for Deletion" style="display: flex; align-items: center;">
+                                                    <i class="far fa-trash-alt text-muted hover-danger" style="transition: all 0.2s ease; font-size: 0.9rem;"></i>
+                                                </label>
+                                                <div class="d-none">
+                                                    {{ gform.DELETE }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="gallery-meta-fields" style="display: flex; gap: 8px; flex-direction: column;">
+                                            <div class="form-group mb-0">
+                                                <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Color / Attribute Scope</label>
+                                                {{ gform.attribute_value }}
+                                            </div>
+                                            <div class="form-group mb-0">
+                                                <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Order</label>
+                                                {{ gform.display_order }}
                                             </div>
                                         </div>
                                     </div>
@@ -130,13 +118,13 @@
                                         {{ gform.image }}
                                     </div>
                                     <label class="gallery-upload-slot d-flex flex-column align-items-center justify-content-center p-3 text-center mb-0 w-100 overflow-hidden" 
-                                            style="min-height: 175px; border: 2px dashed var(--border-color); cursor: pointer; background: var(--bg-secondary); transition: all 0.3s ease;" 
+                                            style="min-height: 140px; border: 2px dashed var(--border-color); cursor: pointer; background: var(--bg-secondary); transition: all 0.3s ease;" 
                                             for="{{ gform.image.id_for_label }}">
                                         
                                         <!-- Success Message (Hidden by default) -->
                                         <div class="selection-success d-none text-success" id="success-{{ gform.image.id_for_label }}">
-                                            <i class="fas fa-check-circle mb-2" style="font-size: 2.5rem;"></i>
-                                            <p class="small mb-0" style="font-weight: 600;">Image Selected Successfully</p>
+                                            <i class="fas fa-check-circle mb-2" style="font-size: 2rem;"></i>
+                                            <p class="small mb-0" style="font-weight: 600;">Selected</p>
                                         </div>
 
                                         <!-- Default Add Icon/Text -->
@@ -147,6 +135,16 @@
                                         
                                         <span id="label-{{ gform.image.id_for_label }}" class="file-name-label small text-primary mt-2 px-2" style="word-break: break-all; font-size: 0.75rem; font-weight: 500;"></span>
                                     </label>
+                                    <div class="gallery-meta-fields p-3" style="display: flex; gap: 8px; flex-direction: column; border-top: 1px solid var(--border-color); background: var(--bg-card);">
+                                        <div class="form-group mb-0">
+                                            <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Color / Attribute Scope</label>
+                                            {{ gform.attribute_value }}
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Order</label>
+                                            {{ gform.display_order }}
+                                        </div>
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -176,7 +174,7 @@
                         <tr>
                             <th>SKU</th>
                             <th>Attributes</th>
-                            <th>Price Override</th>
+                            <th>Price</th>
                             <th>Stock</th>
                             <th>Actions</th>
                         </tr>
@@ -193,8 +191,8 @@
                                 </div>
                             </td>
                             <td>
-                                <span {% if variant.price %}style="color: var(--warning); font-weight: 700;"{% else %}style="color: var(--text-muted); font-weight: 500;"{% endif %}>
-                                    {% if variant.price %}₹{{ variant.price }}{% else %}Inherited (₹{{ product.price }}){% endif %}
+                                <span style="color: var(--warning); font-weight: 700;">
+                                    ₹{{ variant.price }}
                                 </span>
                             </td>
                             <td>
@@ -239,7 +237,7 @@
     </div>
 </div>
 
-<link href="{% static 'css/custom_admin_product_form.css' %}" rel="stylesheet">
+<link href="{% static 'css/custom_admin/product_form.css' %}" rel="stylesheet">
 
-<script src="{% static 'js/custom_admin_product_form.js' %}"></script>
+<script src="{% static 'js/custom_admin/product_form.js' %}"></script>
 {% endblock %}

@@ -78,7 +78,7 @@
                         <div class="d-flex flex-column justify-content-center">
                             <h6 class="mb-2">{{ product.full_name }}</h6>
                             <div class="d-flex mb-2">
-                                <h5 class="text-primary fw-bold me-2 price-display" data-base-price="{{ product.price }}">₹{{ product.price }}</h5>
+                                <h5 class="text-primary fw-bold me-2 price-display" data-base-price="{{ product.min_price }}">₹{{ product.min_price }}</h5>
                                 <!-- <h5 class="text-danger text-decoration-line-through">4.11 $</h5> -->
                             </div>
                         </div>
@@ -149,7 +149,7 @@
                                                 class="d-block mb-2">{{ product.category_id.name }}</a>
                                             <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.full_name }}</a>
                                             <!-- <del class="me-2 fs-5">$1,250.00</del> -->
-                                            <span class="text-primary fs-5 price-display" data-base-price="{{ product.price }}">₹{{ product.price }}</span>
+                                            <span class="text-primary fs-5 price-display" data-base-price="{{ product.min_price }}">₹{{ product.min_price }}</span>
                                         </div>
                                     </div>
                                     <div
@@ -213,7 +213,7 @@
                                                 <a href="{% url 'shop_category' product.category_id.id %}"
                                                     class="d-block mb-2">{{ product.category_id.name }}</a>
                                                 <a href="{% url 'single' product.id %}" class="d-block h4">{{ product.full_name }}</a>
-                                                <span class="text-primary fs-5 price-display" data-base-price="{{ product.price }}">₹{{ product.price }}</span>
+                                                <span class="text-primary fs-5 price-display" data-base-price="{{ product.min_price }}">₹{{ product.min_price }}</span>
                                             </div>
                                         </div>
                                     </div>

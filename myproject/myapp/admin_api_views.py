@@ -4,7 +4,7 @@ from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.core.cache import cache
-from .models import Order, OrderItem, Product, Category, ProductView, Brand
+from .models import Order, OrderItem, Product, Category, ProductView, Brand, ProductVariant
 from .services.forecasting import ForecastingService
 from functools import wraps
 import re
@@ -94,9 +94,10 @@ def dashboard_stats_api(request):
     orders_today = orders_query.count()
     rev_trend = ((total_revenue - prev_revenue) / prev_revenue * 100) if prev_revenue > 0 else 0
 
-    low_stock_count_qs = Product.objects.filter(stock_quantity__lt=F('reorder_threshold'))
-    if category_id: low_stock_count_qs = low_stock_count_qs.filter(category_id=category_id)
-    if brand_id: low_stock_count_qs = low_stock_count_qs.filter(brand_id=brand_id)
+    from .models import ProductVariant
+    low_stock_count_qs = ProductVariant.objects.filter(stock_quantity__lt=F('reorder_threshold'))
+    if category_id: low_stock_count_qs = low_stock_count_qs.filter(product__category_id=category_id)
+    if brand_id: low_stock_count_qs = low_stock_count_qs.filter(product__brand_id=brand_id)
     low_stock_count = low_stock_count_qs.count()
 
     # 2. Trending Products
@@ -126,11 +127,11 @@ def dashboard_stats_api(request):
         trending_list.append({
             'id': p.id,
             'name': p.full_name,
-            'image': p.image.url if p.image else '',
+            'image': p.featured_image_url,
             'units_sold': curr_units,
             'views': p.period_views or 0,
             'revenue': p.revenue or 0,
-            'stock': p.stock_quantity,
+            'stock': p.total_stock,
             'trend': trend
         })
 

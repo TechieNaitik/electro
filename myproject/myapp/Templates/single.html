@@ -5,6 +5,22 @@
 {% block extra_head %}
 <link href="{% static 'lib/lightbox/css/lightbox.min.css' %}" rel="stylesheet">
 <link href="{% static 'css/single.css' %}" rel="stylesheet">
+<style>
+    .star-display i, .star-link i {
+        font-size: 1.4rem; /* Significantly bigger stars */
+        color: var(--bs-warning);
+    }
+    .rating-readonly i {
+        font-size: 1.1rem;
+    }
+    .social-share-buttons .btn {
+        padding: 8px 24px;
+        font-size: 0.9rem;
+    }
+    .variant-section {
+        margin-bottom: 1.5rem;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -68,7 +84,7 @@
                             <a href="{% url 'single' rp.id %}"
                                 class="d-block fw-semibold text-dark text-decoration-none lh-sm mb-1"
                                 style="font-size: 0.92rem;">{{ rp.full_name }}</a>
-                            <span class="text-primary fw-bold price-display" style="font-size: 0.95rem;" data-base-price="{{ rp.price }}">₹{{ rp.price }}</span>
+                            <span class="text-primary fw-bold price-display" style="font-size: 0.95rem;" data-base-price="{{ rp.min_price }}">₹{{ rp.min_price }}</span>
                         </div>
                     </div>
                     {% endfor %}
@@ -93,7 +109,8 @@
                                     style="min-width: 80px; width: 80px; height: 80px; overflow: hidden;"
                                     data-index="{{ forloop.counter0 }}"
                                     data-thumb-url="{{ img.url }}"
-                                    data-thumb-index="{{ forloop.counter0 }}">
+                                    data-thumb-index="{{ forloop.counter0 }}"
+                                    data-av-id="{{ img.av_id|default:'' }}">
                                     <img src="{{ img.url }}" class="img-fluid w-100 h-100" style="object-fit: cover;"
                                         alt="{{ product.full_name }} thumbnail" loading="lazy">
                                 </div>
@@ -101,13 +118,38 @@
                             </div>
                             {% endif %}
                         </div>
+                        
+                        <!-- social share & rating moved here to fill space -->
+                        <div class="mt-4 px-2">
+                             <div class="rating-readonly d-flex align-items-center mb-3">
+                                {% for _ in "12345" %}
+                                <span class="star-display">
+                                    <i class="{% if forloop.counter <= product.rounded_rating %}fas fa-star
+                                        {% elif forloop.counter|add:"-0.5" <= product.rounded_rating %}fas fa-star-half-alt
+                                        {% else %}far fa-star
+                                        {% endif %}">
+                                    </i>
+                                </span>
+                                {% endfor %}
+                                <span class="ms-2 text-muted" style="font-size: 0.85rem;">({{ product.product_reviews.count }} Reviews)</span>
+                            </div>
+
+                            <div class="social-share-buttons mb-3">
+                                <a href="#" class="btn btn-primary d-inline-block rounded text-white py-1 px-4 me-2">
+                                    <i class="fab fa-facebook-f me-1"></i> Share
+                                </a>
+                                <a href="#" class="btn btn-secondary d-inline-block rounded text-white py-1 px-4">
+                                    <i class="fab fa-twitter ms-1"></i> Share
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Product Info -->
                     <div class="col-xl-6">
                         <h4 class="fw-bold mb-3">{{ product.full_name }}</h4>
                         <p class="mb-3">Category: <strong>{{ product.category_id.name }}</strong></p>
-                        <h5 class="fw-bold mb-2 text-primary price-display" id="variant-price" data-base-price="{{ product.price }}">₹{{ product.price }}</h5>
+                        <h5 class="fw-bold mb-2 text-primary price-display" id="variant-price" data-base-price="{{ product.min_price }}">₹{{ product.min_price }}</h5>
                         <div id="variant-sku-container" class="mb-3" style="display: none;">
                             <small class="text-muted">SKU: <span id="variant-sku-value" class="fw-bold text-dark"></span></small>
                         </div>
@@ -131,28 +173,6 @@
                             {% endif %}
                         </div>
 
-                        <div class="mb-3">
-                            <div class="btn btn-primary d-inline-block rounded text-white py-1 px-4 me-2">
-                                <i class="fab fa-facebook-f me-1"></i> Share
-                            </div>
-                            <div class="btn btn-secondary d-inline-block rounded text-white py-1 px-4 ms-2">
-                                <i class="fab fa-twitter ms-1"></i> Share
-                            </div>
-                        </div>
-                        <div class="d-flex flex-column mb-3">
-                            <small>Product ID: #{{ product.id }}</small>
-                        </div>
-                        <div class="rating-readonly d-flex align-items-center mb-3" data-product-id="{{ product.id }}">
-                            {% for _ in "12345" %}
-                            <span class="star-display">
-                                <i class="{% if forloop.counter <= product.rounded_rating %}fas fa-star
-                                    {% elif forloop.counter|add:"-0.5" <= product.rounded_rating %}fas fa-star-half-alt
-                                    {% else %}far fa-star
-                                    {% endif %}">
-                                </i>
-                            </span>
-                            {% endfor %}
-                        </div>
 
                         <!-- ── Variant Selectors ────────────────────────── -->
                         {% if has_variants %}
@@ -283,64 +303,65 @@
                                         <p class="mb-0 text-dark">{{ review.review_text }}</p>
                                     </div>
                                 </div>
-                                {% empty %}
+                                {% endfor %}
+                                {% if not product.product_reviews.all %}
                                 <div class="text-center py-4">
                                     <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
                                     <p class="text-muted">No reviews yet. Be the first to review this product!</p>
                                 </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+                                {% endif %}
 
-                    <!-- Leave a Review Form -->
-                    {% if not user_has_reviewed %}
-                    <form id="review-form">
-                        <h4 class="mb-5 fw-bold">Leave a Reply</h4>
-                        <div class="row g-4">
-                            <div class="col-lg-6">
-                                <div class="border-bottom rounded">
-                                    <input type="text" class="form-control border-0 me-4" placeholder="Your Name *" value="{{ customer.full_name|default:'' }}" required>
+                                <div class="mt-5 pt-4 border-top">
+                                    <!-- Leave a Review Form - Moved Inside Reviews Tab -->
+                                    {% if not user_has_reviewed %}
+                                    <form id="review-form">
+                                        <h4 class="mb-4 fw-bold">Leave a Reply</h4>
+                                        <div class="row g-4">
+                                            <div class="col-lg-6">
+                                                <div class="border-bottom rounded">
+                                                    <input type="text" class="form-control border-0 me-4" placeholder="Your Name *" value="{{ customer.full_name|default:'' }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="border-bottom rounded">
+                                                    <input type="email" class="form-control border-0" placeholder="Your Email *" value="{{ customer.email|default:'' }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="border-bottom rounded my-4">
+                                                    <textarea name="review_text" id="review-text" class="form-control border-0" cols="30" rows="5"
+                                                        placeholder="Your Review *" spellcheck="false" required></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 d-flex align-items-center mb-3">
+                                                <span class="me-3 fw-bold">Your Rating:</span>
+                                                <div class="rating-interactive d-flex align-items-center" data-product-id="{{ product.id }}" data-product-name="{{ product.full_name }}">
+                                                    {% for _ in "12345" %}
+                                                    <button type="button" class="btn p-0 star-link border-0 bg-transparent" data-value="{{ forloop.counter }}">
+                                                        <i class="far fa-star text-warning"></i>
+                                                    </button>
+                                                    {% endfor %}
+                                                    <input type="hidden" name="rating" id="selected-rating" value="">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <button type="submit" id="submit-review-btn"
+                                                    class="btn btn-primary border border-secondary text-primary rounded-pill px-5 py-3 shadow-sm">Post Review</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    {% else %}
+                                    <div class="alert alert-info py-4 text-center rounded-pill shadow-sm">
+                                        <i class="fas fa-check-circle me-2 text-info"></i> You have already submitted a review for this product. Thank you!
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
-                            <div class="col-lg-6">
-                                <div class="border-bottom rounded">
-                                    <input type="email" class="form-control border-0" placeholder="Your Email *" value="{{ customer.email|default:'' }}" required>
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="border-bottom rounded my-4">
-                                    <textarea name="review_text" id="review-text" class="form-control border-0" cols="30" rows="8"
-                                        placeholder="Your Review *" spellcheck="false" required></textarea>
-                                </div>
-                            </div>
-                            <div class="col-lg-12 d-flex align-items-center">
-                                <span class="me-3 fw-bold">Your Rating:</span>
-                                <div class="rating-interactive d-flex align-items-center" data-product-id="{{ product.id }}" data-product-name="{{ product.full_name }}">
-                                    {% for _ in "12345" %}
-                                    <a href="javascript:void(0);" class="star-link" data-value="{{ forloop.counter }}">
-                                        <i class="far fa-star"></i>
-                                    </a>
-                                    {% endfor %}
-                                    <input type="hidden" name="rating" id="selected-rating" value="">
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="d-flex justify-content-between py-3 mb-5">
-                                    <button type="submit" id="submit-review-btn"
-                                        class="btn btn-primary border border-secondary text-primary rounded-pill px-4 py-3"> Post Comment</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                    {% else %}
-                    <div class="alert alert-info py-4 text-center rounded-pill">
-                        <i class="fas fa-check-circle me-2"></i> You have already submitted a review for this product. Thank you!
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+                        </div> <!-- End single-product row -->
+                    </div> <!-- End col-lg-9 -->
+                </div> <!-- End row g-4 -->
+            </div> <!-- End container py-5 -->
+        </div> <!-- End container-fluid -->
     </div>
 </div>
 <!-- Single Products End -->

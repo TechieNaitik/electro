@@ -60,11 +60,7 @@ async function runPytest() {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-play" style="margin-right:5px;"></i> Run Tests';
         
-        // Finalize: Show finished state but keep terminal visible.
-        // User requested: Don't open coverage report by default.
-        setTimeout(() => {
-            console.log("Test execution finished. Terminal remains visible.");
-        }, 300);
+        console.log("Test execution finished. Terminal remains visible.");
 
     } catch (error) {
         console.error("Stream Error:", error);

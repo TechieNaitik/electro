@@ -47,8 +47,8 @@
                         <tr>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 12px;">
-                                    {% if product.image %}
-                                        <img src="{{ product.image.url }}" class="product-thumb" alt="{{ product.full_name }}">
+                                    {% if product.featured_image_url %}
+                                        <img src="{{ product.featured_image_url }}" class="product-thumb" alt="{{ product.full_name }}">
                                     {% else %}
                                         <div class="product-thumb" style="background: var(--bg-primary); display: grid; place-items: center;">
                                             <i class="fas fa-image" style="opacity: .3;"></i>
@@ -58,17 +58,16 @@
                                 </div>
                             </td>
                             <td><span class="badge badge-purple">{{ product.category_id.name }}</span></td>
-                            <td><span style="color: var(--success); font-weight: 700;">₹{{ product.price }}</span></td>
+                            <td><span style="color: var(--success); font-weight: 700;">From ₹{{ product.min_price }}</span></td>
                             <td>
-                                {% if product.variants.exists %}
-                                    <span class="badge badge-purple" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">Varies by Variant</span>
-                                {% else %}
-                                    {% if product.stock_quantity <= 5 %}
-                                        <span class="badge badge-danger">{{ product.stock_quantity }} Low</span>
+                                <div style="display:flex; flex-direction:column; gap:4px;">
+                                    {% if product.total_stock == 0 %}
+                                        <span class="badge badge-danger">Out of Stock</span>
                                     {% else %}
-                                        <span class="badge badge-success">{{ product.stock_quantity }}</span>
+                                        <span class="badge badge-success">{{ product.total_stock }} Total</span>
                                     {% endif %}
-                                {% endif %}
+                                    <small style="font-size: 10px; color: var(--text-muted);">{{ product.variants.count }} variants</small>
+                                </div>
                             </td>
                             <td>
                                 <div style="display: flex; gap: 8px;">

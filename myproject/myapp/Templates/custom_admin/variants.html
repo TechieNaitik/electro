@@ -46,8 +46,8 @@
                         </td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                {% if variant.product.image %}
-                                    <img src="{{ variant.product.image.url }}" alt="{{ variant.product.full_name }}" style="border-radius: 4px; width: 32px; height: 32px; object-fit: cover;">
+                                {% if variant.primary_image_url %}
+                                    <img src="{{ variant.primary_image_url }}" alt="{{ variant.product.full_name }}" style="border-radius: 4px; width: 32px; height: 32px; object-fit: cover;">
                                 {% else %}
                                     <div style="border-radius: 4px; width: 32px; height: 32px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
                                         <i class="fas fa-box text-muted"></i>

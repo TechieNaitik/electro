@@ -40,12 +40,12 @@
                 </div>
                 <div>
                   <h6 class="mb-1 fw-bold">{{ item.product.full_name }}</h6>
-                  <p class="text-muted small mb-0">Model: {{ item.product.category_id.name }}</p>
+                  <p class="text-muted small mb-0">Category: {{ item.product.category_id.name }}</p>
                 </div>
               </div>
             </td>
             <td>
-              <span class="fw-semibold price-display" data-base-price="{{ item.product.price }}">₹{{ item.product.price }}</span>
+              <span class="fw-semibold price-display" data-base-price="{{ item.unit_price }}">₹{{ item.unit_price }}</span>
             </td>
             <td>
               <div class="d-flex justify-content-center align-items-center">

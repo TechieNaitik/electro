@@ -58,11 +58,12 @@ def buy_again(request, oid):
     
     for item in old_order.items.all():
         # Add to cart
-        if item.product.stock_quantity > 0:
-            cart_item, created = Cart.objects.get_or_create(customer=customer, product=item.product)
+        stock = item.variant.stock_quantity if item.variant else item.product.total_stock
+        if stock > 0:
+            cart_item, created = Cart.objects.get_or_create(customer=customer, product=item.product, variant=item.variant)
             if not created:
                 # If already in cart, check stock
-                if item.product.stock_quantity > cart_item.quantity:
+                if stock > cart_item.quantity:
                     cart_item.quantity += 1
                     cart_item.save()
             else:
@@ -83,9 +84,9 @@ def cancel_order(request, oid):
         order.status = 'Cancelled'
         # Revert stock
         for item in order.items.all():
-            product = item.product
-            product.stock_quantity += item.quantity
-            product.save()
+            if item.variant:
+                item.variant.stock_quantity += item.quantity
+                item.variant.save()
         order.save()
         log_action(f"Customer: {customer.full_name} <{customer.email}>", "Cancelled Order", f"Order #{oid}")
         messages.success(request, f"Order #{oid} has been cancelled.")
@@ -200,8 +201,9 @@ def checkout(request):
 
         # Final stock check before processing order
         for item in cart_items:
-            if item.product.stock_quantity < item.quantity:
-                messages.error(request, f"Stock for {item.product.name} is insufficient (Only {item.product.stock_quantity} left). Please update your cart.")
+            available_stock = item.variant.stock_quantity if item.variant else item.product.total_stock
+            if available_stock < item.quantity:
+                messages.error(request, f"Stock for {item.product.full_name} is insufficient (Only {available_stock} left). Please update your cart.")
                 return redirect('cart')
 
         # Final Coupon Validation inside transaction
@@ -252,10 +254,10 @@ def checkout(request):
                         ).all()
                     }
                 else:
-                    product.stock_quantity -= item.quantity
-                    product.save()
-                    snap_price = product.price
-                    snap_sku   = product.sku or ''
+                    # product.stock_quantity -= item.quantity # No longer maintained
+                    # product.save()
+                    snap_price = product.min_price
+                    snap_sku   = ''
                     snap_attrs = {}
 
                 OrderItem.objects.create(
@@ -312,7 +314,7 @@ def compare_view(request):
     ordered_products = [product_dict[int(pid)] for pid in product_ids if int(pid) in product_dict]
     
     # Calculate lowest price among selected products
-    lowest_price = min([p.price for p in ordered_products]) if ordered_products else None
+    lowest_price = min([p.min_price for p in ordered_products]) if ordered_products else None
 
     context = {
         'categories': Category.objects.all(),
@@ -850,7 +852,7 @@ def shop(request, cid=0):
     max_price = request.GET.get('max_price')
     if max_price:
         try:
-            products = products.filter(price__lte=float(max_price))
+            products = products.filter(variants__price__lte=float(max_price)).distinct()
             context['current_max_price'] = max_price
         except ValueError:
             pass
@@ -862,8 +864,8 @@ def shop(request, cid=0):
     sort_map = {
         'Name, A-Z':   ('brand__name', 'model_name'),
         'Name, Z-A':   ('-brand__name', '-model_name'),
-        'Price, ASC':  ('price',),
-        'Price, DESC': ('-price',),
+        'Price, ASC':  ('variants__price',),
+        'Price, DESC': ('-variants__price',),
     }
     order_fields = sort_map.get(sort, ('brand__name', 'model_name'))
     products = products.order_by(*order_fields)
@@ -944,9 +946,7 @@ def single(request, pid):
         'attribute_groups': attribute_groups,
         'base_gallery_json': json.dumps([
             {'url': product.featured_image_url, 'alt': product.full_name}
-        ] + [
-            {'url': img.image_url, 'alt': ''} for img in product.images.all()
-        ]),
+        ] if product.featured_image_url else []),
         'variants_json': json.dumps([
             {
                 'id': v.id,
@@ -1028,7 +1028,7 @@ def add_to_cart(request, pid):
         available_stock = variant.stock_quantity
         stock_label = variant.sku
     else:
-        available_stock = product.stock_quantity
+        available_stock = product.total_stock
         stock_label = product.full_name
 
     cart_filter = {'customer': customer, 'product': product, 'variant': variant}
@@ -1089,13 +1089,14 @@ def update_cart(request, cid, action):
     cart_item = get_object_or_404(Cart, pk=cid, customer=customer)
     
     if action == 'increase':
-        if cart_item.product.stock_quantity > cart_item.quantity:
+        available_stock = cart_item.variant.stock_quantity if cart_item.variant else cart_item.product.total_stock
+        if available_stock > cart_item.quantity:
             cart_item.quantity += 1
             cart_item.save()
         else:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'status': 'error', 'message': f"Only {cart_item.product.stock_quantity} units available."})
-            messages.error(request, f"Only {cart_item.product.stock_quantity} units available for {cart_item.product.name}.")
+                return JsonResponse({'status': 'error', 'message': f"Only {available_stock} units available."})
+            messages.error(request, f"Only {available_stock} units available for {cart_item.product.full_name}.")
     elif action == 'decrease':
         if cart_item.quantity > 1:
             cart_item.quantity -= 1
@@ -1162,7 +1163,6 @@ def variant_options_api(request):
     product = get_object_or_404(Product, pk=product_id)
     all_variants = product.variants.filter(is_active=True).prefetch_related(
         'variantattribute_set__attribute_value__attribute',
-        'variant_images',
     )
 
     # Collect any attribute_value IDs supplied as query params
@@ -1179,18 +1179,14 @@ def variant_options_api(request):
                 av_ids.append(int(val))
 
     def build_gallery(variant):
-        # Keeps ALL product images in the strip but puts relevant variant images first
-        v_images = []
-        other_images = [{'url': request.build_absolute_uri(product.image.url), 'alt': product.full_name}]
-        
-        for pi in product.images.all().order_by('display_order'):
-            img_data = {'url': request.build_absolute_uri(pi.image.url), 'alt': pi.alt_text or product.full_name}
-            if pi.variant == variant:
-                v_images.append(img_data)
-            else:
-                other_images.append(img_data)
-        
-        return v_images + other_images展厅
+        # Uses the new color-scoped gallery property from the model
+        return [
+            {
+                'url': request.build_absolute_uri(img.image.url), 
+                'alt': img.alt_text or product.full_name
+            } 
+            for img in variant.gallery
+        ]
 
     def serialize_variant(v):
         return {
@@ -1500,10 +1496,10 @@ def verify_razorpay_payment(request):
                         ).all()
                     }
                 else:
-                    product.stock_quantity -= item.quantity
-                    product.save()
-                    snap_price = product.price
-                    snap_sku   = product.sku or ''
+                    # product.stock_quantity -= item.quantity
+                    # product.save()
+                    snap_price = product.min_price
+                    snap_sku   = ''
                     snap_attrs = {}
 
                 OrderItem.objects.create(

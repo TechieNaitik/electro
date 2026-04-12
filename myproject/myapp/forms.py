@@ -45,36 +45,26 @@ class BrandForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['category_id', 'brand', 'model_name', 'variant_specs', 'image', 'description', 'price', 'stock_quantity']
+        fields = ['category_id', 'brand', 'model_name', 'description', 'is_featured']
         widgets = {
             'category_id': forms.Select(attrs={'class': 'form-select'}),
             'brand': forms.Select(attrs={'class': 'form-select'}),
             'model_name': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g. iPhone 15'}),
-            'image': forms.FileInput(attrs={'class': 'form-input-file'}),
             'description': forms.Textarea(attrs={'class': 'form-input', 'placeholder': 'Product Description', 'rows': 4}),
-            'price': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Price', 'min': 0}),
-            'stock_quantity': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Stock Quantity', 'min': 0}),
+            'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-    def clean_price(self):
-        price = self.cleaned_data.get('price')
-        if price is not None and price < 0:
-            raise forms.ValidationError("Price cannot be negative.")
-        return price
-
-    def clean_stock_quantity(self):
-        stock = self.cleaned_data.get('stock_quantity')
-        if stock is not None and stock < 0:
-            raise forms.ValidationError("Stock quantity cannot be negative.")
-        return stock
 
 # Product Image Form & FormSet
 class ProductImageForm(forms.ModelForm):
     class Meta:
         model = ProductImage
-        fields = ['image']
+        fields = ['image', 'attribute_value', 'display_order', 'alt_text']
         widgets = {
-            'image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+            'image': forms.FileInput(attrs={'class': 'form-input', 'accept': 'image/*'}),
+            'attribute_value': forms.Select(attrs={'class': 'form-select'}),
+            'display_order': forms.NumberInput(attrs={'class': 'form-input', 'style': 'max-width: 80px;'}),
+            'alt_text': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Optional alt text'}),
         }
 
 ProductImageFormSet = inlineformset_factory(
@@ -118,12 +108,13 @@ AttributeValueFormSet = inlineformset_factory(
 class ProductVariantForm(forms.ModelForm):
     class Meta:
         model = ProductVariant
-        fields = ['product', 'sku', 'price', 'stock_quantity', 'is_active']
+        fields = ['product', 'sku', 'price', 'stock_quantity', 'reorder_threshold', 'is_active']
         widgets = {
             'product': forms.Select(attrs={'class': 'form-control'}),
             'sku': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. IPH15-BLK-128'}),
-            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Optional price override'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Price'}),
             'stock_quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'reorder_threshold': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
@@ -143,11 +134,3 @@ VariantAttributeFormSet = inlineformset_factory(
     can_delete=True
 )
 
-VariantImageFormSet = inlineformset_factory(
-    ProductVariant,
-    ProductImage,
-    form=ProductImageForm,
-    fk_name='variant',
-    extra=5,
-    can_delete=True
-)

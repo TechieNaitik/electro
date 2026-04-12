@@ -83,7 +83,7 @@ class CategoryAdmin(admin.ModelAdmin):
 class ProductInline(admin.TabularInline):
     model = Product
     extra = 0
-    fields = ('model_name', 'variant_specs', 'category_id', 'price', 'stock_quantity')
+    fields = ('model_name', 'category_id', 'is_featured')
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
@@ -106,7 +106,7 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     fk_name = 'product'          # use the product FK, not the variant FK
     extra = 1
-    fields = ('image', 'variant', 'attribute_value', 'display_order', 'alt_text', 'image_preview')
+    fields = ('image', 'attribute_value', 'display_order', 'alt_text', 'image_preview')
     readonly_fields = ('image_preview',)
 
     def image_preview(self, obj):
@@ -136,11 +136,19 @@ class ProductVariantInlineForProduct(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('brand', 'model_name', 'variant_specs', 'category_id', 'price', 'stock_quantity')
-    search_fields = ('model_name', 'brand__name', 'variant_specs', 'sku')
+    list_display = ('brand', 'model_name', 'category_id', 'min_price_display', 'total_stock_display')
+    search_fields = ('model_name', 'brand__name', 'variants__sku')
     list_filter = ('brand', 'category_id')
     raw_id_fields = ('brand',)
     inlines = [ProductImageInline, ProductVariantInlineForProduct]
+
+    def min_price_display(self, obj):
+        return f"₹{obj.min_price}"
+    min_price_display.short_description = 'Starting Price'
+
+    def total_stock_display(self, obj):
+        return obj.total_stock
+    total_stock_display.short_description = 'Total Stock'
     
     def save_model(self, request, obj, form, change):
         if not change:
@@ -231,26 +239,12 @@ class VariantAttributeInline(admin.TabularInline):
     autocomplete_fields = ['attribute_value']
 
 
-class VariantImageInline(admin.TabularInline):
-    """Manages the per-variant image gallery directly on the variant admin."""
-    model = ProductImage
-    fk_name = 'variant'          # use the variant FK, not the product FK
-    extra = 1
-    fields = ('image', 'attribute_value', 'display_order', 'alt_text', 'image_preview')
-    readonly_fields = ('image_preview',)
-
-    def image_preview(self, obj):
-        from django.utils.html import mark_safe
-        if obj.pk and obj.image:
-            return mark_safe(f'<img src="{obj.image.url}" style="height:60px;border-radius:4px;">')
-        return "—"
-    image_preview.short_description = "Preview"
 
 
 @admin.register(ProductVariant)
 class ProductVariantAdmin(admin.ModelAdmin):
     """Dedicated admin page for a variant — shows its attribute assignments AND image gallery."""
-    inlines = [VariantAttributeInline, VariantImageInline]
+    inlines = [VariantAttributeInline]
     list_display  = ('sku', 'product', 'effective_price', 'stock_quantity', 'is_active')
     list_filter   = ('is_active', 'product__category_id')
     search_fields = ('sku', 'product__model_name')

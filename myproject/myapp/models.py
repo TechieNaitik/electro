@@ -52,14 +52,7 @@ class Product(models.Model):
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
     brand       = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     model_name  = models.CharField(max_length=100, null=True, blank=True)
-    variant_specs = models.CharField(max_length=100, null=True, blank=True, help_text="e.g. 128GB Blue, Dual Sim")
-
-    sku         = models.CharField(max_length=50, unique=True, null=True, blank=True)
-    image       = models.ImageField(upload_to='img/')
     description = models.TextField()
-    price       = models.IntegerField()
-    stock_quantity = models.PositiveIntegerField(default=50)
-    reorder_threshold = models.PositiveIntegerField(default=10) # For KPI alerts
     is_featured = models.BooleanField(default=False)
 
     @property
@@ -91,33 +84,42 @@ class Product(models.Model):
 
     @property
     def all_images(self):
-        """Returns a list of all associated image objects."""
-        # Start with the main image
+        """Returns a list of all associated image objects from variants and ProductImage."""
         imgs = []
-        if self.image:
-            # We wrap it in a simple object to match the structure of ProductImage
-            # or just return the image field itself if we handle it in template
-            imgs.append({'url': self.image.url, 'main': True})
-        
-        # Add additional images
+        # 1. Images attached directly to Product (ProductImage model)
+        # These include both general images (attr_value=None) and color-scoped ones.
         for extra in self.images.all():
-            imgs.append({'url': extra.image_url, 'main': False})
-        
+            imgs.append({
+                'url': extra.image_url, 
+                'main': extra.display_order == 0,
+                'av_id': extra.attribute_value_id  # Include color/attr id
+            })
         return imgs
 
     @property
     def featured_image_url(self):
-        """Safely returns the URL of the main product image or an empty string if it doesn't exist."""
-        try:
-            return self.image.url
-        except ValueError:
-            return ""
+        """Safely returns the URL of the first available image."""
+        # Try ProductImage first
+        first_img = self.images.all().first()
+        if first_img:
+            return first_img.image_url
+        
+        # Fallback to variant images (though they should be in self.images.all() anyway)
+        return ""
+
+    @property
+    def total_stock(self):
+        """Returns the aggregate stock across all variants."""
+        return sum(v.stock_quantity for v in self.variants.all())
+
+    @property
+    def min_price(self):
+        """Returns the minimum price among all active variants."""
+        prices = [v.price for v in self.variants.filter(is_active=True) if v.price is not None]
+        return min(prices) if prices else 0
 
     def __str__(self):
-        parts = [self.full_name]
-        if self.variant_specs:
-            parts.append(self.variant_specs)
-        return " ".join(parts).strip()
+        return self.full_name
 
 class ProductView(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='views')
@@ -134,10 +136,15 @@ class Cart(models.Model):
     variant  = models.ForeignKey('ProductVariant', null=True, blank=True, on_delete=models.SET_NULL)   # Phase 1: nullable
     quantity = models.PositiveIntegerField(default=1)
 
+    @property
+    def unit_price(self):
+        """Returns the appropriate unit price: variant price or product min_price."""
+        if self.variant:
+            return self.variant.price
+        return self.product.min_price
+
     def total_price(self):
-        # Use variant's effective_price if a variant is attached
-        unit_price = self.variant.effective_price if self.variant else self.product.price
-        return self.quantity * unit_price
+        return self.quantity * self.unit_price
 
     def __str__(self):
         variant_label = f" [{self.variant.sku}]" if self.variant else ""
@@ -313,22 +320,8 @@ class Coupon(models.Model):
     def __str__(self):
         return self.code
 
-@receiver(post_delete, sender=Product)
-def delete_product_image_on_delete(sender, instance, **kwargs):
-    """
-    Deletes the associated image from the file system when a Product object is deleted.
-    """
-    if instance.image:
-        if os.path.isfile(instance.image.path):
-            os.remove(instance.image.path)
-
 class ProductImage(models.Model):
     product       = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    variant       = models.ForeignKey(
-                        'ProductVariant', null=True, blank=True,
-                        on_delete=models.SET_NULL,
-                        related_name='variant_images'
-                    )  # Specific to a variant
     attribute_value = models.ForeignKey(
                         'AttributeValue', null=True, blank=True,
                         on_delete=models.SET_NULL,
@@ -351,9 +344,9 @@ class ProductImage(models.Model):
             return ""
 
     def __str__(self):
-        if self.variant:
-            return f"Image for {self.variant.sku} (variant of {self.product.full_name})"
-        return f"Image for {self.product.full_name}"
+        if self.attribute_value:
+            return f"Image for {self.product.full_name} ({self.attribute_value.value})"
+        return f"Image for {self.product.full_name} (General)"
 
 @receiver(post_delete, sender=ProductImage)
 def delete_product_extra_image_on_delete(sender, instance, **kwargs):
@@ -410,8 +403,7 @@ class ProductVariant(models.Model):
     attributes     = models.ManyToManyField(AttributeValue,
                                             through='VariantAttribute')
     sku            = models.CharField(max_length=100, unique=True)
-    price          = models.DecimalField(max_digits=10, decimal_places=2,
-                                         null=True, blank=True)
+    price          = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
                                          # None = inherit from Product.price
     stock_quantity    = models.PositiveIntegerField(default=0)
     reorder_threshold = models.PositiveIntegerField(default=10)
@@ -419,8 +411,8 @@ class ProductVariant(models.Model):
 
     @property
     def effective_price(self):
-        """Returns the variant's own price, or falls back to the parent product price."""
-        return self.price if self.price is not None else self.product.price
+        """Returns the variant's own price."""
+        return self.price
 
     @property
     def in_stock(self):
@@ -429,28 +421,32 @@ class ProductVariant(models.Model):
     @property
     def gallery(self):
         """
-        Returns all images scoped specifically to this variant AND images 
-        scoped to its attribute values (like Color=Lavender).
+        Returns all images scoped specifically to this variant's attribute values 
+        (like Color=Lavender) AND general product images.
         """
-        # Specific variant images
-        v_imgs = list(self.variant_images.all())
-        
         # Shared attribute images (e.g., if an image is linked to the 'Lavender' Color)
-        from .models import ProductImage # Internal import to avoid circular dependency if needed, though we are in models
-        attr_imgs = list(ProductImage.objects.filter(
-            product=self.product,
-            attribute_value__in=self.attributes.all()
-        ))
-        
-        # Merge and remove duplicates (by ID)
-        merged = {img.id: img for img in (v_imgs + attr_imgs)}
-        return sorted(merged.values(), key=lambda x: (x.display_order, x.created_at))
+        # We also include images with no attribute_value as general images
+        from .models import ProductImage
+        return ProductImage.objects.filter(
+            product=self.product
+        ).filter(
+            models.Q(attribute_value__in=self.attributes.all()) |
+            models.Q(attribute_value__isnull=True)
+        ).distinct().order_by('display_order', 'created_at')
 
     @property
     def primary_image(self):
         """Returns the first variant image (including shared attribute images)."""
         gallery = self.gallery
         return gallery[0] if gallery else None
+    
+    @property
+    def primary_image_url(self):
+        """Safely returns the URL of the primary image for this specific variant."""
+        img = self.primary_image
+        if img:
+            return img.image_url
+        return self.product.featured_image_url
 
     @property
     def attribute_summary(self):
