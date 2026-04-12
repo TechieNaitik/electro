@@ -135,8 +135,20 @@
 
         <div class="d-flex justify-content-end gap-16 mt-32 border-top border-light pt-32">
             <a href="{% url 'custom_admin:variants' %}" class="btn btn-secondary px-32 h-44 shadow-lg"><i class="fas fa-arrow-left mr-8 opacity-50"></i> Back to Variants</a>
-            <button type="submit" class="btn btn-primary px-48 h-44 shadow-lg font-weight-700">Push to Catalog</button>
+            <button type="submit" id="admin-variant-submit" class="btn btn-primary px-48 h-44 shadow-lg font-weight-700">Push to Catalog</button>
         </div>
+        
+        <script>
+            // Administrative submit protection
+            document.querySelector('form').addEventListener('submit', function() {
+                const btn = document.getElementById('admin-variant-submit');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerText = 'Syncing...';
+                    btn.classList.add('opacity-50');
+                }
+            });
+        </script>
     </form>
 </div>
 {% endblock %}

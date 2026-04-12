@@ -163,14 +163,14 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'product', 'variant', 'quantity')
+    list_display = ('customer', 'variant', 'quantity')
     list_filter = ('customer',)
     raw_id_fields = ('variant',)
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ('product', 'price', 'quantity')
+    readonly_fields = ('variant', 'snapshot_product_name', 'snapshot_sku', 'snapshot_price', 'quantity')
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -181,7 +181,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Wishlist)
 class WishlistAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'product', 'variant', 'added_at')
+    list_display = ('customer', 'variant', 'added_at')
     list_filter = ('customer', 'added_at')
     raw_id_fields = ('variant',)
 
@@ -245,14 +245,14 @@ class VariantAttributeInline(admin.TabularInline):
 class ProductVariantAdmin(admin.ModelAdmin):
     """Dedicated admin page for a variant — shows its attribute assignments AND image gallery."""
     inlines = [VariantAttributeInline]
-    list_display  = ('sku', 'product', 'effective_price', 'stock_quantity', 'is_active')
+    list_display  = ('sku', 'product', 'price', 'stock_quantity', 'is_active')
     list_filter   = ('is_active', 'product__category_id')
     search_fields = ('sku', 'product__model_name')
     actions       = ['bulk_mark_active', 'bulk_mark_inactive']
 
-    def effective_price(self, obj):
-        return obj.effective_price
-    effective_price.short_description = 'Price'
+    def price(self, obj):
+        return obj.price
+    price.short_description = 'Price'
 
     @admin.action(description='Mark selected variants as Active')
     def bulk_mark_active(self, request, queryset):
@@ -273,8 +273,8 @@ class AttributeValueInline(admin.TabularInline):
 @admin.register(Attribute)
 class AttributeAdmin(admin.ModelAdmin):
     inlines = [AttributeValueInline]
-    list_display = ('name', 'category', 'display_order')
-    list_filter  = ('category',)
+    list_display = ('name', 'display_order')
+    list_filter  = ('categories',)
     search_fields = ('name',)
 
 

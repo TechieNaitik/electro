@@ -15,7 +15,7 @@
         {% for item in order.items.all %}
         <div style="border-bottom: 1px solid #edf2f7; padding: 12px 0; display: table; width: 100%;">
             <div style="display: table-cell; vertical-align: middle;">
-                <span style="font-weight: 600;">{{ item.product.full_name }}</span><br>
+                <span style="font-weight: 600;">{{ item.snapshot_product_name }}</span><br>
                 <span style="font-size: 13px; color: #718096;">Qty: {{ item.quantity }}</span>
             </div>
             <div style="display: table-cell; vertical-align: middle; text-align: right; font-weight: 600;">

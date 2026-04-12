@@ -117,4 +117,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500);
         });
     }, 5000);
+
+    // ───────── Number Input Scroll Fix ─────────
+    // Prevents "on its own" stock changes when scrolling the form with mouse over number inputs
+    document.addEventListener('wheel', function(e) {
+        if (document.activeElement.type === 'number') {
+            document.activeElement.blur();
+        }
+    });
+
+    // Also disable arrow key changes if needed for critical fields
+    document.addEventListener('keydown', function(e) {
+        if (['ArrowUp', 'ArrowDown'].includes(e.key) && document.activeElement.type === 'number') {
+            // Optional: e.preventDefault(); 
+            // Better to let them use arrows if they explicitly clicked/tabbed in
+        }
+    });
 });

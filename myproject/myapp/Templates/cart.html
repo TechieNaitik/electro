@@ -35,12 +35,13 @@
             <td class="ps-4 py-4">
               <div class="d-flex align-items-center">
                 <div class="rounded-3 border overflow-hidden me-4" style="width: 100px; height: 100px;">
-                  <img src="{{ item.product.featured_image_url }}" class="img-fluid w-100 h-100 object-fit-cover"
-                    alt="{{ item.product.full_name }}">
+                  <img src="{{ item.variant.variant_image_url }}" class="img-fluid w-100 h-100 object-fit-cover"
+                    alt="{{ item.variant.product.full_name }}">
                 </div>
                 <div>
-                  <h6 class="mb-1 fw-bold">{{ item.product.full_name }}</h6>
-                  <p class="text-muted small mb-0">Category: {{ item.product.category_id.name }}</p>
+                  <h6 class="mb-1 fw-bold text-dark">{{ item.variant.product.full_name }}</h6>
+                  <p class="text-primary small mb-1 fw-medium">{{ item.variant.attribute_summary }}</p>
+                  <p class="text-muted small mb-0">Category: {{ item.variant.product.category_id.name }}</p>
                 </div>
               </div>
             </td>
@@ -51,15 +52,17 @@
               <div class="d-flex justify-content-center align-items-center">
                 <div class="input-group quantity"
                   style="width: 130px; border: 1px solid #dee2e6; border-radius: 50px; padding: 2px;">
-                  <input type="text" id="qty-{{ item.id }}"
-                    class="form-control form-control-sm text-center border-0 fw-bold bg-transparent"
-                    value="{{ item.quantity }}" readonly style="box-shadow: none;">
-                  <div class="input-group-append d-flex">
+                  <div class="input-group-prepend">
                     <a href="{% url 'update_cart' item.id 'decrease' %}"
-                      class="btn btn-sm btn-light border-0 rounded-circle me-1 ajax-update-cart"
+                      class="btn btn-sm btn-light border-0 rounded-circle ajax-update-cart"
                       data-cid="{{ item.id }}" style="width: 28px; height: 28px; padding: 0; line-height: 28px;">
                       <i class="fa fa-minus small"></i>
                     </a>
+                  </div>
+                  <input type="text" id="qty-{{ item.id }}"
+                    class="form-control form-control-sm text-center border-0 fw-bold bg-transparent"
+                    value="{{ item.quantity }}" readonly style="box-shadow: none;">
+                  <div class="input-group-append">
                     <a href="{% url 'update_cart' item.id 'increase' %}"
                       class="btn btn-sm btn-light border-0 rounded-circle ajax-update-cart" data-cid="{{ item.id }}"
                       style="width: 28px; height: 28px; padding: 0; line-height: 28px;">
@@ -70,7 +73,7 @@
               </div>
             </td>
             <td>
-               <span class="text-primary fw-bold price-display" id="item-total-{{ item.id }}" data-base-price="{{ item.total_price }}">₹{{ item.total_price }}</span>
+                <span class="text-primary fw-bold price-display" id="item-total-{{ item.id }}" data-base-price="{{ item.total_price }}">₹{{ item.total_price }}</span>
             </td>
             <td class="pe-4 text-center">
               <a href="{% url 'update_cart' item.id 'remove' %}"

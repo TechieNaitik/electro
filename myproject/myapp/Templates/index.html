@@ -237,8 +237,7 @@
                                 <span class="text-primary fw-bold">₹{{ product.min_price }}</span>
                             </p>
                             <div class="wow fadeInRight" data-wow-delay="0.7s">
-                                <a class="btn btn-primary rounded-pill py-3 px-5 me-3" href="{% url 'single' product.id %}">View Details</a>
-                                <a class="btn btn-secondary rounded-pill py-3 px-5 ajax-add-to-cart" href="{% url 'add_to_cart' product.id %}">Add To Cart</a>
+                                <a class="btn btn-primary rounded-pill py-3 px-5 me-3" href="{% url 'single' product.id %}">View Product</a>
                             </div>
                         </div>
                     </div>
@@ -267,8 +266,8 @@
                             <a href="{% url 'single' special_offer.id %}" class="d-block text-white fs-3">{{ special_offer.full_name }}</a>
                             <span class="text-primary fs-5">₹{{ special_offer.min_price }}</span>
                         </div>
-                        <a href="{% url 'add_to_cart' special_offer.id %}" class="btn btn-primary rounded-pill py-2 px-4 ajax-add-to-cart"><i
-                                class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
+                        <a href="{% url 'single' special_offer.id %}" class="btn btn-primary rounded-pill py-2 px-4"><i
+                                class="fas fa-eye me-2"></i> View Details</a>
                     </div>
                     {% else %}
                     <img src="{% static 'img/header-img.jpg' %}" class="img-fluid w-100 h-100 img-cover" alt="Default Banner">
@@ -408,12 +407,8 @@
                                             <span class="text-primary fs-5 price-display" data-base-price="{{ product.min_price }}">₹{{ product.min_price }}</span>
                                         </div>
                                     </div>
-                                    <div
-                                        class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <a href="{% url 'add_to_cart' product.id %}"
-                                            class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4 ajax-add-to-cart"><i
-                                                class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                                        <div class="d-flex justify-content-between align-items-center">
+                                    <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
                                             <div class="d-flex">
                                                 <a href="javascript:void(0);"
                                                     class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-2 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
@@ -467,7 +462,6 @@
                                         </div>
                                     </div>
                                     <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4 ajax-add-to-cart"><i class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div class="d-flex">
                                                 <a href="javascript:void(0);" class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-2 {% if product.id in wishlist_ids %}wishlisted{% endif %}" data-product-id="{{ product.id }}">
@@ -513,7 +507,6 @@
                                         </div>
                                     </div>
                                     <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4 ajax-add-to-cart"><i class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div class="d-flex">
                                                 <a href="javascript:void(0);" class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-2 {% if product.id in wishlist_ids %}wishlisted{% endif %}" data-product-id="{{ product.id }}">
@@ -559,7 +552,6 @@
                                         </div>
                                     </div>
                                     <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
-                                        <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4 ajax-add-to-cart"><i class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div class="d-flex">
                                                 <a href="javascript:void(0);" class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-2 {% if product.id in wishlist_ids %}wishlisted{% endif %}" data-product-id="{{ product.id }}">
@@ -622,10 +614,7 @@
                             </div>
                         </div>
                         <div class="products-mini-add border p-3">
-                            <a href="{% url 'add_to_cart' product.id %}"
-                                class="btn btn-primary border-secondary rounded-pill py-2 px-4 ajax-add-to-cart"><i
-                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center justify-content-between">
                                 <a href="javascript:void(0);"
                                     class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-2 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
                                     data-product-id="{{ product.id }}">

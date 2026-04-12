@@ -141,11 +141,15 @@
             {% for item in items %}
             <tr>
                 <td>
-                    <div class="item-n">{{ item.product.full_name }}</div>
-                    <div class="item-c">{{ item.product.category_id.name }}</div>
+                    <div class="item-n">{{ item.snapshot_product_name }}</div>
+                    <div class="item-c">
+                        {% for k, v in item.snapshot_attributes.items %}
+                        {{ k }}: {{ v }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </div>
                 </td>
                 <td style="text-align: center;">{{ item.quantity }}</td>
-                <td style="text-align: right;">₹{{ item.price }}</td>
+                <td style="text-align: right;">₹{{ item.snapshot_price }}</td>
                 <td style="text-align: right;">₹{{ item.line_total }}</td>
             </tr>
             {% endfor %}

@@ -232,15 +232,15 @@
                             {% csrf_token %}
                             <!-- Hidden variant_id — populated by JS when a variant is selected -->
                             <input type="hidden" name="variant_id" id="selected-variant-id" value="">
-                            <div class="input-group quantity mb-5" style="width: 100px;">
-                                <input type="text" name="qty" class="form-control form-control-sm text-center border-0" value="1">
+                            <div class="input-group quantity mb-5" style="width: 125px; border: 1px solid #dee2e6; border-radius: 50px; padding: 4px;">
                                 <div class="input-group-btn">
-                                    <button type="button" class="btn btn-sm btn-minus rounded-circle bg-light border">
+                                    <button type="button" class="btn btn-sm btn-minus rounded-circle bg-light border-0" style="width: 32px; height: 32px; padding: 0;">
                                         <i class="fa fa-minus"></i>
                                     </button>
                                 </div>
+                                <input type="text" name="qty" class="form-control form-control-sm text-center border-0 bg-transparent fw-bold" value="1" readonly style="box-shadow: none;">
                                 <div class="input-group-btn">
-                                    <button type="button" class="btn btn-sm btn-plus rounded-circle bg-light border">
+                                    <button type="button" class="btn btn-sm btn-plus rounded-circle bg-light border-0" style="width: 32px; height: 32px; padding: 0;">
                                         <i class="fa fa-plus"></i>
                                     </button>
                                 </div>
@@ -379,7 +379,8 @@
 <script>
     window.PRODUCT_ID    = parseInt('{{ product.id }}');
     window.ALL_VARIANTS  = JSON.parse('{{ variants_json|escapejs }}');
-    window.ORIGINAL_GALLERY = JSON.parse('{{ base_gallery_json|escapejs }}');
+    window.COLOR_IMAGE_MAP = JSON.parse('{{ color_image_map_json|escapejs }}');
+    window.OPTION_TYPES = JSON.parse('{{ option_types_json|escapejs }}');
 </script>
 <script src="{% static 'js/single_inline.js' %}"></script>
 {% endif %}

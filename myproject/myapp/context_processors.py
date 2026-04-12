@@ -23,6 +23,6 @@ def wishlist_data(request):
     if 'email' in request.session:
         customer = Customer.objects.filter(email=request.session['email']).first()
         if customer:
-            wishlist_ids = list(Wishlist.objects.filter(customer=customer).values_list('product_id', flat=True))
+            wishlist_ids = list(Wishlist.objects.filter(customer=customer).values_list('variant__product_id', flat=True).distinct())
     return {'wishlist_ids': wishlist_ids}
 

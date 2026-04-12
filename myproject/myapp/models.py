@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 import os
 from django.db import models
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from decimal import Decimal
@@ -121,6 +121,81 @@ class Product(models.Model):
     def __str__(self):
         return self.full_name
 
+    def get_option_types(self):
+        """
+        Returns a JSON-serializable list of attributes and their available values for this product.
+        Used to build the frontend option selectors.
+        """
+        from .models import Attribute
+        # Fetch attributes that have values associated with this product's variants
+        attributes = Attribute.objects.filter(
+            values__productvariant__product=self
+        ).distinct().order_by('display_order', 'name').prefetch_related('values')
+
+        data = []
+        for attr in attributes:
+            # Filter values to only those actually present for this product's variants
+            relevant_values = attr.values.filter(productvariant__product=self).distinct().order_by('display_order', 'value')
+            data.append({
+                'id': attr.id,
+                'name': attr.name,
+                'values': [
+                    {
+                        'id': v.id,
+                        'value': v.value,
+                        'hex_color': v.hex_color or None
+                    } for v in relevant_values
+                ]
+            })
+        return data
+
+    def get_variant_matrix(self):
+        """
+        Returns an O(1) lookup dictionary keyed by sorted attribute value IDs.
+        e.g., {"3,7": {"price": "999.00", "stock": 10, ...}}
+        Optimized with prefetch_related to avoid N+1 queries.
+        """
+        matrix = {}
+        # Prefetch variants with their attributes ordered by attribute ID for consistent key generation
+        variants = self.variants.filter(is_active=True).prefetch_related(
+            'variantattribute_set__attribute_value__attribute'
+        )
+        
+        for v in variants:
+            # Generate a consistent key based on sorted attribute value IDs
+            # Ordering by attribute__id ensures "Color,Storage" vs "Storage,Color" consistency
+            attr_ids = sorted([
+                va.attribute_value.id for va in v.variantattribute_set.all()
+            ])
+            key = ",".join(map(str, attr_ids))
+            
+            matrix[key] = {
+                'id': v.id,
+                'sku': v.sku,
+                'price': str(v.price),
+                'stock_quantity': v.stock_quantity,
+                'in_stock': v.stock_quantity > 0,
+                'attributes': {
+                    va.attribute_value.attribute.name: va.attribute_value.value 
+                    for va in v.variantattribute_set.all()
+                }
+            }
+        return matrix
+
+    def get_color_image_map(self):
+        """
+        Returns a mapping of attribute value IDs (usually colors) to their specific images.
+        """
+        color_map = {}
+        # Fetch all product images that have an attribute value (color-scoped)
+        images = self.images.exclude(attribute_value=None).select_related('attribute_value')
+        for img in images:
+            av_id = str(img.attribute_value_id) # Using string keys for JS compatibility
+            if av_id not in color_map:
+                color_map[av_id] = []
+            color_map[av_id].append(img.image_url)
+        return color_map
+
 class ProductView(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='views')
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -132,23 +207,27 @@ class ProductView(models.Model):
 
 class Cart(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
-    variant  = models.ForeignKey('ProductVariant', null=True, blank=True, on_delete=models.SET_NULL)   # Phase 1: nullable
+    variant  = models.ForeignKey('ProductVariant', on_delete=models.CASCADE, related_name='cart_items')
     quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['customer', 'variant'], name='unique_customer_variant_cart')
+        ]
+        indexes = [
+            models.Index(fields=['customer', 'variant']),
+        ]
 
     @property
     def unit_price(self):
-        """Returns the appropriate unit price: variant price or product min_price."""
-        if self.variant:
-            return self.variant.price
-        return self.product.min_price
+        """Returns the variant price."""
+        return self.variant.price
 
     def total_price(self):
         return self.quantity * self.unit_price
 
     def __str__(self):
-        variant_label = f" [{self.variant.sku}]" if self.variant else ""
-        return f"{self.customer.full_name} - {self.product.full_name}{variant_label}"
+        return f"{self.customer.full_name} - {self.variant.product.full_name} [{self.variant.sku}]"
 
 class Order(models.Model):
     ORDER_STATUS_CHOICES = [
@@ -196,46 +275,38 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order    = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
     variant  = models.ForeignKey('ProductVariant', null=True, blank=True,
                                   on_delete=models.SET_NULL)
     # Snapshot fields — values captured at the moment of purchase so
     # the line item remains accurate even if variant/product is later modified.
-    snapshot_sku        = models.CharField(max_length=100, blank=True)
-    snapshot_price      = models.DecimalField(max_digits=10, decimal_places=2,
-                                               null=True, blank=True)
-    snapshot_attributes = models.JSONField(default=dict, blank=True)
-    # e.g. {"Color": "Blue", "Storage": "256GB"}
-    price    = models.IntegerField()   # keep for backward compat with existing orders
+    snapshot_product_name = models.CharField(max_length=255, blank=True)
+    snapshot_sku          = models.CharField(max_length=100, blank=True)
+    snapshot_price        = models.DecimalField(max_digits=10, decimal_places=2,
+                                                 null=True, blank=True)
+    snapshot_attributes   = models.JSONField(default=dict, blank=True)
+    # snapshot_price should be used exclusively for calculations
     quantity = models.PositiveIntegerField(default=1)
 
     def line_total(self):
-        return self.price * self.quantity
+        """Uses the Decimal snapshot_price for all calculations."""
+        base_price = self.snapshot_price if self.snapshot_price is not None else Decimal('0.00')
+        return base_price * self.quantity
 
 class Wishlist(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
-    variant  = models.ForeignKey('ProductVariant', null=True, blank=True,
-                                  on_delete=models.SET_NULL)
+    variant  = models.ForeignKey('ProductVariant', on_delete=models.CASCADE, related_name='wishlist_items')
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['customer', 'product'], 
-                condition=models.Q(variant__isnull=True),
-                name='unique_customer_product_no_variant'
-            ),
-            models.UniqueConstraint(
-                fields=['customer', 'product', 'variant'], 
-                condition=models.Q(variant__isnull=False),
-                name='unique_customer_product_variant'
+                fields=['customer', 'variant'], 
+                name='unique_customer_variant_wishlist'
             )
         ]
 
     def __str__(self):
-        variant_label = f" [{self.variant.sku}]" if self.variant else ""
-        return f"{self.customer.full_name} — {self.product.full_name}{variant_label}"
+        return f"{self.customer.full_name} — {self.variant.product.full_name} [{self.variant.sku}]"
 
 class ProductReview(models.Model):
     """Stores detailed product reviews and ratings from individual users."""
@@ -363,17 +434,15 @@ def delete_product_extra_image_on_delete(sender, instance, **kwargs):
 # ===========================================================================
 
 class Attribute(models.Model):
-    """Represents a dimension of variation, optionally scoped to a category."""
+    """Represents a dimension of variation (e.g., Color), applicable across multiple categories."""
     name          = models.CharField(max_length=100)
-    category      = models.ForeignKey(
-                        'Category', null=True, blank=True,
-                        on_delete=models.SET_NULL,
+    categories    = models.ManyToManyField(
+                        'Category', blank=True,
                         related_name='attributes'
-                    )  # None = global attribute (applies to all categories)
+                    )  # Empty = global attribute (applies to all categories)
     display_order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        unique_together = ('name', 'category')
         ordering = ['display_order', 'name']
 
     def __str__(self):
@@ -404,48 +473,23 @@ class ProductVariant(models.Model):
                                             through='VariantAttribute')
     sku            = models.CharField(max_length=100, unique=True)
     price          = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-                                         # None = inherit from Product.price
     stock_quantity    = models.PositiveIntegerField(default=0)
     reorder_threshold = models.PositiveIntegerField(default=10)
     is_active      = models.BooleanField(default=True)
-
-    @property
-    def effective_price(self):
-        """Returns the variant's own price."""
-        return self.price
 
     @property
     def in_stock(self):
         return self.stock_quantity > 0
 
     @property
-    def gallery(self):
-        """
-        Returns all images scoped specifically to this variant's attribute values 
-        (like Color=Lavender) AND general product images.
-        """
-        # Shared attribute images (e.g., if an image is linked to the 'Lavender' Color)
-        # We also include images with no attribute_value as general images
-        from .models import ProductImage
-        return ProductImage.objects.filter(
-            product=self.product
-        ).filter(
-            models.Q(attribute_value__in=self.attributes.all()) |
-            models.Q(attribute_value__isnull=True)
-        ).distinct().order_by('display_order', 'created_at')
-
-    @property
-    def primary_image(self):
-        """Returns the first variant image (including shared attribute images)."""
-        gallery = self.gallery
-        return gallery[0] if gallery else None
-    
-    @property
-    def primary_image_url(self):
-        """Safely returns the URL of the primary image for this specific variant."""
-        img = self.primary_image
-        if img:
-            return img.image_url
+    def variant_image_url(self):
+        """Attempts to find an image matching one of this variant's attributes (e.g. Color). Returns the product's featured image otherwise."""
+        # Try to find a ProductImage that matches one of our attribute values
+        # We prefetch_related for performance in bulk lookups
+        for av in self.attributes.all():
+            img = self.product.images.filter(attribute_value=av).first()
+            if img:
+                return img.image_url
         return self.product.featured_image_url
 
     @property
@@ -466,10 +510,22 @@ class VariantAttribute(models.Model):
         unique_together = ('variant', 'attribute_value')
 
 
-@receiver(post_delete, sender=ProductVariant)
+@receiver(pre_delete, sender=ProductVariant)
 def delete_variant_images_on_delete(sender, instance, **kwargs):
-    """Also delete variant images on disk when a ProductVariant is deleted."""
-    for pi in instance.variant_images.all():
-        if pi.image and os.path.isfile(pi.image.path):
-            os.remove(pi.image.path)
-        pi.delete()
+    """
+    Cleans up color-scoped images that were uniquely associated with this variant's attributes.
+    Prevents AttributeError logs by using the correct reverse relationships.
+    """
+    try:
+        # Get attributes before the variant is deleted
+        attributes = list(instance.attributes.all())
+        for av in attributes:
+            # Check if any OTHER variant of this product still uses this attribute value
+            other_variants_exist = instance.product.variants.exclude(id=instance.id).filter(attributes=av).exists()
+            if not other_variants_exist:
+                # No other variant uses this color/size, delete images scoped to it for this product
+                for pi in instance.product.images.filter(attribute_value=av):
+                    pi.delete() # Triggers file system deletion
+    except (AttributeError, Exception):
+        # Fail gracefully during bulk deletions or if relationships are already severed
+        pass

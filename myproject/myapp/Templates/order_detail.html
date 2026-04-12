@@ -45,15 +45,28 @@
                                     <tr class="border-bottom">
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img src="{{ item.product.featured_image_url }}" class="img-fluid rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="">
+                                                {% if item.variant %}
+                                                <img src="{{ item.variant.product.featured_image_url }}" class="img-fluid rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="">
+                                                {% else %}
+                                                <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-box text-muted"></i>
+                                                </div>
+                                                {% endif %}
                                                 <div>
-                                                    <a href="{% url 'single' item.product.id %}" class="fw-bold">{{ item.product.name }}</a>
-                                                    <p class="text-muted small mb-0">{{ item.product.category_id.name }}</p>
+                                                    <h6 class="mb-0 fw-bold">{{ item.snapshot_product_name }}</h6>
+                                                    {% if item.snapshot_attributes %}
+                                                    <p class="text-muted small mb-0">
+                                                        {% for k, v in item.snapshot_attributes.items %}
+                                                        {{ k }}: {{ v }}{% if not forloop.last %}, {% endif %}
+                                                        {% endfor %}
+                                                    </p>
+                                                    {% endif %}
+                                                    <p class="text-muted small mb-0">SKU: {{ item.snapshot_sku }}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="text-center">{{ item.quantity }}</td>
-                                        <td class="text-end">₹{{ item.price }}</td>
+                                        <td class="text-end">₹{{ item.snapshot_price }}</td>
                                         <td class="text-end fw-bold">₹{{ item.line_total }}</td>
                                     </tr>
                                     {% endfor %}

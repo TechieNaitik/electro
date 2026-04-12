@@ -269,7 +269,7 @@ def admin_export(request):
         headers = ['Order ID', 'Product', 'Variant SKU', 'Quantity', 'Unit Price', 'Subtotal']
         def data_func(obj):
             sku = obj.variant.sku if obj.variant else (obj.snapshot_sku or 'N/A')
-            return [obj.order.id, obj.product.full_name, sku, obj.quantity, f"₹{obj.price}", f"₹{obj.line_total()}"]
+            return [obj.order.id, obj.snapshot_product_name, sku, obj.quantity, f"₹{obj.snapshot_price}", f"₹{obj.line_total()}"]
 
     elif module == 'products':
         queryset = Product.objects.select_related('category_id', 'brand').all().order_by('brand__name', 'model_name')
@@ -550,7 +550,7 @@ def admin_order_detail(request, order_id):
         else:
             messages.error(request, "Invalid order status.")
             
-    items = OrderItem.objects.filter(order=order).select_related('product')
+    items = OrderItem.objects.filter(order=order)
     context = {
         'active_page': 'orders', 
         'order': order, 

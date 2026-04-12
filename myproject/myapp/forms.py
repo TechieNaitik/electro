@@ -67,6 +67,12 @@ class ProductImageForm(forms.ModelForm):
             'alt_text': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Optional alt text'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .models import AttributeValue
+        self.fields['attribute_value'].queryset = AttributeValue.objects.select_related('attribute').order_by('attribute__name', 'value')
+        self.fields['attribute_value'].empty_label = "General (All Variants)"
+
 ProductImageFormSet = inlineformset_factory(
     Product, 
     ProductImage, 
@@ -80,10 +86,10 @@ from .models import Attribute, AttributeValue, ProductVariant, VariantAttribute
 class AttributeForm(forms.ModelForm):
     class Meta:
         model = Attribute
-        fields = ['name', 'category', 'display_order']
+        fields = ['name', 'categories', 'display_order']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Color'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
+            'categories': forms.SelectMultiple(attrs={'class': 'form-control', 'style': 'height: 120px;'}),
             'display_order': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
         }
 

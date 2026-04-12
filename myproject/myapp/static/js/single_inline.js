@@ -3,7 +3,6 @@
 
     const PRODUCT_ID    = window.PRODUCT_ID;
     const ALL_VARIANTS  = window.ALL_VARIANTS;
-    const ORIGINAL_GALLERY = window.ORIGINAL_GALLERY;
 
     // State: attr_name → selected attribute_value id (int) or null
     const selectedAttrs = {};
@@ -96,29 +95,52 @@
         });
     }
 
-    function getMatchingVariants(avIds) {
-        return ALL_VARIANTS.filter(v => avIds.every(id => v.attribute_ids.includes(id)));
+    function resolveVariant(avIds) {
+        if (!avIds || avIds.length === 0) return null;
+        
+        // Use the O(1) matrix lookup. IDs are sorted to match the backend key format.
+        const key = [...avIds].sort((a,b) => a - b).join(',');
+        return ALL_VARIANTS[key] || null;
     }
 
     // ── Main UI update ────────────────────────────────────────────────────────
     function updateUI() {
         const avIds = Object.values(selectedAttrs).filter(Boolean);
-        const matching = getMatchingVariants(avIds);
+        const resolvedVariant = resolveVariant(avIds);
 
-        // Grey out unavailable combinations
+        // Grey out unavailable combinations (Still O(N*A) but manageable for UI state)
+        // We iterate over all possible attribute values to see if they are "viable" given other selections
         document.querySelectorAll('[data-av-id]').forEach(el => {
             const avId = parseInt(el.dataset.avId);
             const attrName = el.dataset.attrName;
+            
+            // Collect other selected IDs
             const otherIds = Object.entries(selectedAttrs)
                 .filter(([k]) => k !== attrName)
                 .map(([, v]) => v).filter(Boolean);
-            const viable = ALL_VARIANTS.some(v =>
-                [...otherIds, avId].every(id => v.attribute_ids.includes(id))
+            
+            // Check if ANY variant exists in the matrix that contains both otherIds and this avId
+            const isViable = Object.values(ALL_VARIANTS).some(v => 
+                [...otherIds, avId].every(id => {
+                    // This is slightly tricky since the matrix values don't store attribute_ids directly
+                    // but we can infer them from the keys or use simple stock check if preferred.
+                    // For now, let's keep it simple: if this avId + otherIds results in a key that exists
+                    // we need to be careful with "partial" keys.
+                    
+                    // Actually, simpler logic: a value is viable if there exists AT LEAST ONE 
+                    // variant in ALL_VARIANTS that has this avId AND all otherIds.
+                    return true; // Placeholder for now or keep existing logic if we adjust models
+                })
             );
+            
+            // Re-implementing viable check correctly for the new matrix
+            const viable = Object.keys(ALL_VARIANTS).some(key => {
+                const parts = key.split(',').map(Number);
+                return [...otherIds, avId].every(id => parts.includes(id));
+            });
+
             el.classList.toggle('unavailable', !viable);
         });
-
-        const resolvedVariant = matching.length === 1 ? matching[0] : null;
 
         // Price & SKU
         if (resolvedVariant) {
@@ -152,9 +174,14 @@
                 addToCartBtn.disabled = true;
                 addToCartBtn.innerHTML = '<i class="fa fa-ban me-2"></i> Out of Stock';
             }
+        } else {
+            // No variant fully resolved
+             stockBadgeEl.innerHTML = `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2" style="font-size:.88rem;"><i class="fas fa-hand-pointer me-1"></i> Select options to view stock</span>`;
+             addToCartBtn.disabled = true;
+             addToCartBtn.innerHTML = '<i class="fa fa-shopping-bag me-2 text-white"></i> Add to cart';
         }
 
-        // Highlight thumbnails instead of swapping
+        // Highlight thumbnails
         highlightGallery(avIds);
 
         // Persist to URL

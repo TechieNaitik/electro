@@ -183,11 +183,11 @@
                 {% for item in items %}
                 <tr>
                     <td>
-                        <img src="{{ item.product.featured_image_url }}" alt="{{ item.product.full_name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05);">
+                        <img src="{{ item.variant.product.featured_image_url }}" alt="{{ item.variant.product.full_name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05);">
                     </td>
                     <td>
-                        <div style="font-weight: 700; color: var(--text-primary);">{{ item.product.full_name }}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">SKU: #{{ item.product.id|stringformat:"04d" }}</div>
+                        <div style="font-weight: 700; color: var(--text-primary);">{{ item.variant.product.full_name }}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">SKU: #{{ item.variant.product.id|stringformat:"04d" }}</div>
                     </td>
                     <td class="text-center" style="font-size: 1.1rem;">₹{{ item.price }}</td>
                     <td class="text-center">

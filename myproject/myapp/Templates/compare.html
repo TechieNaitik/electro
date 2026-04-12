@@ -158,34 +158,11 @@
                     <tr>
                         <td class="row-label">Actions</td>
                         {% for product in products %}
-                        <td class="compare-actions-cell">
-                            <!-- Quantity Selector -->
-                            <div class="compare-qty-wrap mb-3">
-                                <label class="compare-qty-label">Qty</label>
-                                <div class="compare-qty-group">
-                                    <button type="button" class="compare-qty-btn compare-qty-minus" aria-label="Decrease">
-                                        <i class="fa fa-minus"></i>
-                                    </button>
-                                    <input type="number"
-                                           class="compare-qty-input"
-                                           value="1" min="1"
-                                           max="{{ product.stock_quantity|default:99 }}"
-                                           data-product-id="{{ product.id }}"
-                                           id="compare-qty-{{ product.id }}"
-                                           {% if product.stock_quantity == 0 %}disabled{% endif %}>
-                                    <button type="button" class="compare-qty-btn compare-qty-plus" aria-label="Increase">
-                                        <i class="fa fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Add to Cart -->
-                            <a href="{% url 'add_to_cart' product.id %}"
-                               class="btn btn-primary btn-sm rounded-pill ajax-add-to-cart px-4 mb-2 d-block text-center compare-cart-btn"
-                               data-product-id="{{ product.id }}"
-                               {% if product.stock_quantity == 0 %}style="pointer-events:none;opacity:.55;"{% endif %}>
-                                <i class="fas fa-shopping-cart me-2"></i>
-                                {% if product.stock_quantity > 0 %}Add To Cart{% else %}Out of Stock{% endif %}
+                        <td class="compare-actions-cell text-center">
+                            <!-- View Details -->
+                            <a href="{% url 'single' product.id %}"
+                               class="btn btn-primary btn-sm rounded-pill px-4 mb-2 d-block text-center compare-cart-btn">
+                                <i class="fas fa-eye me-2"></i> View Details
                             </a>
 
                             <!-- Wishlist Button -->

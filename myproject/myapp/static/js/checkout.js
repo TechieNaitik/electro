@@ -35,13 +35,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!selectedRadio) return;
         
         const selectedMethod = selectedRadio.value;
+        setLoading(true);
+
         if (selectedMethod !== 'Razorpay') {
             // Standard form submission for COD or other methods
             return;
         }
 
         e.preventDefault();
-        setLoading(true);
 
         try {
             // 1. Create Razorpay Order on server

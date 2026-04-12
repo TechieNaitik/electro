@@ -14,9 +14,9 @@ class ForecastingService:
         # Get historical sales data
         queryset = OrderItem.objects.all()
         if product_id:
-            queryset = queryset.filter(product_id=product_id)
+            queryset = queryset.filter(variant__product_id=product_id)
         if category_id:
-            queryset = queryset.filter(product__category_id=category_id)
+            queryset = queryset.filter(variant__product__category_id=category_id)
         
         # Aggregate by day
         historical_data = queryset.annotate(
@@ -93,12 +93,15 @@ class ForecastingService:
         forecast_data = ForecastingService.predict_sales(product_id=product.id, days_ahead=30)
         total_predicted = sum([val for date, val in forecast_data['forecast']])
         
-        if total_predicted > product.stock_quantity:
+        # Use total_stock property for Product level aggregate
+        stock = getattr(product, 'total_stock', getattr(product, 'stock_quantity', 0))
+        
+        if total_predicted > stock:
             days_until_stockout = 0
             cumulative = 0
             for i, (date, val) in enumerate(forecast_data['forecast']):
                 cumulative += val
-                if cumulative >= product.stock_quantity:
+                if cumulative >= stock:
                     days_until_stockout = i + 1
                     break
             return {

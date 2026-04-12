@@ -114,16 +114,21 @@
                                     </div>
                                 {% else %}
                                     <!-- New Image Upload Slot with Success Text (No Preview) -->
-                                    <div class="d-none">
-                                        {{ gform.image }}
-                                    </div>
-                                    <label class="gallery-upload-slot d-flex flex-column align-items-center justify-content-center p-3 text-center mb-0 w-100 overflow-hidden" 
-                                            style="min-height: 140px; border: 2px dashed var(--border-color); cursor: pointer; background: var(--bg-secondary); transition: all 0.3s ease;" 
+                                    <label class="gallery-upload-slot d-flex flex-column align-items-center justify-content-center p-0 text-center mb-0 w-100 overflow-hidden" 
+                                            style="min-height: 140px; border: 2px dashed var(--border-color); cursor: pointer; background: var(--bg-secondary); transition: all 0.3s ease; position: relative;" 
                                             for="{{ gform.image.id_for_label }}">
                                         
+                                        <!-- Hidden Input (Moved inside for better JS selection) -->
+                                        <div class="d-none">
+                                            {{ gform.image }}
+                                        </div>
+
+                                        <!-- Live Preview Image -->
+                                        <img id="preview-{{ gform.image.id_for_label }}" class="w-100 h-100 d-none" style="object-fit: contain; position: absolute; top: 0; left: 0; z-index: 1;">
+
                                         <!-- Success Message (Hidden by default) -->
-                                        <div class="selection-success d-none text-success" id="success-{{ gform.image.id_for_label }}">
-                                            <i class="fas fa-check-circle mb-2" style="font-size: 2rem;"></i>
+                                        <div class="selection-success d-none text-success" id="success-{{ gform.image.id_for_label }}" style="z-index: 2; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px;">
+                                            <i class="fas fa-check-circle mb-1" style="font-size: 1.5rem;"></i>
                                             <p class="small mb-0" style="font-weight: 600;">Selected</p>
                                         </div>
 
