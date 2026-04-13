@@ -51,7 +51,7 @@
     <div id="django-messages" style="display: none;">
         {% if messages %}
             {% for message in messages %}
-                <span class="django-message" data-message="{{ message|escapejs }}" data-tags="{{ message.tags }}"></span>
+                <span class="django-message" data-message="{{ message }}" data-tags="{{ message.tags }}"></span>
             {% endfor %}
         {% endif %}
     </div>

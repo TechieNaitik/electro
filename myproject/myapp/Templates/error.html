@@ -61,13 +61,13 @@
 
     {% if debug %}
     <div id="debug-data-bridge" style="display: none;"
-        data-type="{{ error_type|escapejs }}"
-        data-message="{{ error_message|escapejs }}"
-        data-path="{{ request_path|escapejs }}"
-        data-file="{{ file_path|escapejs }}"
-        data-line="{{ line_number|escapejs }}"
-        data-func="{{ function_name|escapejs }}"
-        data-trace="{{ stack_trace|escapejs }}">
+        data-type="{{ error_type }}"
+        data-message="{{ error_message }}"
+        data-path="{{ request_path }}"
+        data-file="{{ file_path }}"
+        data-line="{{ line_number }}"
+        data-func="{{ function_name }}"
+        data-trace="{{ stack_trace }}">
     </div>
     <script src="{% static 'js/error.js' %}"></script>
     {% endif %}

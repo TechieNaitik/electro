@@ -71,7 +71,7 @@
         }
     }
 
-    // Initialize the existing thumbnails with click handlers (since we no longer clear the strip)
+    // Initialize the existing thumbnails with click handlers
     if (thumbStrip) {
         thumbStrip.querySelectorAll('.thumbnail-item').forEach(div => {
             div.addEventListener('click', () => {
@@ -88,8 +88,9 @@
                 // CONNECTION: If this thumbnail belongs to a variant color, select it
                 const tAvId = parseInt(div.dataset.avId);
                 if (tAvId) {
-                    const el = document.querySelector(`[data-av-id="${tAvId}"]`);
-                    if (el && el.dataset.attrName === 'Color' && !el.classList.contains('active')) {
+                    // Specific selector for the swatch button, NOT the thumbnail
+                    const el = document.querySelector(`.color-swatch-btn[data-av-id="${tAvId}"]`);
+                    if (el && !el.classList.contains('active')) {
                         el.click();
                     }
                 }
@@ -110,32 +111,17 @@
         const avIds = Object.values(selectedAttrs).filter(Boolean);
         const resolvedVariant = resolveVariant(avIds);
 
-        // Grey out unavailable combinations (Still O(N*A) but manageable for UI state)
-        // We iterate over all possible attribute values to see if they are "viable" given other selections
-        document.querySelectorAll('[data-av-id]').forEach(el => {
+        // Grey out unavailable combinations
+        document.querySelectorAll('.color-swatch-btn, .pill-btn').forEach(el => {
             const avId = parseInt(el.dataset.avId);
             const attrName = el.dataset.attrName;
+            if (!attrName) return;
             
             // Collect other selected IDs
             const otherIds = Object.entries(selectedAttrs)
                 .filter(([k]) => k !== attrName)
                 .map(([, v]) => v).filter(Boolean);
             
-            // Check if ANY variant exists in the matrix that contains both otherIds and this avId
-            const isViable = Object.values(ALL_VARIANTS).some(v => 
-                [...otherIds, avId].every(id => {
-                    // This is slightly tricky since the matrix values don't store attribute_ids directly
-                    // but we can infer them from the keys or use simple stock check if preferred.
-                    // For now, let's keep it simple: if this avId + otherIds results in a key that exists
-                    // we need to be careful with "partial" keys.
-                    
-                    // Actually, simpler logic: a value is viable if there exists AT LEAST ONE 
-                    // variant in ALL_VARIANTS that has this avId AND all otherIds.
-                    return true; // Placeholder for now or keep existing logic if we adjust models
-                })
-            );
-            
-            // Re-implementing viable check correctly for the new matrix
             const viable = Object.keys(ALL_VARIANTS).some(key => {
                 const parts = key.split(',').map(Number);
                 return [...otherIds, avId].every(id => parts.includes(id));
@@ -196,10 +182,11 @@
     }
 
     // ── Click handlers ────────────────────────────────────────────────────────
-    document.querySelectorAll('[data-av-id]').forEach(el => {
+    document.querySelectorAll('.color-swatch-btn, .pill-btn').forEach(el => {
         el.addEventListener('click', function () {
             if (this.classList.contains('unavailable')) return;
             const attrName = this.dataset.attrName;
+            if (!attrName) return;
             const avId = parseInt(this.dataset.avId);
             const avValue = this.dataset.avValue;
             const labelId = 'selected-' + attrName.toLowerCase().replace(/\s+/g, '-');
@@ -229,7 +216,7 @@
         params.forEach((avIdStr) => {
             const avId = parseInt(avIdStr);
             if (!avId) return;
-            const el = document.querySelector(`[data-av-id="${avId}"]`);
+            const el = document.querySelector(`.color-swatch-btn[data-av-id="${avId}"], .pill-btn[data-av-id="${avId}"]`);
             if (el) el.click();
         });
     })();

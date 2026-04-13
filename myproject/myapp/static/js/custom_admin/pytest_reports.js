@@ -61,6 +61,9 @@ async function runPytest() {
         btn.innerHTML = '<i class="fas fa-play" style="margin-right:5px;"></i> Run Tests';
         
         console.log("Test execution finished. Terminal remains visible.");
+        
+        // Enable report buttons
+        document.querySelectorAll('.report-btn').forEach(l => l.classList.remove('disabled'));
 
     } catch (error) {
         console.error("Stream Error:", error);

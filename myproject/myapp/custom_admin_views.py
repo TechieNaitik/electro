@@ -1,3 +1,6 @@
+import os
+import re
+import subprocess
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, StreamingHttpResponse
 from django.contrib import messages
@@ -362,8 +365,10 @@ def admin_dashboard(request):
 def admin_pytest_reports(request):
     import os
     from django.conf import settings
-    report_path = os.path.join(str(settings.BASE_DIR), 'htmlcov', 'index.html')
-    exists = os.path.exists(report_path)
+    report_dir = os.path.join(str(settings.BASE_DIR), 'htmlcov')
+    # Better check: report exists if the directory exists and has the index OR if any of our split reports exist
+    exists = os.path.exists(os.path.join(report_dir, 'index.html')) or \
+             os.path.exists(os.path.join(report_dir, 'passed_tests.html'))
     
     context = {
         'active_page': 'pytest_reports',
@@ -373,7 +378,6 @@ def admin_pytest_reports(request):
 
 @site_admin_required
 def run_pytest_api(request):
-    import subprocess
     import os
     
     if request.method != 'POST':
@@ -420,8 +424,6 @@ def run_pytest_api(request):
 
 @site_admin_required
 def stream_pytest_api(request):
-    import subprocess
-    import os
     import sys
 
     # Get project root (myproject/)
@@ -434,7 +436,7 @@ def stream_pytest_api(request):
         env['PYTHONUNBUFFERED'] = '1'
         
         process = subprocess.Popen(
-            ['pytest', '-v', '--color=yes'],
+            ['pytest', '-v', '--color=yes', '--cov', '--cov-report=html'],
             cwd=root_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -796,8 +798,6 @@ def update_split_reports(output, root_dir):
     Parses pytest -v output and generates passed_tests.html, failed_tests.html, etc.
     in the htmlcov directory.
     """
-    import os
-    import re
 
     report_dir = os.path.join(root_dir, 'htmlcov')
     if not os.path.exists(report_dir):
