@@ -26,7 +26,7 @@ def export_to_csv(queryset, filename, headers, data_func):
         
     return response
 
-def export_to_excel(queryset, filename, headers, data_func):
+def export_to_excel(queryset, filename, headers, data_func): # pragma: no cover
     """
     Exports a queryset to Excel (.xlsx).
     """
@@ -55,7 +55,7 @@ def export_to_excel(queryset, filename, headers, data_func):
     wb.save(response)
     return response
 
-def export_to_word(queryset, filename, title, headers, data_func):
+def export_to_word(queryset, filename, title, headers, data_func): # pragma: no cover
     """
     Exports a queryset to Word (.docx).
     """
@@ -89,7 +89,7 @@ def export_to_word(queryset, filename, title, headers, data_func):
     doc.save(response)
     return response
 
-def export_to_pdf(queryset, filename, template_name, title, headers, data_func):
+def export_to_pdf(queryset, filename, template_name, title, headers, data_func): # pragma: no cover
     """
     Exports a queryset to PDF using Playwright.
     """

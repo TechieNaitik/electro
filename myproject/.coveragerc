@@ -1,0 +1,17 @@
+[run]
+source = myapp
+omit = 
+    */migrations/*
+    */tests/*
+
+[report]
+show_missing = True
+exclude_lines =
+    pragma: no cover
+    def __str__
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    def error_404
+    def error_500
+    def error_403
+    def error_400

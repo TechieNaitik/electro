@@ -27,33 +27,44 @@ class TestForms:
         form = BrandForm(data={'name': 'Apple'})
         assert form.is_valid()
 
-    def test_product_form_price_validation(self, category, brand, dummy_image):
+    def test_product_form_valid(self, category, brand):
         data = {
             'category_id': category.id,
             'brand': brand.id,
             'model_name': 'iPhone 15',
-            'variant_specs': '128GB',
             'description': 'Description',
-            'price': -100,  # Invalid price
-            'stock_quantity': 50
+            'is_featured': False
         }
-        form = ProductForm(data=data, files={'image': dummy_image})
-        assert not form.is_valid()
-        assert 'price' in form.errors
+        form = ProductForm(data=data)
+        assert form.is_valid()
 
-    def test_product_form_stock_validation(self, category, brand, dummy_image):
+    def test_product_variant_form_price_validation(self, product):
+        from myapp.forms import ProductVariantForm
         data = {
-            'category_id': category.id,
-            'brand': brand.id,
-            'model_name': 'iPhone 15',
-            'variant_specs': '128GB',
-            'description': 'Description',
-            'price': 1000,
-            'stock_quantity': -10  # Invalid stock
+            'product': product.id,
+            'sku': 'SKU-NEG',
+            'price': -100,  # Invalid price
+            'stock_quantity': 50,
+            'reorder_threshold': 10
         }
-        form = ProductForm(data=data, files={'image': dummy_image})
+        form = ProductVariantForm(data=data)
+        # DecimalField with min_value/validators or handled by DB 
+        # Usually forms handle min_value if specified in widgets or field override
+        # Here we just check if it's invalid assuming some validation exists or we add it
+        assert "Price cannot be negative" in str(form.errors['price'])
+
+    def test_product_variant_form_stock_validation(self, product):
+        from myapp.forms import ProductVariantForm
+        data = {
+            'product': product.id,
+            'sku': 'SKU-NEG-STOCK',
+            'price': 1000,
+            'stock_quantity': -10,  # Invalid stock
+            'reorder_threshold': 10
+        }
+        form = ProductVariantForm(data=data)
         assert not form.is_valid()
-        assert 'stock_quantity' in form.errors
+        assert "greater than or equal to 0" in str(form.errors['stock_quantity'])
 
     def test_coupon_form_initial_datetime(self):
         from myapp.models import Coupon
@@ -77,41 +88,11 @@ class TestForms:
         from myapp.forms import AttributeForm
         data = {
             'name': 'Color',
-            'category': category.id,
+            'categories': [category.id],
             'display_order': 1
         }
         form = AttributeForm(data=data)
         assert form.is_valid()
-
-    def test_product_variant_form_valid(self, product):
-        from myapp.forms import ProductVariantForm
-        data = {
-            'product': product.id,
-            'sku': 'SKU-123',
-            'price': 999.99,
-            'stock_quantity': 10,
-            'is_active': True
-        }
-        form = ProductVariantForm(data=data)
-        assert form.is_valid()
-
-    def test_product_form_clean_stock_manual(self):
-        """Manually test clean_stock_quantity to hit line 68 coverage."""
-        from myapp.forms import ProductForm
-        form = ProductForm()
-        form.cleaned_data = {'stock_quantity': -1}
-        with pytest.raises(forms.ValidationError) as excinfo:
-            form.clean_stock_quantity()
-        assert "Stock quantity cannot be negative" in str(excinfo.value)
-
-    def test_product_form_clean_price_manual(self):
-        """Manually test clean_price to hit line 62 coverage."""
-        from myapp.forms import ProductForm
-        form = ProductForm()
-        form.cleaned_data = {'price': -1}
-        with pytest.raises(forms.ValidationError) as excinfo:
-            form.clean_price()
-        assert "Price cannot be negative" in str(excinfo.value)
 
     def test_formsets(self, product):
         from myapp.forms import ProductImageFormSet, AttributeValueFormSet
@@ -125,4 +106,46 @@ class TestForms:
         attr = Attribute.objects.create(name="Size")
         formset = AttributeValueFormSet(instance=attr)
         assert len(formset.forms) == 5
+
+    def test_variant_attribute_formset(self, product):
+        from myapp.models import ProductVariant
+        from myapp.forms import VariantAttributeFormSet
+        variant = ProductVariant.objects.create(
+            product=product,
+            sku='VA-FORMSET-TEST',
+            price=100,
+            stock_quantity=10
+        )
+        formset = VariantAttributeFormSet(instance=variant)
+        assert len(formset.forms) == 4
+
+    def test_product_variant_form_stock_validation_direct(self):
+        """Specifically test the clean_stock_quantity method which is unreachable via is_valid due to PositiveIntegerField."""
+        from myapp.forms import ProductVariantForm
+        form = ProductVariantForm()
+        form.cleaned_data = {'stock_quantity': -5}
+        with pytest.raises(forms.ValidationError) as excinfo:
+            form.clean_stock_quantity()
+        assert "Stock cannot be negative" in str(excinfo.value)
+        
+        # Test valid case for completeness
+        form.cleaned_data = {'stock_quantity': 10}
+        assert form.clean_stock_quantity() == 10
+
+    def test_product_image_form_init(self):
+        """Test ProductImageForm's initialization logic for queryset and empty label."""
+        from myapp.forms import ProductImageForm
+        from myapp.models import AttributeValue, Attribute
+        
+        # Create some attribute values
+        attr = Attribute.objects.create(name="Color")
+        AttributeValue.objects.create(attribute=attr, value="Red")
+        AttributeValue.objects.create(attribute=attr, value="Blue")
+        
+        form = ProductImageForm()
+        assert form.fields['attribute_value'].empty_label == "General (All Variants)"
+        # Queryset should be Ordered by attribute name and value
+        qs = form.fields['attribute_value'].queryset
+        assert qs.count() >= 2
+        assert "Color" in str(qs.first().attribute.name)
 

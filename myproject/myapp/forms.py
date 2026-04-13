@@ -124,6 +124,18 @@ class ProductVariantForm(forms.ModelForm):
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
+    def clean_price(self):
+        price = self.cleaned_data.get('price')
+        if price is not None and price < 0:
+            raise forms.ValidationError("Price cannot be negative.")
+        return price
+
+    def clean_stock_quantity(self):
+        stock = self.cleaned_data.get('stock_quantity')
+        if stock is not None and stock < 0:
+            raise forms.ValidationError("Stock cannot be negative.")
+        return stock
+
 class VariantAttributeForm(forms.ModelForm):
     class Meta:
         model = VariantAttribute

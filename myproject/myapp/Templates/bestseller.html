@@ -50,12 +50,6 @@
                     </div>
                     <div class="products-mini-add border p-3">
                         <div class="d-flex align-items-center justify-content-between">
-                            <a href="javascript:void(0);"
-                                class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-2 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
-                                data-product-id="{{ product.id }}">
-                                <span class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></span>
-                            </a>
-
                             <div class="rating-readonly d-flex align-items-center ms-2" data-product-id="{{ product.id }}">
                                 {% for _ in "12345" %}
                                 <span class="star-display">
@@ -115,12 +109,6 @@
                     </div>
                     <div class="products-mini-add border p-3">
                         <div class="d-flex align-items-center justify-content-between">
-                            <a href="javascript:void(0);"
-                                class="wishlist-btn text-primary d-flex align-items-center justify-content-center me-2 {% if product.id in wishlist_ids %}wishlisted{% endif %}"
-                                data-product-id="{{ product.id }}">
-                                <span class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></span>
-                            </a>
-
                             <div class="rating-readonly d-flex align-items-center ms-2" data-product-id="{{ product.id }}">
                                 {% for _ in "12345" %}
                                 <span class="star-display">

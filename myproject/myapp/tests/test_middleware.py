@@ -95,3 +95,26 @@ def test_process_exception_render_failure():
             assert "Original Error" in response.content.decode()
             assert "Template Error" in response.content.decode()
 
+def test_process_exception_file_not_found():
+    """Test process_exception when the file path doesn't exist on disk."""
+    from myapp.middleware import ErrorHandlingMiddleware
+    from django.test.client import RequestFactory
+    from django.contrib.sessions.middleware import SessionMiddleware
+    from unittest.mock import patch, MagicMock
+    
+    middleware = ErrorHandlingMiddleware(lambda r: None)
+    factory = RequestFactory()
+    request = factory.get('/')
+    middleware_session = SessionMiddleware(lambda r: None)
+    middleware_session.process_request(request)
+    
+    fake_tb = MagicMock()
+    fake_tb.filename = "/non/existent/file.py"
+    fake_tb.lineno = 10
+    fake_tb.name = "fake_func"
+    
+    with patch('traceback.extract_tb', return_value=[fake_tb]):
+        with patch('os.path.exists', return_value=False):
+            response = middleware.process_exception(request, ValueError("Err"))
+            assert response.status_code == 500
+            assert "Err" in response.content.decode()

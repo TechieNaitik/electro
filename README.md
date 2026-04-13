@@ -154,11 +154,6 @@
 
 ### Installation
 
-<details>
-<summary><strong>Step-by-step setup guide</strong></summary>
-
-<br/>
-
 **1. Clone the repository**
 
 ```bash
@@ -216,7 +211,6 @@ python manage.py runserver
 
 Visit `http://127.0.0.1:8000` to see the app running.
 
-</details>
 
 ---
 
@@ -240,20 +234,16 @@ python manage.py create_site_admin <username> <email> <password>
 
 ## Project Structure
 
-<details>
-<summary><strong>View full directory tree</strong></summary>
-
-<br/>
-
 ```text
 electro/
 ├── LICENSE                    # MIT License
 ├── README.md                  # Project documentation
 ├── .gitignore                 # Git ignore rules
-├── pytest.ini                 # Pytest configuration
 ├── requirements.txt           # Python dependencies
+├── screenshots/               # Screenshots of the project
 └── myproject/                 # Django project root
     ├── manage.py              # Management utility
+    ├── pytest.ini             # Pytest configuration
     ├── myproject/             # Project config (settings, urls, wsgi)
     └── myapp/                 # Core application
         ├── migrations/        # Database migration history
@@ -261,14 +251,13 @@ electro/
         ├── services/          # Business logic: Coupon, Currency, AI Forecasting
         ├── static/            # Public assets (CSS, JS, images)
         ├── templates/         # HTML templates
+        ├── tests/             # Unit and integration tests
         ├── admin.py           # Django admin config
         ├── apps.py            # App configuration
         ├── models.py          # Database models
         ├── urls.py            # URL routing
         └── views.py           # Views and business logic
 ```
-
-</details>
 
 ---
 

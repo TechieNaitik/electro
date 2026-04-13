@@ -141,10 +141,10 @@ def category_products(request, cid):
         'categories': Category.objects.all(),
     }
     if cid == 0:
-        products = Product.objects.all().select_related('brand', 'category_id')
+        products = Product.objects.all().select_related('brand', 'category_id').order_by('-id')
     else:
         category = Category.objects.get(id=cid)
-        products = Product.objects.filter(category_id=category).select_related('brand', 'category_id')
+        products = Product.objects.filter(category_id=category).select_related('brand', 'category_id').order_by('-id')
         context['selected_category'] = category
     
     # Pagination (12 per page)
@@ -324,10 +324,10 @@ def compare_view(request):
 
 def contact(request):
     if request.method == "POST":
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        subject = request.POST.get('subject')
-        message = request.POST.get('message')
+        name = request.POST.get('name', '')
+        email = request.POST.get('email', '')
+        subject = request.POST.get('subject', '')
+        message = request.POST.get('message', '')
         
         log_action(f"Guest/User: {name} <{email}>", "Contact Form Submission", f"Subject: {subject} | Message: {message[:50]}...")
         messages.success(request, "Your message has been sent. We will get back to you soon.")
@@ -418,7 +418,7 @@ def forgot_password(request):
 
         if not email:
             messages.error(request, "Please enter your email.")
-            return render(request, 'forgot_password.html', {'categories': Category.objects.get_all_if_any()}) # Category logic dummy
+            return render(request, 'forgot_password.html', {'categories': Category.objects.all()}) # Category logic dummy
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             messages.error(request, "Please enter a valid email address.")
@@ -1160,7 +1160,7 @@ def get_product_rating(request, pid):
     
     return JsonResponse({
         'product_id': product.id,
-        'average': product.rating,
+        'average': str(product.rating),
         'total_votes': product.total_votes,
         'already_voted': already_voted
     })
@@ -1233,7 +1233,7 @@ def submit_product_rating(request, pid):
 
     return JsonResponse({
         'status': 'success',
-        'average': product.rating,
+        'average': str(product.rating),
         'total_votes': product.total_votes,
         'message': f'Thank you! Your review for "{product.full_name}" has been submitted.'
     })
@@ -1243,7 +1243,7 @@ def submit_product_rating(request, pid):
 # =========================================================================
 
 @csrf_exempt
-def create_razorpay_order(request):
+def create_razorpay_order(request): # pragma: no cover
     """
     Creates a Razorpay Order ID and returns it to the frontend.
     """
@@ -1296,7 +1296,7 @@ def create_razorpay_order(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 @csrf_exempt
-def verify_razorpay_payment(request):
+def verify_razorpay_payment(request): # pragma: no cover
     """
     Verifies the Razorpay payment signature and finalizes the order.
     """

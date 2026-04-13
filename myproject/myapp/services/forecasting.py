@@ -73,11 +73,6 @@ class ForecastingService:
         # Calculate accuracy score (R^2 or MAPE)
         score = model.score(X, y)
 
-        forecast_dates = [
-            (datetime.now() + timedelta(days=i+1)).strftime('%Y-%m-%d')
-            for i in range(days_ahead)
-        ]
-
         return {
             'forecast': list(zip(forecast_dates, predictions.tolist())),
             'accuracy': round(score * 100, 2),

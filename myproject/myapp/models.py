@@ -509,6 +509,9 @@ class VariantAttribute(models.Model):
     class Meta:
         unique_together = ('variant', 'attribute_value')
 
+    def __str__(self):
+        return f"{self.variant.sku} - {self.attribute_value}"
+
 
 @receiver(pre_delete, sender=ProductVariant)
 def delete_variant_images_on_delete(sender, instance, **kwargs):

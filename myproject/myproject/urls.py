@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),         # Default Django admin
-    path('admin/', include('myapp.custom_admin_urls')),  # Custom admin panel
+    path('admin/', include('myapp.custom_admin_urls', namespace='custom_admin')),  # Custom admin panel
     path('', include('myapp.urls')),
 ]
 

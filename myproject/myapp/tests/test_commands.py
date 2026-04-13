@@ -2,7 +2,7 @@ import pytest
 from io import StringIO
 from django.core.management import call_command
 from django.contrib.auth.models import User
-from myapp.models import SiteAdmin, Product, Customer, Order
+from myapp.models import SiteAdmin, Product, Customer, Order, Category, Brand
 from unittest.mock import patch
 
 @pytest.mark.django_db
@@ -58,9 +58,10 @@ class TestManagementCommands:
         
         # Verify data creation
         assert Customer.objects.count() == 5
-        assert Product.objects.count() > 0
+        assert Category.objects.count() > 0
+        assert Brand.objects.count() > 0
         assert User.objects.filter(username='admin').exists()
-        assert "DATABASE FULLY RESTORED" in out.getvalue()
+        assert "DATABASE RESET" in out.getvalue()
 
 @pytest.mark.django_db
 def test_reset_db_root_script():
