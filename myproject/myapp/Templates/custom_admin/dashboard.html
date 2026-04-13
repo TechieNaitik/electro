@@ -43,50 +43,11 @@
     </div>
 </div>
 
-<script>
-document.getElementById('currency-refresh-card').addEventListener('click', function() {
-    const card = this;
-    const icon = card.querySelector('.fa-rotate');
-    const label = card.querySelector('.stat-number');
-    
-    // Start animation
-    icon.classList.add('fa-spin');
-    label.innerText = 'Syncing...';
-    card.style.pointerEvents = 'none';
-    card.style.opacity = '0.7';
+<div id="currency-refresh-config" 
+     data-url="{% url 'custom_admin:api_refresh_currency' %}" 
+     data-csrf="{{ csrf_token }}">
+</div>
 
-    fetch("{% url 'custom_admin:api_refresh_currency' %}", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": "{{ csrf_token }}",
-            "Content-Type": "application/json"
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            label.innerText = 'Refreshed!';
-            label.style.color = 'var(--success)';
-            setTimeout(() => {
-                label.innerText = 'Click to Sync';
-                label.style.color = 'var(--text-secondary)';
-            }, 3000);
-        } else {
-            label.innerText = 'Error!';
-            alert("Error refreshing rates: " + data.message);
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        label.innerText = 'Failed!';
-    })
-    .finally(() => {
-        icon.classList.remove('fa-spin');
-        card.style.pointerEvents = 'auto';
-        card.style.opacity = '1';
-    });
-});
-</script>
 
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
     <!-- ═══ Recent Orders ═══ -->

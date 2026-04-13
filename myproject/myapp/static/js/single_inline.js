@@ -1,8 +1,10 @@
 (function () {
     'use strict';
 
-    const PRODUCT_ID    = window.PRODUCT_ID;
-    const ALL_VARIANTS  = window.ALL_VARIANTS;
+    const configEl = document.getElementById('variant-config');
+    const PRODUCT_ID    = configEl ? parseInt(configEl.dataset.productId) : null;
+    const ALL_VARIANTS  = configEl ? JSON.parse(configEl.dataset.variants || '{}') : {};
+
 
     // State: attr_name → selected attribute_value id (int) or null
     const selectedAttrs = {};

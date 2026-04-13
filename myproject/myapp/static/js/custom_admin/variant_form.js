@@ -72,4 +72,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // Administrative submit protection
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function() {
+            const btn = document.getElementById('admin-variant-submit');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Syncing...';
+                btn.classList.add('opacity-50');
+            }
+        });
+    }
 });
+

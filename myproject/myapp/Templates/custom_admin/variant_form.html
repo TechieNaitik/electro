@@ -138,17 +138,7 @@
             <button type="submit" id="admin-variant-submit" class="btn btn-primary px-48 h-44 shadow-lg font-weight-700">Push to Catalog</button>
         </div>
         
-        <script>
-            // Administrative submit protection
-            document.querySelector('form').addEventListener('submit', function() {
-                const btn = document.getElementById('admin-variant-submit');
-                if (btn) {
-                    btn.disabled = true;
-                    btn.innerText = 'Syncing...';
-                    btn.classList.add('opacity-50');
-                }
-            });
-        </script>
+
     </form>
 </div>
 {% endblock %}

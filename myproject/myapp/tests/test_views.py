@@ -226,3 +226,516 @@ class TestInfrastructureViews:
 
     def test_apis(self, client):
         assert client.get(reverse('exchange_rates')).status_code == 200
+
+    def test_get_client_ip_branches(self, rf):
+        from myapp.views import get_client_ip
+        # 1. Test with X-Forwarded-For (Hits the 'if' branch)
+        request = rf.get('/', HTTP_X_FORWARDED_FOR='1.2.3.4, 5.6.7.8')
+        assert get_client_ip(request) == '1.2.3.4'
+        
+        # 2. Test with REMOTE_ADDR (Hits the 'else' branch)
+        request = rf.get('/', REMOTE_ADDR='9.9.9.9')
+        assert get_client_ip(request) == '9.9.9.9'
+
+    def test_legacy_redirect_views(self, client):
+        """Tests views that simply redirect to the account tabs."""
+        assert client.get(reverse('order_history')).status_code == 302
+        assert client.get(reverse('wishlist')).status_code == 302
+@pytest.mark.django_db
+class TestRemoveCouponView:
+    def test_remove_coupon(self, client, customer):
+        _make_session(client, email=customer.email, coupon_id=1)
+        # Fixed: Use 'remove_coupon' as the correct URL name
+        response = client.post(reverse('remove_coupon'), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert response.status_code == 200
+        assert response.json()['success'] is True
+        assert 'coupon_id' not in client.session
+
+@pytest.mark.django_db
+class TestAddToCartAjax:
+    def test_add_to_cart_no_variant_multi_variant_ajax(self, client, customer, product):
+        """Test adding to cart without variant_id for a product with multiple variants."""
+        _make_session(client, email=customer.email)
+        # Create at least 2 active variants to trigger the 'multi-variant' error branch
+        from myapp.models import ProductVariant
+        ProductVariant.objects.create(product=product, sku="V1_unique", price=100, stock_quantity=10, is_active=True)
+        ProductVariant.objects.create(product=product, sku="V2_unique", price=200, stock_quantity=10, is_active=True)
+        
+        response = client.post(
+            reverse('add_to_cart', args=[product.id]),
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        assert response.status_code == 200
+        # Should return error because variant_id is missing and multiple variants exist
+        assert response.json()['status'] == 'error'
+        assert "Please select a variant" in response.json()['message']
+
+@pytest.mark.django_db
+class TestZeroCoverageViews:
+    """Tests for views that originally had zero coverage."""
+
+    def test_cart_view(self, client, customer, variant, coupon):
+        """Covers all branches in cart view: unauth, empty cart, valid/invalid coupons."""
+        url = reverse('cart')
+        
+        # 1. Unauthenticated branch
+        response = client.get(url)
+        assert response.status_code == 302
+        assert response.url == reverse('login')
+        
+        # Authenticate
+        _make_session(client, email=customer.email)
+        
+        # 2. Authenticated, empty cart
+        response = client.get(url)
+        assert response.status_code == 200
+        assert response.context['cart_count'] == 0
+        
+        # Add item to cart
+        from myapp.models import Cart
+        Cart.objects.create(customer=customer, variant=variant, quantity=1)
+        
+        # 3. Authenticated, valid coupon
+        # Assuming coupon is valid (min_amount <= total)
+        coupon.min_amount = Decimal('0.00')
+        coupon.save()
+        _make_session(client, email=customer.email, coupon_id=coupon.id)
+        response = client.get(url)
+        assert response.status_code == 200
+        assert response.context['applied_coupon'] == coupon
+        assert response.context['discount'] > 0
+        
+        # 4. Authenticated, invalid coupon
+        coupon.active = False # make it invalid
+        coupon.save()
+        response = client.get(url)
+        assert response.status_code == 200
+        assert response.context['applied_coupon'] is None
+        assert client.session.get('coupon_id') is None
+
+    def test_category_products_view(self, client, category, product):
+        """Covers all products (cid=0) and specific category products branches."""
+        # 1. cid = 0 (all products)
+        url_all = reverse('category_products', args=[0])
+        response = client.get(url_all)
+        assert response.status_code == 200
+        assert product in response.context['products']
+        
+        # 2. cid > 0 (specific category)
+        url_cat = reverse('category_products', args=[category.id])
+        response = client.get(url_cat)
+        assert response.status_code == 200
+        assert response.context['selected_category'] == category
+
+    def test_contact_view(self, client):
+        """Covers GET and POST branches of contact view."""
+        url = reverse('contact')
+        
+        # 1. GET request
+        response = client.get(url)
+        assert response.status_code == 200
+        
+        # 2. POST request
+        response = client.post(url, {
+            'name': 'Test User',
+            'email': 'test@example.com',
+            'subject': 'Hello',
+            'message': 'This is a test message'
+        })
+        assert response.status_code == 302
+        assert response.url == url
+
+    def test_proceed_to_checkout_view(self, client, customer):
+        """Covers auth checks and session flag setting."""
+        url = reverse('proceed_to_checkout')
+        
+        # 1. Unauthenticated branch
+        response = client.get(url)
+        assert response.status_code == 302
+        
+        # 2. Authenticated branch
+        _make_session(client, email=customer.email)
+        response = client.get(url)
+        assert response.status_code == 302
+        assert response.url == reverse('checkout')
+        assert client.session.get('checkout_allowed') is True
+
+    def test_help_view(self, client):
+        """Covers help view rendering."""
+        url = reverse('help')
+        response = client.get(url)
+        assert response.status_code == 200
+
+@pytest.mark.django_db
+class TestLowCoverageViews:
+    """Tests for views that had low coverage, filling in missing branches."""
+
+    def test_login_view(self, client, customer):
+        """Covers all missing branches of the login view."""
+        url = reverse('login')
+        
+        # 1. Missing email
+        response = client.post(url, {'email': '', 'password': 'test'})
+        assert response.status_code == 200
+        assert b"Please enter your email" in response.content
+
+        # 2. Missing password
+        response = client.post(url, {'email': 'test@example.com', 'password': ''})
+        assert response.status_code == 200
+        assert b"Please enter your password" in response.content
+
+        # 3. Invalid email or password
+        response = client.post(url, {'email': 'test@example.com', 'password': 'wrong'})
+        assert response.status_code == 200
+        assert b"Invalid email or password" in response.content
+
+        # 4. Successful login
+        with patch('myapp.views.log_action'):
+            response = client.post(url, {'email': customer.email, 'password': customer.password})
+        assert response.status_code == 302
+        assert response.url == reverse('home')
+        assert client.session.get('email') == customer.email
+
+        # 5. Already logged in branch
+        response = client.get(url)
+        assert response.status_code == 302
+        assert response.url == reverse('home')
+
+    def test_return_order_view(self, client, customer, order):
+        """Covers returning eligible and ineligible orders."""
+        url = reverse('return_order', args=[order.id])
+
+        # 1. Unauthenticated
+        response = client.get(url)
+        assert response.status_code == 302
+        
+        # Authenticate
+        _make_session(client, email=customer.email)
+
+        # 2. Order not eligible (status != Delivered)
+        order.status = 'Pending'
+        order.save()
+        response = client.get(url)
+        assert response.status_code == 302
+        assert response.url == reverse('order_detail', args=[order.id])
+
+        # 3. Order is eligible (status == Delivered)  <-- coverage was missing here
+        order.status = 'Delivered'
+        order.save()
+        response = client.get(url)
+        assert response.status_code == 302
+        order.refresh_from_db()
+        assert order.status == 'Returned'
+
+    def test_forgot_password_view(self, client, customer):
+        """Covers missing branches in forgot password view."""
+        url = reverse('forgot_password')
+        
+        # 1. Missing email
+        response = client.post(url, {'email': ''})
+        assert response.status_code == 200
+        assert b"Please enter your email." in response.content
+        
+        # 2. Invalid email format
+        response = client.post(url, {'email': 'invalid-email'})
+        assert response.status_code == 200
+        assert b"Please enter a valid email address." in response.content
+
+        # 3. No account found
+        response = client.post(url, {'email': 'notfound@example.com'})
+        assert response.status_code == 200
+        assert b"No account found with this email." in response.content
+
+        # 4. Exception in send_mail
+        with patch('myapp.views.send_mail', side_effect=Exception('Mail error')):
+            response = client.post(url, {'email': customer.email})
+        assert response.status_code == 200
+        assert b"Failed to send OTP. Please check email configuration." in response.content
+
+    def test_reset_password_view(self, client, customer):
+        """Covers missing branches in reset password view."""
+        url = reverse('reset_password')
+        
+        # 1. No reset_email in session
+        response = client.get(url)
+        assert response.status_code == 302
+        assert response.url == reverse('forgot_password')
+
+        # 2. Missing fields
+        _make_session(client, reset_email=customer.email)
+        response = client.post(url, {'email': customer.email, 'otp': '123456'}) # Missing new_password
+        assert response.status_code == 200
+        assert b"All fields are required." in response.content
+
+        # 3. Passwords do not match
+        _make_session(client, reset_email=customer.email, reset_otp='123456')
+        response = client.post(url, {
+            'email': customer.email, 
+            'otp': '123456', 
+            'new_password': 'pass', 
+            'confirm_password': 'diff'
+        })
+        assert response.status_code == 200
+        assert b"Passwords do not match." in response.content
+
+        # 4. OTP Expired (> 300s)
+        _make_session(client, reset_email=customer.email, reset_otp='123456', reset_otp_time=time.time() - 400)
+        response = client.post(url, {
+            'email': customer.email, 
+            'otp': '123456', 
+            'new_password': 'pass', 
+            'confirm_password': 'pass'
+        })
+        assert response.status_code == 200
+        assert b"OTP expired." in response.content
+
+        # 5. Successful reset and logging out the existing session
+        _make_session(client, email=customer.email, name=customer.full_name, reset_email=customer.email, reset_otp='123456', reset_otp_time=time.time())
+        response = client.post(url, {
+            'email': customer.email, 
+            'otp': '123456', 
+            'new_password': 'newpass', 
+            'confirm_password': 'newpass'
+        })
+        assert response.status_code == 302
+        assert response.url == reverse('login')
+        assert 'email' not in client.session # User gets logged out
+
+        # 6. GET request (success branch loading template)
+        _make_session(client, reset_email=customer.email)
+        response = client.get(url)
+        assert response.status_code == 200
+
+    def test_register_view(self, client):
+        """Covers missing branches in register view."""
+        url = reverse('register')
+        
+        # 1. GET request
+        response = client.get(url)
+        assert response.status_code == 200
+        
+        # 2. Missing fields
+        response = client.post(url, {'name': 'Test', 'email': 'test@example.com'}) # missing passwords
+        assert response.status_code == 200
+        assert b"All fields are required." in response.content
+        
+        # 3. Passwords do not match
+        response = client.post(url, {
+            'name': 'Test', 
+            'email': 'test@example.com', 
+            'password': 'pass', 
+            'confirm_password': 'diff'
+        })
+        assert response.status_code == 200
+        assert b"Passwords do not match." in response.content
+
+@pytest.mark.django_db
+class TestRemainingCoverage:
+    """Covers tiny dangling branches to push coverage to 100%."""
+    
+    def test_buy_again_branches(self, client, customer, order, variant):
+        url = reverse('buy_again', args=[order.id])
+        # Unauth
+        assert client.get(url).status_code == 302
+        
+        # Test stock <= cart_item.quantity
+        from myapp.models import Cart
+        Cart.objects.create(customer=customer, variant=variant, quantity=5)
+        variant.stock_quantity = 3
+        variant.save()
+        _make_session(client, email=customer.email)
+        
+        from myapp.models import OrderItem
+        OrderItem.objects.create(order=order, variant=variant, quantity=1, snapshot_product_name="X")
+        response = client.get(url)
+        assert response.status_code == 302
+        
+    def test_cancel_order_unauth_and_ineligible(self, client, order, customer):
+        url = reverse('cancel_order', args=[order.id])
+        assert client.get(url).status_code == 302
+        _make_session(client, email=customer.email)
+        order.status = 'Delivered'
+        order.save()
+        assert client.get(url).status_code == 302
+        
+    def test_checkout_branches(self, client, customer, variant, coupon):
+        url = reverse('checkout')
+        assert client.get(url).status_code == 302
+        _make_session(client, email=customer.email)
+        assert client.get(url).status_code == 302 # No checkout_allowed
+        _make_session(client, email=customer.email, checkout_allowed=True)
+        assert client.get(url).status_code == 302 # empty cart
+
+        from myapp.models import Cart
+        Cart.objects.create(customer=customer, variant=variant, quantity=1)
+        # Invalid coupon
+        coupon.active = False
+        coupon.save()
+        _make_session(client, email=customer.email, checkout_allowed=True, coupon_id=coupon.id)
+        assert client.get(url).status_code == 200
+
+        # Insufficient stock POST
+        variant.stock_quantity = 0
+        variant.save()
+        customer.address = "A"; customer.town_city="C"; customer.state="S"; customer.country="C"; customer.postcode_zip="1"
+        customer.save()
+        assert client.post(url, {'payment_method': 'Delivery'}).status_code == 302
+
+        # Final validate fail
+        variant.stock_quantity = 10
+        variant.save()
+        coupon.active = True
+        coupon.save()
+        with patch('myapp.models.Coupon.is_valid', return_value=(False, "Nope")):
+            assert client.post(url, {'payment_method': 'Delivery'}).status_code == 302
+            
+    def test_download_invoice_admin(self, client, order):
+        with patch('myapp.views.sync_playwright'):
+            _make_session(client, _site_admin_user_id=1)
+            assert client.get(reverse('download_invoice', args=[order.id])).status_code == 200
+            
+    def test_my_account_branches(self, client, customer):
+        url = reverse('my_account')
+        assert client.get(url).status_code == 302
+        _make_session(client, email=customer.email)
+        assert client.get(url, {'tab': 'orders', 'date_range': '30d'}).status_code == 200
+        assert client.get(url, {'tab': 'orders', 'date_range': '3m'}).status_code == 200
+        assert client.get(url, {'tab': 'orders', 'date_range': '6m'}).status_code == 200
+        assert client.get(url, {'tab': 'orders', 'q': 'query'}).status_code == 200
+        assert client.get(url, {'tab': 'wishlist'}).status_code == 200
+        from myapp.models import Customer
+        Customer.objects.create(full_name='Other', email='other@e.com', password='p')
+        response = client.post(url + "?tab=profile", {'email': 'other@e.com'})
+        assert response.status_code == 200
+
+    def test_order_detail_unauth_and_mask(self, client, customer, order):
+        url = reverse('order_detail', args=[order.id])
+        assert client.get(url).status_code == 302
+        _make_session(client, email=customer.email)
+        order.payment_method = "Visa"
+        order.save()
+        assert client.get(url).status_code == 200
+
+    def test_shop_errors(self, client):
+        url = reverse('shop')
+        assert client.get(url, {'cid': 'invalid'}).status_code == 200
+        assert client.get(url, {'cid': 9999}).status_code == 200 # Category.DoesNotExist
+        assert client.get(url, {'brand': 'invalid'}).status_code == 200
+
+    def test_single_reviews(self, client, product, customer):
+        url = reverse('single', args=[product.id])
+        _make_session(client, email='missing@e.com')
+        assert client.get(url).status_code == 200
+        
+        # To get a session key, we make a get request
+        client.get('/')
+        session_key = client.session.session_key
+        from myapp.models import ProductReview
+        ProductReview.objects.create(product=product, customer=customer, rating=5, review_text="A", session_key=session_key, ip_address="127.0.0.1")
+        assert client.get(url).status_code == 200
+
+    def test_add_to_cart_ajax_unauth(self, client, variant):
+        url = reverse('add_to_cart', args=[variant.product.id])
+        res = client.post(url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'error'
+        assert client.post(url).status_code == 302 # Standard
+        
+    def test_add_to_cart_single_variant_fallback(self, client, customer, product):
+        from myapp.models import ProductVariant
+        product.variants.all().delete()
+        ProductVariant.objects.create(product=product, sku="V1", price=100, stock_quantity=10, is_active=True)
+        _make_session(client, email=customer.email)
+        assert client.post(reverse('add_to_cart', args=[product.id])).status_code == 302
+
+    def test_add_to_cart_missing_variant(self, client, customer, product):
+        from myapp.models import ProductVariant
+        product.variants.all().delete()
+        ProductVariant.objects.create(product=product, sku="V1", price=100, stock_quantity=10, is_active=True)
+        ProductVariant.objects.create(product=product, sku="V2", price=100, stock_quantity=10, is_active=True)
+        _make_session(client, email=customer.email)
+        assert client.post(reverse('add_to_cart', args=[product.id])).status_code == 302
+        res = client.post(reverse('add_to_cart', args=[product.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'error'
+
+    def test_add_to_cart_invalid_variant(self, client, customer, product):
+        _make_session(client, email=customer.email)
+        assert client.post(reverse('add_to_cart', args=[product.id]), {'variant_id': 9999}).status_code == 302
+        res = client.post(reverse('add_to_cart', args=[product.id]), {'variant_id': 9999}, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'error'
+
+    def test_add_to_cart_ajax_success(self, client, customer, variant):
+        _make_session(client, email=customer.email)
+        res = client.post(reverse('add_to_cart', args=[variant.product.id]), {'variant_id': variant.id, 'qty': 1}, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'success'
+
+    def test_add_to_cart_ajax_stock_error(self, client, customer, variant):
+        variant.stock_quantity = 0
+        variant.save()
+        _make_session(client, email=customer.email)
+        res = client.post(reverse('add_to_cart', args=[variant.product.id]), {'variant_id': variant.id, 'qty': 1}, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'error'
+
+    def test_toggle_wishlist_unauth(self, client, product):
+        res = client.post(reverse('toggle_wishlist', args=[product.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'error'
+
+    def test_toggle_wishlist_no_variants(self, client, customer, product):
+        product.variants.all().delete()
+        _make_session(client, email=customer.email)
+        res = client.post(reverse('toggle_wishlist', args=[product.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'error'
+
+    def test_update_cart_ajax_coupon(self, client, customer, variant, coupon):
+        from myapp.models import Cart
+        cart_item = Cart.objects.create(customer=customer, variant=variant, quantity=5)
+        _make_session(client, email=customer.email, coupon_id=coupon.id)
+        # decrease
+        res = client.get(reverse('update_cart', args=[cart_item.id, 'decrease']), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'success'
+        # coupon invalid
+        coupon.active = False
+        coupon.save()
+        res = client.get(reverse('update_cart', args=[cart_item.id, 'increase']), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'success'
+        assert not res.json()['coupon_applied']
+        
+    def test_update_cart_ajax_stock_err(self, client, customer, variant):
+        from myapp.models import Cart
+        variant.stock_quantity = 1
+        variant.save()
+        cart_item = Cart.objects.create(customer=customer, variant=variant, quantity=1)
+        _make_session(client, email=customer.email)
+        res = client.get(reverse('update_cart', args=[cart_item.id, 'increase']), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'error'
+        
+    def test_update_cart_zero_qty(self, client, customer, variant):
+        from myapp.models import Cart
+        cart_item = Cart.objects.create(customer=customer, variant=variant, quantity=1)
+        _make_session(client, email=customer.email)
+        res = client.get(reverse('update_cart', args=[cart_item.id, 'decrease']), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        assert res.json()['status'] == 'success'
+        
+    def test_forgot_pw_and_login_get(self, client):
+        assert client.get(reverse('forgot_password')).status_code == 200
+        assert client.get(reverse('login')).status_code == 200
+
+    def test_get_product_rating_guest_session(self, client, product):
+        client.get('/') # init session
+        session_key = client.session.session_key
+        from myapp.models import ProductReview
+        ProductReview.objects.create(product=product, session_key=session_key, rating=5, review_text="x", ip_address="127.0.0.1")
+        res = client.get(reverse('get_rating', args=[product.id]))
+        assert res.json()['already_voted'] is True
+        
+    def test_submit_product_rating_missing_text(self, client, customer, product):
+        _make_session(client, email=customer.email)
+        res = client.post(reverse('submit_rating', args=[product.id]), json.dumps({'rating': 3, 'review_text': ''}), content_type='application/json')
+        assert res.json()['status'] == 'error'
+        assert res.json()['message'] == 'Review comment is mandatory.'
+        
+    def test_submit_product_rating_not_post(self, client, product):
+        res = client.get(reverse('submit_rating', args=[product.id]))
+        assert res.json()['status'] == 'error'
+
+
+

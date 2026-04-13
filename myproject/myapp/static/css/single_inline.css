@@ -1,0 +1,14 @@
+.star-display i, .star-link i {
+    font-size: 1.4rem; /* Significantly bigger stars */
+    color: var(--bs-warning);
+}
+.rating-readonly i {
+    font-size: 1.1rem;
+}
+.social-share-buttons .btn {
+    padding: 8px 24px;
+    font-size: 0.9rem;
+}
+.variant-section {
+    margin-bottom: 1.5rem;
+}

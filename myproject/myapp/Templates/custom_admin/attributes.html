@@ -1,4 +1,6 @@
 {% extends 'custom_admin/base.html' %}
+{% load static %}
+
 
 {% block title %}Attributes Library — Electro Admin{% endblock %}
 {% block page_title %}Attributes Management{% endblock %}
@@ -85,14 +87,6 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.color-dot').forEach(dot => {
-            const color = dot.getAttribute('data-bg-color');
-            if (color) {
-                dot.style.backgroundColor = color;
-            }
-        });
-    });
-</script>
+<script src="{% static 'js/custom_admin/attributes.js' %}"></script>
+
 {% endblock %}

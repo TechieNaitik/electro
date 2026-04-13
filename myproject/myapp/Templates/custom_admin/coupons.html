@@ -1,4 +1,6 @@
 {% extends 'custom_admin/base.html' %}
+{% load static %}
+
 
 {% block title %}Coupons | Admin{% endblock %}
 {% block page_title %}Coupons Management{% endblock %}
@@ -123,12 +125,6 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.progress-bar-fill').forEach(el => {
-            const progress = el.dataset.progress || 0;
-            el.style.width = progress + '%';
-        });
-    });
-</script>
+<script src="{% static 'js/custom_admin/coupons.js' %}"></script>
+
 {% endblock %}

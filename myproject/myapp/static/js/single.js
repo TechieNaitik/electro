@@ -99,7 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Initialize Color Swatches
+    document.querySelectorAll('.color-swatch-btn').forEach(btn => {
+        const color = btn.getAttribute('data-swatch-color');
+        if (color) btn.style.backgroundColor = color;
+    });
 });
+
 
 // Existing Add to Cart Logic
 const cartForm = document.getElementById("ajax-add-to-cart-form");

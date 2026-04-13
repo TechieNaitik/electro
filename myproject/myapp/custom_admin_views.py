@@ -263,7 +263,7 @@ def admin_export(request):
             return [obj.id, obj.customer.full_name, obj.created_at.strftime('%Y-%m-%d %H:%M'), f"${obj.total_amount}", obj.payment_method, obj.status]
 
     elif module == 'order_details':
-        queryset = OrderItem.objects.select_related('order', 'product').all().order_by('-order__created_at')
+        queryset = OrderItem.objects.select_related('order', 'variant__product').all().order_by('-order__created_at')
         filename = f"order_details_{datetime.now().strftime('%Y-%m-%d')}"
         title = "Order Details (Line Items)"
         headers = ['Order ID', 'Product', 'Variant SKU', 'Quantity', 'Unit Price', 'Subtotal']
@@ -317,7 +317,7 @@ def admin_export(request):
         if module == 'customers':
             queryset = queryset.filter(Q(full_name__icontains=query) | Q(email__icontains=query))
         elif module == 'orders':
-            queryset = queryset.filter(Q(full_name__icontains=query) | Q(id__icontains=query))
+            queryset = queryset.filter(Q(customer__full_name__icontains=query) | Q(id__icontains=query))
         elif module == 'products':
             queryset = queryset.filter(Q(brand__name__icontains=query) | Q(model_name__icontains=query) | Q(variants__sku__icontains=query)).distinct()
 

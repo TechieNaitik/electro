@@ -5,22 +5,8 @@
 {% block extra_head %}
 <link href="{% static 'lib/lightbox/css/lightbox.min.css' %}" rel="stylesheet">
 <link href="{% static 'css/single.css' %}" rel="stylesheet">
-<style>
-    .star-display i, .star-link i {
-        font-size: 1.4rem; /* Significantly bigger stars */
-        color: var(--bs-warning);
-    }
-    .rating-readonly i {
-        font-size: 1.1rem;
-    }
-    .social-share-buttons .btn {
-        padding: 8px 24px;
-        font-size: 0.9rem;
-    }
-    .variant-section {
-        margin-bottom: 1.5rem;
-    }
-</style>
+<link href="{% static 'css/single_inline.css' %}" rel="stylesheet">
+
 {% endblock %}
 
 {% block content %}
@@ -197,18 +183,7 @@
                                     </button>
                                     {% endfor %}
                                 </div>
-                                <script>
-                                    // Dynamically apply background colors to swatches without causing CSS linting errors in the IDE
-                                    (function() {
-                                        const container = document.getElementById('swatch-container-{{ forloop.counter }}');
-                                        if (container) {
-                                            container.querySelectorAll('.color-swatch-btn').forEach(btn => {
-                                                const color = btn.getAttribute('data-swatch-color');
-                                                if (color) btn.style.backgroundColor = color;
-                                            });
-                                        }
-                                    })();
-                                </script>
+
                                 {% else %}
                                 <div class="pill-options" data-attr-name="{{ attr_name }}">
                                     {% for av in values %}
@@ -374,14 +349,12 @@
 <script src="{% static 'lib/lightbox/js/lightbox.min.js' %}"></script>
 <script src="{% static 'js/single.js' %}"></script>
 
-{% if has_variants %}
-<!-- ── Variant Selector Logic ─────────────────────────── -->
-<script>
-    window.PRODUCT_ID    = parseInt('{{ product.id }}');
-    window.ALL_VARIANTS  = JSON.parse('{{ variants_json|escapejs }}');
-    window.COLOR_IMAGE_MAP = JSON.parse('{{ color_image_map_json|escapejs }}');
-    window.OPTION_TYPES = JSON.parse('{{ option_types_json|escapejs }}');
-</script>
+<div id="variant-config"
+     data-product-id="{{ product.id }}"
+     data-variants="{{ variants_json|escapejs }}"
+     data-color-images="{{ color_image_map_json|escapejs }}"
+     data-option-types="{{ option_types_json|escapejs }}">
+</div>
 <script src="{% static 'js/single_inline.js' %}"></script>
-{% endif %}
+
 {% endblock %}

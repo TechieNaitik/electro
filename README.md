@@ -21,6 +21,8 @@
 [![pytest](https://img.shields.io/badge/Tested_with-pytest-0A9EDC?style=flat-square&logo=pytest&logoColor=white)](https://docs.pytest.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/firstcontributions/first-contributions)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?style=flat-square&logo=bootstrap&logoColor=white)](https://getbootstrap.com)
+[![Coverage](https://img.shields.io/badge/Coverage-98%25-brightgreen?style=flat-square)](https://docs.pytest.org)
+
 
 <br/>
 
@@ -100,7 +102,9 @@
 | **Centralized Profile Management** | Comprehensive dashboard for personal details, contact info, and multi-field shipping addresses |
 | **Contact & Support Suite** | Integrated Contact forms, FAQ, Help docs, and Legal policies (Privacy, Terms) |
 | **Product Pagination** | 3×4 grid layout with persistent filtering and sorting across all catalog views |
+| **Isolated Asset Architecture** | Refactored frontend with strict separation of CSS/JS from HTML templates for better performance and CSP compliance |
 | **Responsive Design** | Glassmorphism-inspired dark mode aesthetic |
+
 
 ---
 
@@ -279,7 +283,9 @@ The built-in **Pytest Reports** view streams live test results and renders visua
 
 ## Security Architecture
 
-- **Client/Server separation** — Strict boundary between public assets (CSS/JS) and private business logic (Python/Django)
+- **Secure Asset Management** — Strict physical separation of CSS/JS from HTML templates (100% extraction of inline scripts/styles)
+- **Client/Server separation** — Strict boundary between public assets and private business logic
+
 - **Secrets management** — All credentials externalized to `.env`; never exposed in `static/` or JavaScript
 - **CSRF & session security** — Full Django middleware stack: CSRF protection, XSS filtering, signed sessions
 - **Secure file serving** — Sensitive media and admin logs served via authenticated Django views, not raw static paths

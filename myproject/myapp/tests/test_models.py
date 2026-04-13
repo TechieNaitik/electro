@@ -235,14 +235,31 @@ class TestModels:
             # The signal should call os.remove
             assert mock_remove.called
 
-    def test_variant_delete_signal_exception_handling(self, variant):
+    def test_variant_delete_signal_exception_handling(self, variant, attribute_value):
         from unittest.mock import patch
+        # Add an attribute so the loop runs
+        variant.attributes.add(attribute_value)
+        
         # Patching inside the try block of the signal to hit line 532
-        with patch('myapp.models.ProductImage.objects.filter', side_effect=Exception("Simulated Error")):
+        # We patch 'myapp.models.ProductVariant.objects.exclude' as it's called in line 527
+        with patch('myapp.models.ProductVariant.objects.exclude', side_effect=Exception("Simulated Error")):
             variant.delete()
         
         # Ensure variant is gone
         assert not ProductVariant.objects.filter(id=variant.id).exists()
+
+    def test_delete_variant_images_on_delete_direct_hit(self):
+        from myapp.models import delete_variant_images_on_delete
+        from unittest.mock import MagicMock
+        
+        mock_instance = MagicMock()
+        # Trigger Exception on the first line of the loop
+        mock_instance.attributes.all.return_value = [MagicMock()]
+        # Trigger AttributeError on the next line (line 527)
+        mock_instance.product.variants.exclude.side_effect = AttributeError("Simulated")
+        
+        # This call should hit the except block (lines 532 and 534)
+        delete_variant_images_on_delete(None, mock_instance)
 
     def test_variant_delete_signal_shared_attribute(self, product, variant):
         from myapp.models import Attribute, AttributeValue, ProductImage, ProductVariant
