@@ -297,39 +297,57 @@ The built-in **Pytest Reports** view streams live test results and renders visua
 ### 🏠 Storefront & Discovery
 
 ![Home Page Carousel](screenshots/Home_Carousel.png)
-*Modern Landing Page with Interactive Carousel*
+*Modern Landing Page with Interactive Glassmorphism Carousel*
 
 ![Top Selling Products](screenshots/Home_TopSelling.png)
-*Dynamic "Top Selling" and "Featured" Product Tabs*
+*Dynamic "Top Selling" and "Featured" Product Tabs with Real-time Inventory*
 
 ![Shop Page](screenshots/Shop.png)
-*Advanced Product Catalog with Multi-Category Filtering*
+*Advanced Product Catalog with Sidebar Filtering and Multi-Category Support*
+
+![Single Product Page](screenshots/Single.png)
+*Detailed Product View with Multi-variant Selection (Color/Storage) and AJAX Wishlist Controls*
 
 ### 🛍️ Shopping Experience
 
 ![Compare Products](screenshots/Compare%20Products.png)
-*Side-by-side Product Comparison with Difference Highlighting*
+*Side-by-side Product Comparison Suite with Difference Highlighting*
 
 ![Shopping Cart](screenshots/Cart.png)
-*AJAX-powered Shopping Cart with Live Quantity Updates*
+*AJAX-powered Shopping Cart with Live Quantity Synchronization*
+
+![Account Dashboard](screenshots/Account_Dashboard.png)
+*Centralized User Profile showing Order History, Wishlist Status, and Wallet Balance*
 
 ### 💳 Checkout & Billing
 
 ![Checkout Interface 1](screenshots/Checkout_1.png)
 ![Checkout Interface 2](screenshots/Checkout_2.png)
-*Streamlined Two-Step Checkout with Profile Autocomplete*
+*Two-Step Secure Checkout with Profile-based Autocomplete*
+
+![Payment Success](screenshots/Razorpay%20Payment%20Success.png)
+*Seamless Razorpay Integration with Real-time Payment Verification*
 
 ![PDF Invoice](screenshots/PDF_Invoice.png)
-*Pixel-perfect PDF Invoices rendered via Playwright*
+*Professional PDF Billing rendered via Playwright's Headless Engine*
 
 ![Email Notifications](screenshots/Email_Invoice.png)
-*Event-driven HTML Emails for Order Confirmation*
+![Payment Success Email](screenshots/Razorpay%20Payment%20Success%20Email.png)
+*Automated HTML Email Ecosystem for Order Confirmations and Payment Receipts*
 
-### 📊 Admin Intelligence & Analytics
+### 📊 Management & Analytics
 
 ![Analytical Dashboard 1](screenshots/Analytical%20Dashboard_1.png)
 ![Analytical Dashboard 2](screenshots/Analytical%20Dashboard_2.png)
-*Custom Admin Portal with BI Charts (chart.js) and AI Sales Forecasting (scikit-learn)*
+*BI Dashboard featuring Chart.js Visualizations and scikit-learn Sales Forecasting*
+
+![Product Management](screenshots/Product%20CRUD%20Form.png)
+*Custom Admin Interface for Complex Product Variant and Gallery Management*
+
+### 🧪 Quality Assurance
+
+![Pytest Reports](screenshots/Pytest%20Reports.png)
+*Live Terminal Streaming of pytest Suite and Coverage Reports directly in the UI*
 
 ---
 

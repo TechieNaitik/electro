@@ -379,6 +379,8 @@ def admin_pytest_reports(request):
 @site_admin_required
 def run_pytest_api(request):
     import os
+    import sys
+    import subprocess
     
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Only POST requests allowed.'}, status=405)
@@ -397,7 +399,7 @@ def run_pytest_api(request):
         # Note: In a production environment, this should be a background task (e.g. Celery).
         # For this project, we'll run it synchronously for simplicity.
         result = subprocess.run(
-            ['pytest', f'--cov-report=html:{report_dir}'], 
+            [sys.executable, '-m', 'pytest', f'--cov-report=html:{report_dir}'], 
             cwd=root_dir, 
             capture_output=True, 
             text=True,
@@ -435,15 +437,20 @@ def stream_pytest_api(request):
         env = os.environ.copy()
         env['PYTHONUNBUFFERED'] = '1'
         
-        process = subprocess.Popen(
-            ['pytest', '-v', '--color=yes', '--cov', '--cov-report=html'],
-            cwd=root_dir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1,
-            env=env
-        )
+        try:
+            process = subprocess.Popen(
+                [sys.executable, '-m', 'pytest', '-v', '--color=yes', '--cov', '--cov-report=html'],
+                cwd=root_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                env=env
+            )
+        except Exception as e:
+            yield f"\n[ERROR] Failed to start pytest process: {str(e)}\n"
+            yield "\n--- FINISHED ---"
+            return
 
         # Capture output for split reporting
         all_output = []
